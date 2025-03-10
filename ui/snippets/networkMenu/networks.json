@@ -1,0 +1,15 @@
+[
+	{
+	"title": "XONE Mainnet",
+	"url": "https://xscscan.com/",
+	"group": "Mainnets",
+	"icon": "/assets/favicon/android-chrome-192x192.png",
+	"isActive": true
+	},
+	{
+	"title": "XONE Testnet",
+	"url": "https://testnet.xscscan.com/",
+	"group": "Testnets",
+	"icon": "/assets/favicon/android-chrome-192x192.png"
+	}
+]
