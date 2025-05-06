@@ -21,7 +21,9 @@ const ContractConnectWallet = ({ isLoading }: Props) => {
           <span>Disconnected</span>
           <Button
             ml={ 3 }
-            onClick={ web3Wallet.connect }
+            onClick={() => {
+              web3Wallet.openModal();
+            }}
             size="sm"
             variant="outline"
             isLoading={ web3Wallet.isOpen }

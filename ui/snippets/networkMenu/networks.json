@@ -3,8 +3,7 @@
 	"title": "XONE Mainnet",
 	"url": "https://xscscan.com/",
 	"group": "Mainnets",
-	"icon": "/assets/favicon/android-chrome-192x192.png",
-	"isActive": true
+	"icon": "/assets/favicon/android-chrome-192x192.png"
 	},
 	{
 	"title": "XONE Testnet",

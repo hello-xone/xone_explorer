@@ -194,7 +194,6 @@ export default function useNavItems(): ReturnType {
       },
     ];
 
-    // eslint-disable-next-line
     const apiNavItems: Array<NavItem> = [
       config.features.restApiDocs.isEnabled ? {
         text: 'REST API',
@@ -208,16 +207,16 @@ export default function useNavItems(): ReturnType {
         icon: 'graphQL',
         isActive: pathname === '/graphiql',
       } : null,
-      !config.UI.navigation.hiddenLinks?.rpc_api && {
-        text: 'RPC API',
-        icon: 'RPC',
-        url: 'https://docs.blockscout.com/for-users/api/rpc-endpoints',
-      },
-      !config.UI.navigation.hiddenLinks?.eth_rpc_api && {
-        text: 'Eth RPC API',
-        icon: 'RPC',
-        url: ' https://docs.blockscout.com/for-users/api/eth-rpc',
-      },
+      // !config.UI.navigation.hiddenLinks?.rpc_api && {
+      //   text: 'RPC API',
+      //   icon: 'RPC',
+      //   url: 'https://docs.blockscout.com/for-users/api/rpc-endpoints',
+      // },
+      // !config.UI.navigation.hiddenLinks?.eth_rpc_api && {
+      //   text: 'Eth RPC API',
+      //   icon: 'RPC',
+      //   url: ' https://docs.blockscout.com/for-users/api/eth-rpc',
+      // },
     ].filter(Boolean);
 
     const otherNavItems: Array<NavItem> | Array<Array<NavItem>> = [
@@ -269,12 +268,12 @@ export default function useNavItems(): ReturnType {
         icon: 'bvi',
         // subItems: [],
       },
-      // apiNavItems.length > 0 && {
-      //   text: 'API',
-      //   icon: 'restAPI',
-      //   isActive: apiNavItems.some(item => isInternalItem(item) && item.isActive),
-      //   subItems: apiNavItems,
-      // },
+      apiNavItems.length > 0 && {
+        text: 'API',
+        icon: 'restAPI',
+        isActive: apiNavItems.some(item => isInternalItem(item) && item.isActive),
+        subItems: apiNavItems,
+      },
       {
         text: 'Other',
         icon: 'gear',

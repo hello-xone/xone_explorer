@@ -308,7 +308,7 @@ const Footer2 = () => {
           { text: 'RPC Endpoints', to: 'https://docs.xone.org/developers/rpc' },
           { text: 'Tools', to: 'https://docs.xone.org/developers/tools' },
           { text: 'Faucets', to: 'https://faucet.xone.org/' },
-          { text: 'Github', to: 'https://github.com/huione-labs' },
+          { text: 'Github', to: 'https://github.com/hello-xone' },
           { text: 'Gmail', to: 'mailto:developers@xone.org' },
         ] }/>
 

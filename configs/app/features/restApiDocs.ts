@@ -2,7 +2,7 @@ import type { Feature } from './types';
 
 import { getEnvValue } from '../utils';
 
-const DEFAULT_URL = `https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml`;
+const DEFAULT_URL = `/static/swagger.yaml`;
 const envValue = getEnvValue('NEXT_PUBLIC_API_SPEC_URL');
 
 const title = 'REST API documentation';
@@ -17,7 +17,7 @@ const config: Feature<{ specUrl: string }> = (() => {
 
   return Object.freeze({
     title,
-    isEnabled: false,
+    isEnabled: true,
     specUrl: envValue || DEFAULT_URL,
   });
 })();
