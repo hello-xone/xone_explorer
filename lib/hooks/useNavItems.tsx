@@ -38,6 +38,14 @@ export default function useNavItems(): ReturnType {
       icon: 'block',
       isActive: pathname === '/blocks' || pathname === '/block/[height_or_hash]',
     };
+
+    const epochs: NavItem | null = {
+      text: 'Epochs',
+      nextRoute: { pathname: '/epochs' as const },
+      icon: 'hourglass',
+      isActive: pathname === '/epochs',
+    };
+
     const txs: NavItem | null = {
       text: 'Transactions',
       nextRoute: { pathname: '/txs' as const },
@@ -112,10 +120,11 @@ export default function useNavItems(): ReturnType {
     if (rollupFeature.isEnabled && (rollupFeature.type === 'optimistic' || rollupFeature.type === 'arbitrum' || rollupFeature.type === 'zkEvm')) {
       blockchainNavItems = [
         [
+          epochs,
           txs,
           rollupDeposits,
           rollupWithdrawals,
-        ],
+        ].filter(Boolean) as Array<NavItem>,
         [
           blocks,
           rollupTxnBatches,
@@ -134,10 +143,11 @@ export default function useNavItems(): ReturnType {
     } else if (rollupFeature.isEnabled && rollupFeature.type === 'shibarium') {
       blockchainNavItems = [
         [
+          epochs,
           txs,
           rollupDeposits,
           rollupWithdrawals,
-        ],
+        ].filter(Boolean) as Array<NavItem>,
         [
           blocks,
           userOps,
@@ -149,11 +159,12 @@ export default function useNavItems(): ReturnType {
     } else if (rollupFeature.isEnabled && rollupFeature.type === 'zkSync') {
       blockchainNavItems = [
         [
+          epochs,
           txs,
           userOps,
           blocks,
           rollupTxnBatches,
-        ].filter(Boolean),
+        ].filter(Boolean) as Array<NavItem>,
         [
           topAccounts,
           validators,
@@ -163,6 +174,7 @@ export default function useNavItems(): ReturnType {
       ];
     } else {
       blockchainNavItems = [
+        epochs,
         txs,
         userOps,
         blocks,

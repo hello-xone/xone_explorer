@@ -27,6 +27,10 @@ export function ad(): CspDev.DirectiveDescriptor {
       //getit
       'v1.getittech.io',
       'ipapi.co',
+
+      // epochs
+      'explorer-api.xone.plus',
+      'explorer-api.xonetest.plus',
     ],
     'frame-src': [
       // coinzilla

@@ -35,7 +35,15 @@ export default function useApiInfiniteQuery<R extends PaginatedResources>({
     },
     initialPageParam: null,
     getNextPageParam: (lastPage) => {
-      return lastPage.next_page_params as TPageParam<R>;
+      // 针对epochs资源，lastPage没有next_page_params，直接返回null
+      // 其他资源保持原逻辑
+      if (!lastPage || typeof lastPage !== 'object' || lastPage === null) {
+        return null;
+      }
+
+      return 'next_page_params' in lastPage ?
+        (lastPage as { next_page_params: TPageParam<R> }).next_page_params :
+        null;
     },
     ...queryOptions,
   });

@@ -54,6 +54,7 @@
 	| "empty_search_result"
 	| "ENS_slim"
 	| "ENS"
+	| "epoch"
 	| "error-pages/404"
 	| "error-pages/422"
 	| "error-pages/429"

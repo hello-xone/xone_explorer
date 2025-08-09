@@ -70,6 +70,9 @@ const TEMPLATE_MAP: Record<Route['pathname'], string> = {
   '/api/healthz': DEFAULT_TEMPLATE,
   '/api/config': DEFAULT_TEMPLATE,
   '/api/sprite': DEFAULT_TEMPLATE,
+
+  // epoch routes
+  '/epochs': DEFAULT_TEMPLATE,
 };
 
 // eslint-disable-next-line

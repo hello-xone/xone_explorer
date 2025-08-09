@@ -64,6 +64,9 @@ export const PAGE_TYPE_DICT: Record<Route['pathname'], string> = {
   '/api/healthz': 'Node API: Health check',
   '/api/config': 'Node API: App config',
   '/api/sprite': 'Node API: SVG sprite content',
+
+  // epoch routes
+  '/epochs': 'Epochs',
 };
 
 export default function getPageType(pathname: Route['pathname']) {

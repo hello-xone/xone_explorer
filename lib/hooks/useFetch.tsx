@@ -10,6 +10,7 @@ export interface Params {
   signal?: RequestInit['signal'];
   body?: Record<string, unknown> | FormData;
   credentials?: RequestCredentials;
+  mode?: RequestMode;
 }
 
 interface Meta {

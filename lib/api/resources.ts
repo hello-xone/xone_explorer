@@ -77,6 +77,7 @@ import type {
   EnsDomainLookupFilters,
   EnsLookupSorting,
 } from 'types/api/ens';
+import type { EpochsResponse } from 'types/api/epochs';
 import type { IndexingStatus } from 'types/api/indexingStatus';
 import type { InternalTransactionsResponse } from 'types/api/internalTransaction';
 import type { LogsResponseTx, LogsResponseAddress } from 'types/api/log';
@@ -1075,6 +1076,16 @@ export const RESOURCES = {
   block_countdown: {
     path: '/api',
   },
+
+  // Epoch
+  current_epoch: {
+    path: '/api/epochs/current_epoch?identifier=day',
+    filterFields: [ 'identifier' as const ],
+  },
+  epochs: {
+    path: '/api/epochs/epochs',
+    filterFields: [ 'q' as const, 'type' as const ],
+  },
 };
 
 export type ResourceName = keyof typeof RESOURCES;
@@ -1127,7 +1138,7 @@ export type PaginatedResources = 'blocks' | 'block_txs' | 'block_election_reward
 'withdrawals' | 'address_withdrawals' | 'block_withdrawals' |
 'watchlist' | 'private_tags_address' | 'private_tags_tx' |
 'domains_lookup' | 'addresses_lookup' | 'user_ops' | 'validators_stability' | 'validators_blackfort' | 'noves_address_history' |
-'token_transfers_all';
+'token_transfers_all' | 'epochs';
 
 export type PaginatedResponse<Q extends PaginatedResources> = ResourcePayload<Q>;
 
@@ -1234,6 +1245,7 @@ Q extends 'optimistic_l2_output_roots_count' ? number :
 Q extends 'optimistic_l2_withdrawals_count' ? number :
 Q extends 'optimistic_l2_deposits_count' ? number :
 Q extends 'optimistic_l2_dispute_games_count' ? number :
+Q extends 'epochs' ? EpochsResponse :
 never;
 // !!! IMPORTANT !!!
 // See comment above
@@ -1313,9 +1325,16 @@ Q extends 'address_xstar_score' ? AddressXStarResponse :
 never;
 /* eslint-enable @stylistic/indent */
 
+type QWithoutEpochs = Exclude<PaginatedResources, 'epochs'>;
+
 export type ResourcePayload<Q extends ResourceName> = ResourcePayloadA<Q> | ResourcePayloadB<Q>;
-export type PaginatedResponseItems<Q extends ResourceName> = Q extends PaginatedResources ? ResourcePayloadA<Q>['items'] | ResourcePayloadB<Q>['items'] : never;
-export type PaginatedResponseNextPageParams<Q extends ResourceName> = Q extends PaginatedResources ?
+export type PaginatedResponseItems<Q extends ResourceName> =
+  Q extends 'epochs'
+    ? EpochsResponse['epochInfoss']
+    : Q extends QWithoutEpochs
+      ? ResourcePayloadA<Q>['items'] | ResourcePayloadB<Q>['items']
+      : never;
+export type PaginatedResponseNextPageParams<Q extends ResourceName> = Q extends 'epochs' ? EpochsResponse['total'] : Q extends QWithoutEpochs ?
   ResourcePayloadA<Q>['next_page_params'] | ResourcePayloadB<Q>['next_page_params'] :
   never;
 

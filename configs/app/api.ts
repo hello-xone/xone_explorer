@@ -20,6 +20,8 @@ const socketEndpoint = [
   apiPort && ':' + apiPort,
 ].filter(Boolean).join('');
 
+const epochApiHost = getEnvValue('NEXT_PUBLIC_EPOCH_API_HOST');
+
 const api = Object.freeze({
   host: apiHost,
   protocol: apiSchema,
@@ -27,6 +29,7 @@ const api = Object.freeze({
   endpoint: apiEndpoint,
   socket: socketEndpoint,
   basePath: stripTrailingSlash(getEnvValue('NEXT_PUBLIC_API_BASE_PATH') || ''),
+  epochApiHost,
 });
 
 export default api;
