@@ -44,15 +44,15 @@ const LatestBlocks = () => {
   });
 
   const handleNewBlockMessage: SocketMessage.NewBlock['handler'] = React.useCallback((payload) => {
-    queryClient.setQueryData(getResourceKey('homepage_blocks'), (prevData: Array<Block> | undefined) => {
+    React.startTransition(() => {
+      queryClient.setQueryData(getResourceKey('homepage_blocks'), (prevData: Array<Block> | undefined) => {
+        if (prevData?.some((block => block.height === payload.block.height))) {
+          return prevData;
+        }
 
-      const newData = prevData ? [ ...prevData ] : [];
-
-      if (newData.some((block => block.height === payload.block.height))) {
-        return newData;
-      }
-
-      return [ payload.block, ...newData ].sort((b1, b2) => b2.height - b1.height).slice(0, blocksMaxCount);
+        const combined = prevData ? [ payload.block, ...prevData ] : [ payload.block ];
+        return combined.sort((b1, b2) => b2.height - b1.height).slice(0, blocksMaxCount);
+      });
     });
   }, [ queryClient, blocksMaxCount ]);
 
