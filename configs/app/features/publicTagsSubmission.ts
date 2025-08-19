@@ -19,7 +19,6 @@ const config: Feature<{ api: { endpoint: string; basePath: string } }> = (() => 
       },
     });
   }
-
   return Object.freeze({
     title,
     isEnabled: false,
