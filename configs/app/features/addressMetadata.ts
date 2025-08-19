@@ -7,6 +7,7 @@ const apiHost = getEnvValue('NEXT_PUBLIC_METADATA_SERVICE_API_HOST');
 const title = 'Address metadata';
 
 const config: Feature<{ api: { endpoint: string; basePath: string } }> = (() => {
+  console.log(apiHost, "apiHost");
   if (apiHost) {
     return Object.freeze({
       title,

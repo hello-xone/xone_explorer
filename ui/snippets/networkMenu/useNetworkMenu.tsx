@@ -17,7 +17,8 @@ export default function useNetworkMenu() {
   // const fetch = useFetch();
   const { isPending, data } = useQuery<unknown, ResourceError<unknown>, Array<FeaturedNetwork>>({
     queryKey: [ 'featured-network' ],
-    queryFn: async() => networks.map(network => ({...network, isActive: new URL(network.url).host === window.location.host})),
+    queryFn: async() => networks.map(network => ({ ...network,
+      url: window.location.host.indexOf('xonescan') ? network.url : network.xscUrl, isActive: new URL(network.url).host === window.location.host })),
     // queryFn: async() => fetch(config.UI.navigation.featuredNetworks || '', undefined, { resource: 'featured-network' }),
     enabled: Boolean(config.UI.navigation.featuredNetworks) && isOpen,
     staleTime: Infinity,

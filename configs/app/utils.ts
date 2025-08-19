@@ -14,7 +14,6 @@ export const getEnvValue = (envName: string) => {
       return storageValue;
     }
   }
-
   return replaceQuotes(envs[envName]);
 };
 
