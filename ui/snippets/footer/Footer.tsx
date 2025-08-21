@@ -292,7 +292,7 @@ const Footer2 = () => {
           <IconSvg name={ WALLETS_INFO['metamask'].icon } boxSize={ 6 } mr="2"/>
           <Text color={ buttonColor }>Add { chain.name }</Text>
         </Button>
-        <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2024 Xone.</Text>
+        <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
       </VStack>
       <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
         <Links title="Xone" links={ [
