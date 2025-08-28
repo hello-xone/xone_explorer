@@ -19,7 +19,6 @@ const PublicTagsSubmit = () => {
 
   const profileQuery = useProfileQuery();
   const configQuery = useApiQuery('address_metadata_tag_types', { queryOptions: { enabled: !profileQuery.isLoading } });
-
   React.useEffect(() => {
     if (!configQuery.isPending) {
       setScreen(configQuery.isError ? 'error' : 'form');

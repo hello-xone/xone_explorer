@@ -1,13 +1,15 @@
 [
 	{
 	"title": "XONE Mainnet",
-	"url": "https://xscscan.com/",
+	"xscUrl": "https://xscscan.com/",
+	"url": "https://xonescan.com/",
 	"group": "Mainnets",
 	"icon": "/assets/favicon/android-chrome-192x192.png"
 	},
 	{
 	"title": "XONE Testnet",
-	"url": "https://testnet.xscscan.com/",
+	"xscUrl": "https://testnet.xscscan.com/",
+	"url": "https://testnet.xonescan.com/",
 	"group": "Testnets",
 	"icon": "/assets/favicon/android-chrome-192x192.png"
 	}
