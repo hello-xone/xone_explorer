@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Box, Flex } from '@chakra-ui/react';
 import React from 'react';
 
@@ -36,7 +35,7 @@ const Home = () => {
         <Stats/>
         <ChainIndicators/>
       </Flex>
-      { /* <AdBanner mt={ 6 } mx="auto" display={{ base: 'flex', lg: 'none' }} justifyContent="center"/> */ }
+      <AdBanner mt={ 6 } mx="auto" display={{ base: 'flex', lg: 'none' }} justifyContent="center"/>
       <Flex mt={ 8 } direction={{ base: 'column', lg: 'row' }} columnGap={ 12 } rowGap={ 6 }>
         { leftWidget }
         <Box flexGrow={ 1 }>

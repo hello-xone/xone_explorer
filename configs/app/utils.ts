@@ -1,5 +1,5 @@
-import isBrowser from 'lib/isBrowser';
-import * as regexp from 'lib/regexp';
+import { isBrowser } from 'toolkit/utils/isBrowser';
+import * as regexp from 'toolkit/utils/regexp';
 
 export const replaceQuotes = (value: string | undefined) => value?.replaceAll('\'', '"');
 
@@ -14,6 +14,7 @@ export const getEnvValue = (envName: string) => {
       return storageValue;
     }
   }
+
   return replaceQuotes(envs[envName]);
 };
 
@@ -45,7 +46,6 @@ export const buildExternalAssetFilePath = (name: string, value: string) => {
     }
     return `/assets/configs/${ fileName }.${ fileExtension }`;
   } catch (error) {
-
     return;
   }
 };

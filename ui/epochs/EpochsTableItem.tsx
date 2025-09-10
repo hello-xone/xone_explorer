@@ -1,113 +1,81 @@
-import { Td, Tr, Skeleton } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
-import React, { useCallback } from 'react';
+import { HStack } from '@chakra-ui/react';
+import React from 'react';
 
-import type { EpochInfo } from 'types/api/epoch';
+import type { CeloEpochListItem } from 'types/api/epochs';
 
-import formatDateUTC from 'lib/date/utcTime';
-import * as EntityBase from 'ui/shared/entities/base/components';
+import getCurrencyValue from 'lib/getCurrencyValue';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import { TableCell, TableRow } from 'toolkit/chakra/table';
+import EpochEntity from 'ui/shared/entities/epoch/EpochEntity';
+import CeloEpochStatus from 'ui/shared/statusTag/CeloEpochStatus';
+import TimeWithTooltip from 'ui/shared/time/TimeWithTooltip';
 
-type Props = {
-  epoch: EpochInfo;
+interface Props {
+  item: CeloEpochListItem;
   isLoading?: boolean;
 };
 
-const TokensTableItem = ({ epoch, isLoading }: Props) => {
-  const { id, startBlocknumber, endBlocknumber, epochStart, epochEnd } = epoch;
-  const router = useRouter();
+const EpochsTableItem = ({ item, isLoading }: Props) => {
 
-  const handleLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    if (isLoading) return;
-    router.push({
-      pathname: '/blocks',
-      query: {
-        page: '1',
-        ...epoch.endBlocknumber ?
-          {
-            next_page_params: encodeURIComponent(JSON.stringify({
-              block_number: epoch.endBlocknumber + 1,
-              end_block: epoch.startBlocknumber,
-            })),
-          } :
-          {
-            next_page_params: encodeURIComponent(JSON.stringify({
-              end_block: epoch.startBlocknumber,
-            })),
-          },
-      },
-    }, undefined, { shallow: true });
-  }, [ epoch.endBlocknumber, epoch.startBlocknumber, isLoading, router ]);
+  const communityReward = getCurrencyValue({
+    value: item.distribution?.community_transfer?.value ?? '0',
+    decimals: item.distribution?.community_transfer?.decimals,
+    accuracy: 8,
+  });
+  const carbonOffsettingReward = getCurrencyValue({
+    value: item.distribution?.carbon_offsetting_transfer?.value ?? '0',
+    decimals: item.distribution?.carbon_offsetting_transfer?.decimals,
+    accuracy: 8,
+  });
+  const totalReward = getCurrencyValue({
+    value: item.distribution?.transfers_total?.value ?? '0',
+    decimals: item.distribution?.transfers_total?.decimals,
+    accuracy: 8,
+  });
 
   return (
-    <Tr role="group">
-      <Td>
-        <EntityBase.Link href="/blocks" onClick={ handleLinkClick }>
-          { /* <IconSvg
-            name="checkered_flag"
-            boxSize={5}
-            p="1px"
-            isLoading={isLoading}
-            flexShrink={0}
-          /> */ }
-          <Skeleton
-            isLoaded={ !isLoading }
-            fontSize="sm"
-            lineHeight="24px"
-            fontWeight={ 500 }
+    <TableRow>
+      <TableCell verticalAlign="middle">
+        <HStack gap={ 2 }>
+          <EpochEntity number={ String(item.number) } noIcon fontWeight={ 700 } isLoading={ isLoading }/>
+          <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 500 }><span>{ item.type }</span></Skeleton>
+          <TimeWithTooltip
+            timestamp={ item.timestamp }
+            isLoading={ isLoading }
+            color="text.secondary"
             display="inline-block"
-          >
-            #{ id }
-          </Skeleton>
-        </EntityBase.Link>
-      </Td>
-      <Td isNumeric>
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { startBlocknumber }
+            fontWeight={ 400 }
+          />
+        </HStack>
+      </TableCell>
+      <TableCell verticalAlign="middle">
+        <CeloEpochStatus
+          isFinalized={ item.is_finalized }
+          loading={ isLoading }
+        />
+      </TableCell>
+      <TableCell verticalAlign="middle">
+        <Skeleton loading={ isLoading }>
+          { item.start_block_number } - { item.end_block_number || '' }
         </Skeleton>
-      </Td>
-      <Td isNumeric>
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { endBlocknumber === 0 ? '…' : endBlocknumber }
+      </TableCell>
+      <TableCell verticalAlign="middle" isNumeric>
+        <Skeleton loading={ isLoading }>
+          { item.distribution?.community_transfer ? communityReward.valueStr : '-' }
         </Skeleton>
-      </Td>
-      <Td isNumeric maxWidth="300px" width="300px">
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { formatDateUTC(epochStart) }
+      </TableCell>
+      <TableCell verticalAlign="middle" isNumeric>
+        <Skeleton loading={ isLoading }>
+          { item.distribution?.carbon_offsetting_transfer ? carbonOffsettingReward.valueStr : '-' }
         </Skeleton>
-      </Td>
-
-      <Td isNumeric maxWidth="300px" width="300px">
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { formatDateUTC(epochEnd) }
+      </TableCell>
+      <TableCell verticalAlign="middle" isNumeric>
+        <Skeleton loading={ isLoading }>
+          { item.distribution?.transfers_total ? totalReward.valueStr : '-' }
         </Skeleton>
-      </Td>
-    </Tr>
+      </TableCell>
+    </TableRow>
   );
 };
 
-export default TokensTableItem;
+export default EpochsTableItem;

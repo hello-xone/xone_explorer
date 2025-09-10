@@ -1,20 +1,18 @@
 import type { GridProps, HTMLChakraProps } from '@chakra-ui/react';
-import { Box, Grid, Flex, Text, Link, VStack, Skeleton, useColorModeValue, Button, SimpleGrid, Heading } from '@chakra-ui/react';
+import { Box, Grid, Flex, Text, VStack } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import type { CustomLinksGroup } from 'types/footerLinks';
 
 import config from 'configs/app';
-import chain from 'configs/app/chain';
 import type { ResourceError } from 'lib/api/resources';
 import useApiQuery from 'lib/api/useApiQuery';
 import useFetch from 'lib/hooks/useFetch';
 import useIssueUrl from 'lib/hooks/useIssueUrl';
-import useToast from 'lib/hooks/useToast';
-import { copy } from 'lib/html-entities';
-import useAddOrSwitchChain from 'lib/web3/useAddOrSwitchChain';
-import { WALLETS_INFO } from 'lib/web3/wallets';
+import { Link } from 'toolkit/chakra/link';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import { copy } from 'toolkit/utils/htmlEntities';
 import IconSvg from 'ui/shared/IconSvg';
 import { CONTENT_MAX_WIDTH } from 'ui/shared/layout/utils';
 import NetworkAddToWallet from 'ui/shared/NetworkAddToWallet';
@@ -28,17 +26,16 @@ const MAX_LINKS_COLUMNS = 4;
 const FRONT_VERSION_URL = `https://github.com/blockscout/frontend/tree/${ config.UI.footer.frontendVersion }`;
 const FRONT_COMMIT_URL = `https://github.com/blockscout/frontend/commit/${ config.UI.footer.frontendCommit }`;
 
-// @ts-ignore
 const Footer = () => {
 
-  const { data: backendVersionData } = useApiQuery('config_backend_version', {
+  const { data: backendVersionData } = useApiQuery('general:config_backend_version', {
     queryOptions: {
       staleTime: Infinity,
+      enabled: !config.features.opSuperchain.isEnabled,
     },
   });
   const apiVersionUrl = getApiVersionUrl(backendVersionData?.backend_version);
   const issueUrl = useIssueUrl(backendVersionData?.backend_version);
-  const logoColor = useColorModeValue('blue.600', 'white');
 
   const BLOCKSCOUT_LINKS = [
     {
@@ -46,12 +43,6 @@ const Footer = () => {
       iconSize: '16px',
       text: 'Submit an issue',
       url: issueUrl,
-    },
-    {
-      icon: 'social/canny' as const,
-      iconSize: '20px',
-      text: 'Feature request',
-      url: 'https://blockscout.canny.io/feature-requests',
     },
     {
       icon: 'social/git' as const,
@@ -63,7 +54,7 @@ const Footer = () => {
       icon: 'social/twitter' as const,
       iconSize: '18px',
       text: 'X (ex-Twitter)',
-      url: 'https://www.twitter.com/blockscoutcom',
+      url: 'https://x.com/blockscout',
     },
     {
       icon: 'social/discord' as const,
@@ -81,7 +72,7 @@ const Footer = () => {
       icon: 'donate' as const,
       iconSize: '20px',
       text: 'Donate',
-      url: 'https://github.com/sponsors/blockscout',
+      url: 'https://eth.blockscout.com/address/0xfB4aF6A8592041E9BcE186E5aC4BDbd2B137aD11',
     },
   ];
 
@@ -126,11 +117,13 @@ const Footer = () => {
   }, []);
 
   const renderProjectInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
+    const logoColor = { base: 'blue.600', _dark: 'white' };
+
     return (
       <Box gridArea={ gridArea }>
-        <Flex columnGap={ 2 } fontSize="xs" lineHeight={ 5 } alignItems="center" color="text">
+        <Flex columnGap={ 2 } textStyle="xs" alignItems="center">
           <span>Made with</span>
-          <Link href="https://www.blockscout.com" isExternal display="inline-flex" color={ logoColor } _hover={{ color: logoColor }}>
+          <Link href="https://www.blockscout.com" target="_blank" display="inline-flex" color={ logoColor } _hover={{ color: logoColor }}>
             <IconSvg
               name="networks/logo-placeholder"
               width="80px"
@@ -141,7 +134,7 @@ const Footer = () => {
         <Text mt={ 3 } fontSize="xs">
           Blockscout is a tool for inspecting and analyzing EVM based blockchains. Blockchain explorer for Ethereum Networks.
         </Text>
-        <Box mt={ 6 } alignItems="start" fontSize="xs" lineHeight={ 5 }>
+        <Box mt={ 6 } alignItems="start" textStyle="xs">
           { apiVersionUrl && (
             <Text>
               Backend: <Link href={ apiVersionUrl } target="_blank">{ backendVersionData?.backend_version }</Link>
@@ -158,12 +151,12 @@ const Footer = () => {
         </Box>
       </Box>
     );
-  }, [ apiVersionUrl, backendVersionData?.backend_version, frontendLink, logoColor ]);
+  }, [ apiVersionUrl, backendVersionData?.backend_version, frontendLink ]);
 
   const containerProps: HTMLChakraProps<'div'> = {
     as: 'footer',
     borderTopWidth: '1px',
-    borderTopColor: 'solid',
+    borderTopColor: 'border.divider',
   };
 
   const contentProps: GridProps = {
@@ -175,6 +168,22 @@ const Footer = () => {
     m: '0 auto',
   };
 
+  const renderRecaptcha = (gridArea?: GridProps['gridArea']) => {
+    if (!config.services.reCaptchaV2.siteKey) {
+      return <Box gridArea={ gridArea }/>;
+    }
+
+    return (
+      <Box gridArea={ gridArea } textStyle="xs" mt={ 6 }>
+        <span>This site is protected by reCAPTCHA and the Google </span>
+        <Link href="https://policies.google.com/privacy" external noIcon>Privacy Policy</Link>
+        <span> and </span>
+        <Link href="https://policies.google.com/terms" external noIcon>Terms of Service</Link>
+        <span> apply.</span>
+      </Box>
+    );
+  };
+
   if (config.UI.footer.links) {
     return (
       <Box { ...containerProps }>
@@ -182,6 +191,7 @@ const Footer = () => {
           <div>
             { renderNetworkInfo() }
             { renderProjectInfo() }
+            { renderRecaptcha() }
           </div>
 
           <Grid
@@ -202,8 +212,8 @@ const Footer = () => {
                 .slice(0, colNum)
                 .map(linkGroup => (
                   <Box key={ linkGroup.title }>
-                    <Skeleton fontWeight={ 500 } mb={ 3 } display="inline-block" isLoaded={ !isPlaceholderData }>{ linkGroup.title }</Skeleton>
-                    <VStack spacing={ 1 } alignItems="start">
+                    <Skeleton fontWeight={ 500 } mb={ 3 } display="inline-block" loading={ isPlaceholderData }>{ linkGroup.title }</Skeleton>
+                    <VStack gap={ 1 } alignItems="start">
                       { linkGroup.links.map(link => <FooterLinkItem { ...link } key={ link.text } isLoading={ isPlaceholderData }/>) }
                     </VStack>
                   </Box>
@@ -223,20 +233,22 @@ const Footer = () => {
           lg: `
           "network links-top"
           "info links-bottom"
+          "recaptcha links-bottom"
         `,
         }}
       >
 
         { renderNetworkInfo({ lg: 'network' }) }
         { renderProjectInfo({ lg: 'info' }) }
+        { renderRecaptcha({ lg: 'recaptcha' }) }
 
         <Grid
           gridArea={{ lg: 'links-bottom' }}
           gap={ 1 }
           gridTemplateColumns={{
             base: 'repeat(auto-fill, 160px)',
-            lg: 'repeat(3, 160px)',
-            xl: 'repeat(4, 160px)',
+            lg: 'repeat(2, 160px)',
+            xl: 'repeat(3, 160px)',
           }}
           gridTemplateRows={{
             base: 'auto',
@@ -255,94 +267,4 @@ const Footer = () => {
   );
 };
 
-const Footer2 = () => {
-  const toast = useToast();
-  const addOrSwitchChain = useAddOrSwitchChain();
-  const buttonColor = useColorModeValue('black', 'white');
-
-  const onAddChain = useCallback(async() => {
-    try {
-      await addOrSwitchChain();
-      toast({
-        position: 'top-right',
-        title: 'Success',
-        description: 'Successfully added network to your wallet',
-        status: 'success',
-        variant: 'subtle',
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        position: 'top-right',
-        title: 'Error',
-        description: (error as Error)?.message || 'Something went wrong',
-        status: 'error',
-        variant: 'subtle',
-        isClosable: true,
-      });
-    }
-  }, [ toast, addOrSwitchChain ]);
-
-  return (
-    <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
-      <VStack alignItems="start" minH="140px" >
-        <Button variant="outline" borderColor="priRed.500" onClick={ onAddChain } _hover={{
-          borderColor: 'priRed.700',
-        }} size="sm">
-          <IconSvg name={ WALLETS_INFO['metamask'].icon } boxSize={ 6 } mr="2"/>
-          <Text color={ buttonColor }>Add { chain.name }</Text>
-        </Button>
-        <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
-      </VStack>
-      <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
-        <Links title="Xone" links={ [
-          { text: 'Home', to: 'https://xone.org' },
-          { text: 'About', to: 'https://docs.xone.org/study/xone' },
-          { text: 'Terms of Service', to: 'https://docs.xone.org/study/service' },
-          { text: 'Privacy Policy', to: 'https://docs.xone.org/study/privacy' },
-          { text: 'Events', to: 'https://lu.ma/xone' },
-        ] }/>
-
-        <Links title="Developers" links={ [
-          { text: 'Docs', to: 'https://docs.xone.org/developers/ready' },
-          { text: 'RPC Endpoints', to: 'https://docs.xone.org/developers/rpc' },
-          { text: 'Tools', to: 'https://docs.xone.org/developers/tools' },
-          { text: 'Faucets', to: 'https://faucet.xone.org/' },
-          { text: 'Github', to: 'https://github.com/hello-xone' },
-          { text: 'Gmail', to: 'mailto:developers@xone.org' },
-        ] }/>
-
-        <Links title="Community" links={ [
-          { text: 'Telegram', to: 'https://t.me/hello_xonechain/2' },
-          { text: 'X', to: 'https://x.com/xone_chain' },
-          { text: 'Youtube', to: 'https://www.youtube.com/@HelloXone' },
-          { text: 'Medium', to: 'https://medium.com/@xone_chain' },
-        ] }/>
-
-      </SimpleGrid>
-    </Box>
-  );
-};
-
-const Links = ({ title, links }: { title: string;links: Array<{ text: string;to: string }> }) => {
-  const titleColor = useColorModeValue('black', 'white');
-  const hoverColor = useColorModeValue('black', 'white');
-  return (
-    <Box>
-      <Heading fontSize="lg" color={ titleColor }>{ title }</Heading>
-      <Box>
-        { links.map((li, i) => {
-          return (
-            <Box key={ i } py="1">
-              <Text as="a" href={ li.to } color="#6B6A6A" _hover={{
-                color: hoverColor,
-              }} fontSize="sm">{ li.text }</Text>
-            </Box>
-          );
-        }) }
-      </Box>
-    </Box>
-  );
-};
-
-export default React.memo(Footer2);
+export default React.memo(Footer);

@@ -1,177 +1,76 @@
-import React, { useEffect, useMemo } from 'react';
-import { animateScroll } from 'react-scroll';
+import { Box } from '@chakra-ui/react';
+import React from 'react';
 
-import type { EpochInfo } from 'types/api/epoch';
-import type { RoutedTab } from 'ui/shared/Tabs/types';
-
-import useQueryEpochs from 'lib/api/useQueryEpochs';
-import useIsMobile from 'lib/hooks/useIsMobile';
-import EpochsList from 'ui/epochs/Epochs';
-import EpochsActionBar from 'ui/epochs/EpochsActionBar';
+import { CELO_EPOCH_ITEM } from 'stubs/epoch';
+import { generateListStub } from 'stubs/utils';
+import EpochsListItem from 'ui/epochs/EpochsListItem';
+import EpochsTable from 'ui/epochs/EpochsTable';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
+import DataFetchAlert from 'ui/shared/DataFetchAlert';
+import DataListDisplay from 'ui/shared/DataListDisplay';
 import PageTitle from 'ui/shared/Page/PageTitle';
-import RoutedTabs from 'ui/shared/Tabs/RoutedTabs';
+import Pagination from 'ui/shared/pagination/Pagination';
+import useQueryWithPages from 'ui/shared/pagination/useQueryWithPages';
 
-const TAB_LIST_PROPS = {
-  marginBottom: 0,
-  pt: 6,
-  pb: 6,
-  marginTop: -5,
-  alignItems: 'center',
-};
-
-const TABS_RIGHT_SLOT_PROPS = {
-  ml: 8,
-  flexGrow: 1,
-};
-
-const PAGE_LIMIT = 50;
-
-interface EpochListResponse {
-  code: number;
-  data: {
-    epochInfoss: Array<EpochInfo>;
-    total: number;
-  };
-  msg: string;
-}
-
-type PaginationState = {
-  page: number;
-  hasPages: boolean;
-  hasNextPage: boolean;
-  canGoBackwards: boolean;
-  isLoading: boolean;
-  isVisible: boolean;
-};
-
-type PaginationUpdate = Partial<PaginationState>;
-
-const Epochs = () => {
-  const isMobile = useIsMobile();
-  const { fetchEpochs } = useQueryEpochs();
-
-  const [ epochData, setEpochData ] = React.useState<
-    EpochListResponse['data'] | null
-  >(null);
-  const [ pagination, setPagination ] = React.useState<PaginationState>({
-    page: 1,
-    hasPages: false,
-    hasNextPage: false,
-    canGoBackwards: false,
-    isLoading: true,
-    isVisible: true,
+const EpochsPageContent = () => {
+  const epochsQuery = useQueryWithPages({
+    resourceName: 'general:epochs_celo',
+    options: {
+      placeholderData: generateListStub<'general:epochs_celo'>(CELO_EPOCH_ITEM, 50, { next_page_params: {
+        number: 1739,
+        items_count: 50,
+      } }),
+    },
   });
 
-  const onNextPageClick = () => {
-    if (!pagination.hasNextPage) return;
+  const actionBar = epochsQuery.pagination.isVisible ? (
+    <ActionBar mt={ -6 }>
+      <Pagination ml="auto" { ...epochsQuery.pagination }/>
+    </ActionBar>
+  ) : null;
 
-    updatePagination({
-      page: pagination.page + 1,
-    });
-  };
-  const onPrevPageClick = () => {
-    if (!pagination.canGoBackwards) return;
+  const isLoading = epochsQuery.isPlaceholderData;
 
-    updatePagination({
-      page: pagination.page - 1,
-    });
-  };
+  const content = (() => {
+    if (epochsQuery.isError) {
+      return <DataFetchAlert/>;
+    }
 
-  const resetPage = () => {
-    updatePagination({
-      page: 1,
-    });
-  };
-
-  const updatePagination = (newData: PaginationUpdate) => {
-    setPagination({
-      ...pagination,
-      ...newData,
-    });
-  };
-
-  useEffect(() => {
-    setEpochData(null);
-    const fetchData = async() => {
-      updatePagination({
-        isLoading: true,
-      });
-      const res = await fetchEpochs({
-        limit: PAGE_LIMIT,
-        page: pagination.page - 1, // Adjust for 0-based index
-      });
-      animateScroll.scrollToTop({ duration: 0 }); // Scroll to top after fetching new data
-      setEpochData(res);
-      const epochLength = res.epochInfoss.length;
-      if (epochLength > 0) {
-        updatePagination({
-          hasPages: false,
-          hasNextPage: epochLength === PAGE_LIMIT,
-          canGoBackwards: pagination.page - 1 > 0,
-          isLoading: false,
-        });
-      }
-    };
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ pagination.page ]);
-
-  const epochQuery = useMemo(() => {
-    return {
-      isError: false,
-      isPlaceholderData: pagination.isLoading,
-      data: epochData || {
-        epochInfoss: Array(PAGE_LIMIT).fill({
-          id: 1,
-          epochStart: 1672531200,
-          epochEnd: 1672617600,
-          startBlocknumber: 123456,
-          endBlocknumber: 123457,
-        } as EpochInfo),
-        total: 0,
-      },
-      pagination,
-    };
-  }, [ epochData, pagination ]);
-
-  const actionBar = (
-    <EpochsActionBar
-      pagination={{
-        ...pagination,
-        onNextPageClick,
-        onPrevPageClick,
-        resetPage,
-      }}
-    />
-  );
-
-  const tabs: Array<RoutedTab> = [
-    {
-      id: 'all',
-      title: 'All',
-      component: (
-        <EpochsList
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          query={ epochQuery as any }
-          actionBar={ isMobile ? actionBar : null }
-        />
-      ),
-    },
-  ].filter(Boolean);
+    return epochsQuery.data?.items ? (
+      <>
+        <Box hideBelow="lg">
+          <EpochsTable
+            items={ epochsQuery.data.items }
+            top={ epochsQuery.pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+            isLoading={ isLoading }
+          />
+        </Box>
+        <Box hideFrom="lg">
+          { epochsQuery.data.items.map((item, index) => (
+            <EpochsListItem
+              key={ item.number + (epochsQuery.isPlaceholderData ? String(index) : '') }
+              item={ item }
+              isLoading={ isLoading }
+            />
+          )) }
+        </Box>
+      </>
+    ) : null;
+  })();
 
   return (
     <>
       <PageTitle title="Epochs" withTextAd/>
-      { !isMobile && actionBar }
-      <RoutedTabs
-        tabs={ tabs }
-        tabListProps={ isMobile ? undefined : TAB_LIST_PROPS }
-        rightSlotProps={ !isMobile ? TABS_RIGHT_SLOT_PROPS : undefined }
-        stickyEnabled={ !isMobile }
-      />
+      <DataListDisplay
+        isError={ epochsQuery.isError }
+        itemsNum={ epochsQuery.data?.items?.length }
+        emptyText="There are no epochs."
+        actionBar={ actionBar }
+      >
+        { content }
+      </DataListDisplay>
     </>
   );
 };
 
-export default Epochs;
+export default EpochsPageContent;

@@ -1,5 +1,5 @@
 import type { AddressParam } from './addressParams';
-import type { TokenInfo, TokenType } from './token';
+import type { TokenInfo, TokenInstance, TokenType } from './token';
 
 export type Erc20TotalPayload = {
   decimals: string | null;
@@ -8,37 +8,41 @@ export type Erc20TotalPayload = {
 
 export type Erc721TotalPayload = {
   token_id: string | null;
+  token_instance: TokenInstance | null;
 };
 
 export type Erc1155TotalPayload = {
   decimals: string | null;
   value: string;
   token_id: string | null;
+  token_instance: TokenInstance | null;
 };
 
 export type Erc404TotalPayload = {
   decimals: string;
   value: string;
   token_id: null;
+  token_instance: TokenInstance | null;
 } | {
   token_id: string;
+  token_instance: TokenInstance | null;
 };
 
 export type TokenTransfer = (
   {
-    token: TokenInfo<'ERC-20'>;
+    token: TokenInfo<'ERC-20'> | null;
     total: Erc20TotalPayload | null;
   } |
   {
-    token: TokenInfo<'ERC-721'>;
+    token: TokenInfo<'ERC-721'> | null;
     total: Erc721TotalPayload | null;
   } |
   {
-    token: TokenInfo<'ERC-1155'>;
+    token: TokenInfo<'ERC-1155'> | null;
     total: Erc1155TotalPayload | null;
   } |
   {
-    token: TokenInfo<'ERC-404'>;
+    token: TokenInfo<'ERC-404'> | null;
     total: Erc404TotalPayload | null;
   }
 ) & TokenTransferBase;

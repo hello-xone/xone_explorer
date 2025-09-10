@@ -44,7 +44,7 @@ const config: Feature<AdsBannerFeaturePayload> = (() => {
     if (desktopConfig && mobileConfig) {
       return Object.freeze({
         title,
-        isEnabled: false,
+        isEnabled: true,
         provider,
         adButler: {
           config: {
@@ -62,7 +62,7 @@ const config: Feature<AdsBannerFeaturePayload> = (() => {
 
       return Object.freeze({
         title,
-        isEnabled: false,
+        isEnabled: true,
         provider,
         additionalProvider,
         adButler: {
@@ -75,7 +75,7 @@ const config: Feature<AdsBannerFeaturePayload> = (() => {
     }
     return Object.freeze({
       title,
-      isEnabled: false,
+      isEnabled: true,
       provider,
     });
   }

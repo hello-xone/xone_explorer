@@ -1,67 +1,120 @@
-import { Button, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import React from 'react';
-import { GoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 import config from 'configs/app';
 import buildUrl from 'lib/api/buildUrl';
 import useFetch from 'lib/hooks/useFetch';
-import useToast from 'lib/hooks/useToast';
+import { Button } from 'toolkit/chakra/button';
+import { toaster } from 'toolkit/chakra/toaster';
+import { SECOND } from 'toolkit/utils/consts';
+import { apos } from 'toolkit/utils/htmlEntities';
+import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
+import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
 
 import AppErrorIcon from '../AppErrorIcon';
 import AppErrorTitle from '../AppErrorTitle';
 
-const AppErrorTooManyRequests = () => {
-  const toast = useToast();
-  const fetch = useFetch();
-  const [ token, setToken ] = React.useState<string | undefined>(undefined);
+function formatTimeLeft(timeLeft: number) {
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const seconds = timeLeft % 60;
 
-  const handleReCaptchaChange = React.useCallback(async(token: string) => {
-    setToken(token);
-  }, [ ]);
+  return `${ hours.toString().padStart(2, '0') }h ${ minutes.toString().padStart(2, '0') }m ${ seconds.toString().padStart(2, '0') }s`;
+}
+
+interface Props {
+  bypassOptions?: string;
+  reset?: string;
+}
+
+const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
+
+  const [ timeLeft, setTimeLeft ] = React.useState(reset ? Math.ceil(Number(reset) / SECOND) : undefined);
+
+  const fetch = useFetch();
+  const recaptcha = useReCaptcha();
 
   const handleSubmit = React.useCallback(async() => {
     try {
-      const url = buildUrl('api_v2_key');
+      const token = await recaptcha.executeAsync();
+
+      if (!token) {
+        throw new Error('ReCaptcha is not solved');
+      }
+
+      const url = buildUrl('general:api_v2_key');
 
       await fetch(url, {
         method: 'POST',
-        body: { recaptcha_v3_response: token },
+        body: { recaptcha_response: token },
+        headers: {
+          'recaptcha-v2-response': token,
+        },
         credentials: 'include',
       }, {
-        resource: 'api_v2_key',
+        resource: 'general:api_v2_key',
       });
 
       window.location.reload();
 
     } catch (error) {
-      toast({
-        position: 'top-right',
+      toaster.create({
         title: 'Error',
         description: 'Unable to get client key.',
-        status: 'error',
-        variant: 'subtle',
-        isClosable: true,
+        type: 'error',
       });
     }
-  }, [ token, toast, fetch ]);
+  }, [ recaptcha, fetch ]);
 
-  if (!config.services.reCaptchaV3.siteKey) {
-    throw new Error('reCAPTCHA V3 site key is not set');
+  React.useEffect(() => {
+    if (reset === undefined) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev && prev > 1) {
+          return prev - 1;
+        }
+
+        window.clearInterval(interval);
+        window.location.reload();
+
+        return 0;
+      });
+    }, SECOND);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [ reset ]);
+
+  if (!config.services.reCaptchaV2.siteKey) {
+    throw new Error('reCAPTCHA V2 site key is not set');
   }
 
+  const text = (() => {
+    if (timeLeft === undefined && bypassOptions === 'no_bypass') {
+      return 'Rate limit exceeded.';
+    }
+
+    const timeLeftText = timeLeft !== undefined ? `wait ${ formatTimeLeft(timeLeft) } ` : '';
+    const bypassText = bypassOptions !== 'no_bypass' ? `verify you${ apos }re human ` : '';
+    const orText = timeLeft !== undefined && bypassOptions !== 'no_bypass' ? 'OR ' : '';
+
+    return `Rate limit exceeded. Please ${ timeLeftText }${ orText }${ bypassText }before making another request.`;
+  })();
+
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={ config.services.reCaptchaV3.siteKey }>
+    <>
       <AppErrorIcon statusCode={ 429 }/>
       <AppErrorTitle title="Too many requests"/>
-      <Text variant="secondary" mt={ 3 }>
-        You have exceeded the request rate for a given time period. Please reduce the number of requests and try again soon.
+      <Text color="text.secondary" mt={ 3 }>
+        { text }
       </Text>
-      <GoogleReCaptcha
-        onVerify={ handleReCaptchaChange }
-        refreshReCaptcha
-      />
-      <Button onClick={ handleSubmit } mt={ 8 }>Try again</Button>
-    </GoogleReCaptchaProvider>
+      <ReCaptcha { ...recaptcha }/>
+      { bypassOptions !== 'no_bypass' && <Button onClick={ handleSubmit } disabled={ recaptcha.isInitError } mt={ 8 }>I'm not a robot</Button> }
+    </>
   );
 };
 

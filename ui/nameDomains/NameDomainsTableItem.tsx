@@ -1,12 +1,12 @@
-import { chakra, Tr, Td, Skeleton } from '@chakra-ui/react';
 import React from 'react';
 
 import type * as bens from '@blockscout/bens-types';
 
 import dayjs from 'lib/date/dayjs';
-import NameDomainExpiryStatus from 'ui/nameDomain/NameDomainExpiryStatus';
+import { TableCell, TableRow } from 'toolkit/chakra/table';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 import EnsEntity from 'ui/shared/entities/ens/EnsEntity';
+import TimeWithTooltip from 'ui/shared/time/TimeWithTooltip';
 
 type Props = bens.Domain & {
   isLoading?: boolean;
@@ -22,30 +22,24 @@ const NameDomainsTableItem = ({
 }: Props) => {
 
   return (
-    <Tr>
-      <Td verticalAlign="middle">
+    <TableRow>
+      <TableCell verticalAlign="middle">
         <EnsEntity domain={ name } protocol={ protocol } isLoading={ isLoading } fontWeight={ 600 }/>
-      </Td>
-      <Td verticalAlign="middle">
+      </TableCell>
+      <TableCell verticalAlign="middle">
         { resolvedAddress && <AddressEntity address={ resolvedAddress } isLoading={ isLoading } fontWeight={ 500 }/> }
-      </Td>
-      <Td verticalAlign="middle" pl={ 9 }>
-        { registrationDate && (
-          <Skeleton isLoaded={ !isLoading }>
-            { dayjs(registrationDate).format('lll') }
-            <chakra.span color="text_secondary"> { dayjs(registrationDate).fromNow() }</chakra.span>
-          </Skeleton>
-        ) }
-      </Td>
-      <Td verticalAlign="middle">
-        { expiryDate && (
-          <Skeleton isLoaded={ !isLoading } whiteSpace="pre-wrap">
-            <span>{ dayjs(expiryDate).format('lll') } </span>
-            <NameDomainExpiryStatus date={ expiryDate }/>
-          </Skeleton>
-        ) }
-      </Td>
-    </Tr>
+      </TableCell>
+      <TableCell verticalAlign="middle" pl={ 9 }>
+        <TimeWithTooltip timestamp={ registrationDate } isLoading={ isLoading }/>
+      </TableCell>
+      <TableCell verticalAlign="middle">
+        <TimeWithTooltip
+          timestamp={ expiryDate }
+          isLoading={ isLoading }
+          color={ expiryDate && dayjs(expiryDate).diff(dayjs(), 'day') < 30 ? 'red.600' : 'inherit' }
+        />
+      </TableCell>
+    </TableRow>
   );
 };
 

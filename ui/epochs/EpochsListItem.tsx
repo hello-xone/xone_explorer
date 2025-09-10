@@ -1,98 +1,80 @@
-import { HStack, Skeleton } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
-import React, { useCallback } from 'react';
+import { HStack } from '@chakra-ui/react';
+import React from 'react';
 
-import type { EpochInfo } from 'types/api/epoch';
+import type { CeloEpochListItem } from 'types/api/epochs';
 
-import formatDateUTC from 'lib/date/utcTime';
-import * as EntityBase from 'ui/shared/entities/base/components';
+import config from 'configs/app';
+import getCurrencyValue from 'lib/getCurrencyValue';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import DetailedInfoTimestamp from 'ui/shared/DetailedInfo/DetailedInfoTimestamp';
+import EpochEntity from 'ui/shared/entities/epoch/EpochEntity';
 import ListItemMobile from 'ui/shared/ListItemMobile/ListItemMobile';
+import CeloEpochStatus from 'ui/shared/statusTag/CeloEpochStatus';
 
-type Props = {
-  epoch: EpochInfo;
+interface Props {
+  item: CeloEpochListItem;
   isLoading?: boolean;
-};
+}
 
-const EpochsListItem = ({ epoch, isLoading }: Props) => {
-  const { id, startBlocknumber, endBlocknumber, epochStart, epochEnd } = epoch;
-
-  const router = useRouter();
-
-  const handleLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    if (isLoading) return;
-    router.push({
-      pathname: '/blocks',
-      query: {
-        page: '1',
-        ...epoch.endBlocknumber ?
-          {
-            next_page_params: encodeURIComponent(JSON.stringify({
-              block_number: epoch.endBlocknumber + 1,
-              end_block: epoch.startBlocknumber,
-            })),
-          } :
-          {
-            next_page_params: encodeURIComponent(JSON.stringify({
-              end_block: epoch.startBlocknumber,
-            })),
-          },
-      },
-    }, undefined, { shallow: true });
-  }, [ epoch.endBlocknumber, epoch.startBlocknumber, isLoading, router ]);
+const EpochsListItem = ({ item, isLoading }: Props) => {
+  const communityReward = getCurrencyValue({
+    value: item.distribution?.community_transfer?.value ?? '0',
+    decimals: item.distribution?.community_transfer?.decimals,
+    accuracy: 8,
+  });
+  const carbonOffsettingReward = getCurrencyValue({
+    value: item.distribution?.carbon_offsetting_transfer?.value ?? '0',
+    decimals: item.distribution?.carbon_offsetting_transfer?.decimals,
+    accuracy: 8,
+  });
+  const totalReward = getCurrencyValue({
+    value: item.distribution?.transfers_total?.value ?? '0',
+    decimals: item.distribution?.transfers_total?.decimals,
+    accuracy: 8,
+  });
 
   return (
-    <ListItemMobile rowGap={ 3 }>
-      <HStack spacing={ 3 }>
-        <EntityBase.Link href="/blocks" onClick={ handleLinkClick }>
-          { /* <IconSvg
-            name="checkered_flag"
-            boxSize={5}
-            p="1px"
-            isLoading={isLoading}
-            flexShrink={0}
-          /> */ }
-          <Skeleton isLoaded={ !isLoading } fontSize="sm">
-            <span>#{ id }</span>
+    <ListItemMobile rowGap={ 1 } py={ 3 } w="full" textStyle="sm" fontWeight={ 500 } alignItems="stretch">
+      <HStack minH="30px" gap={ 3 }>
+        <EpochEntity number={ String(item.number) } isLoading={ isLoading }/>
+        <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 400 } ml="auto"><span>{ item.type }</span></Skeleton>
+        <CeloEpochStatus isFinalized={ item.is_finalized } loading={ isLoading }/>
+      </HStack>
+      { item.timestamp && (
+        <HStack minH="30px" gap={ 0 } color="text.secondary" fontWeight={ 400 }>
+          <DetailedInfoTimestamp timestamp={ item.timestamp } isLoading={ isLoading } noIcon/>
+        </HStack>
+      ) }
+      <HStack minH="30px">
+        <Skeleton loading={ isLoading }>Block range</Skeleton>
+        <Skeleton loading={ isLoading } color="text.secondary">
+          <span>{ item.start_block_number } - { item.end_block_number || '' }</span>
+        </Skeleton>
+      </HStack>
+      { item.distribution?.community_transfer ? (
+        <HStack minH="30px">
+          <Skeleton loading={ isLoading }>Community</Skeleton>
+          <Skeleton loading={ isLoading } color="text.secondary">
+            <span>{ communityReward.valueStr } { config.chain.currency.symbol }</span>
           </Skeleton>
-        </EntityBase.Link>
-      </HStack>
-
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
-          Start Block Number
-        </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
-          <span>{ startBlocknumber }</span>
-        </Skeleton>
-      </HStack>
-
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
-          End Block Number
-        </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
-          <span>{ endBlocknumber === 0 ? '…' : endBlocknumber }</span>
-        </Skeleton>
-      </HStack>
-
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
-          Start Time (UTC+0)
-        </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
-          <span>{ formatDateUTC(epochStart) }</span>
-        </Skeleton>
-      </HStack>
-
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
-          End Time (UTC+0)
-        </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
-          <span>{ formatDateUTC(epochEnd) }</span>
-        </Skeleton>
-      </HStack>
+        </HStack>
+      ) : null }
+      { item.distribution?.carbon_offsetting_transfer ? (
+        <HStack minH="30px">
+          <Skeleton loading={ isLoading }>Carbon offset</Skeleton>
+          <Skeleton loading={ isLoading } color="text.secondary">
+            <span>{ carbonOffsettingReward.valueStr } { config.chain.currency.symbol }</span>
+          </Skeleton>
+        </HStack>
+      ) : null }
+      { item.distribution?.transfers_total ? (
+        <HStack minH="30px">
+          <Skeleton loading={ isLoading }>Total</Skeleton>
+          <Skeleton loading={ isLoading } color="text.secondary">
+            <span>{ totalReward.valueStr } { config.chain.currency.symbol }</span>
+          </Skeleton>
+        </HStack>
+      ) : null }
     </ListItemMobile>
   );
 };
