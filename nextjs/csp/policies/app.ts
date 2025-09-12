@@ -7,6 +7,9 @@ import { KEY_WORDS } from '../utils';
 const MAIN_DOMAINS = [
   `*.${ config.app.host }`,
   config.app.host,
+  // Include domains with port numbers for API calls
+  config.app.port ? `*.${ config.app.host }:${ config.app.port }` : '',
+  config.app.port ? `${ config.app.host }:${ config.app.port }` : '',
 ].filter(Boolean);
 
 const externalFontsDomains = (() => {
@@ -37,6 +40,10 @@ export function app(): CspDev.DirectiveDescriptor {
       // webpack hmr in safari doesn't recognize localhost as 'self' for some reason
       config.app.isDev ? 'ws://localhost:3000/_next/webpack-hmr' : '',
 
+      // Local API proxy endpoints
+      `${ config.app.baseUrl }/node-api/proxy/`,
+      `${ config.app.baseUrl }/api/`,
+
       // APIs
       ...Object.values(config.apis).filter(Boolean).map((api) => api.endpoint),
       ...Object.values(config.apis).filter(Boolean).map((api) => api.socketEndpoint),
@@ -59,6 +66,10 @@ export function app(): CspDev.DirectiveDescriptor {
       // next.js generates and rebuilds source maps in dev using eval()
       // https://github.com/vercel/next.js/issues/14221#issuecomment-657258278
       config.app.isDev ? KEY_WORDS.UNSAFE_EVAL : '',
+
+      // Monaco Editor and React Refresh require unsafe-eval for web workers and hot reload
+      // This is needed for code editor functionality and development features
+      KEY_WORDS.UNSAFE_EVAL,
 
       // hash of ColorModeScript: system + dark
       '\'sha256-yYJq8IP5/WhJj6zxyTmujEqBFs/MufRufp2QKJFU76M=\'',
