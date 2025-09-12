@@ -63,3 +63,5 @@ yarn-error.log*
 /tools/preset-sync/index.js
 
 sync.sh
+
+.history
