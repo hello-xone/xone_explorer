@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Box, Link, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 
 import chain from 'configs/app/chain';
@@ -7,7 +7,6 @@ import { WALLETS_INFO } from 'lib/web3/wallets';
 import { Button } from 'toolkit/chakra/button';
 import { useColorModeValue } from 'toolkit/chakra/color-mode';
 import { Heading } from 'toolkit/chakra/heading';
-import { Link } from 'toolkit/chakra/link';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
 

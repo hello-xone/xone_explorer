@@ -1,15 +1,12 @@
-import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 
-import chain from 'configs/app/chain';
 import useAddChainClick from 'lib/web3/useAddChainClick';
-import { WALLETS_INFO } from 'lib/web3/wallets';
-import { Button } from 'toolkit/chakra/button';
 import { useColorModeValue } from 'toolkit/chakra/color-mode';
-import { Heading } from 'toolkit/chakra/heading';
-import { Link } from 'toolkit/chakra/link';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
+import { WALLETS_INFO } from 'lib/web3/wallets';
+import chain from 'configs/app/chain';
 
 //   const { data: backendVersionData } = useApiQuery('general:config_backend_version', {
 //     queryOptions: {
@@ -321,9 +318,9 @@ const Links = ({ title, links }: { title: string;links: Array<{ text: string;to:
         { links.map((li, i) => {
           return (
             <Box key={ i } py="1">
-              <Link href={ li.to || '' } color="#6B6A6A" _hover={{
+              <Text as="a" href={ li.to } color="#6B6A6A" _hover={{
                 color: hoverColor,
-              }} fontSize="sm">{ li.text }</Link>
+              }} fontSize="sm">{ li.text }</Text>
             </Box>
           );
         }) }
@@ -331,5 +328,6 @@ const Links = ({ title, links }: { title: string;links: Array<{ text: string;to:
     </Box>
   );
 };
+
 
 export default React.memo(Footer);

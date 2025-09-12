@@ -1,15 +1,31 @@
-import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
-
-import chain from 'configs/app/chain';
-import useAddChainClick from 'lib/web3/useAddChainClick';
-import { WALLETS_INFO } from 'lib/web3/wallets';
-import { Button } from 'toolkit/chakra/button';
-import { useColorModeValue } from 'toolkit/chakra/color-mode';
-import { Heading } from 'toolkit/chakra/heading';
-import { Link } from 'toolkit/chakra/link';
+import type { GridProps, HTMLChakraProps } from '@chakra-ui/react';
+import { Box, Grid, Flex, Text, VStack } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 import { toaster } from 'toolkit/chakra/toaster';
+import type { CustomLinksGroup } from 'types/footerLinks';
+import config from 'configs/app';
+import type { ResourceError } from 'lib/api/resources';
+import useApiQuery from 'lib/api/useApiQuery';
+import useFetch from 'lib/hooks/useFetch';
+import useIssueUrl from 'lib/hooks/useIssueUrl';
+import { Link } from 'toolkit/chakra/link';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import { copy } from 'toolkit/utils/htmlEntities';
 import IconSvg from 'ui/shared/IconSvg';
+import { CONTENT_MAX_WIDTH } from 'ui/shared/layout/utils';
+import NetworkAddToWallet from 'ui/shared/NetworkAddToWallet';
+
+import FooterLinkItem from './FooterLinkItem';
+import IntTxsIndexingStatus from './IntTxsIndexingStatus';
+import getApiVersionUrl from './utils/getApiVersionUrl';
+
+const MAX_LINKS_COLUMNS = 4;
+
+const FRONT_VERSION_URL = `https://github.com/blockscout/frontend/tree/${ config.UI.footer.frontendVersion }`;
+const FRONT_COMMIT_URL = `https://github.com/blockscout/frontend/commit/${ config.UI.footer.frontendCommit }`;
+
+// const Footer = () => {
 
 //   const { data: backendVersionData } = useApiQuery('general:config_backend_version', {
 //     queryOptions: {
@@ -251,24 +267,24 @@ import IconSvg from 'ui/shared/IconSvg';
 // };
 
 const Footer = () => {
-  const handleAddToWalletClick = useAddChainClick();
+  const addOrSwitchChain = useAddOrSwitchChain();
   const buttonColor = useColorModeValue('black', 'white');
 
   const onAddChain = useCallback(async() => {
     try {
-      await handleAddToWalletClick();
+      await addOrSwitchChain();
       toaster.success({
         title: 'Success',
         description: 'Successfully added network to your wallet',
       });
     } catch (error) {
-      toaster.error({
+       toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong',
       });
-
+    
     }
-  }, [ handleAddToWalletClick ]);
+  }, [ toast, addOrSwitchChain ]);
 
   return (
     <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
@@ -311,25 +327,5 @@ const Footer = () => {
   );
 };
 
-const Links = ({ title, links }: { title: string;links: Array<{ text: string;to: string }> }) => {
-  const titleColor = useColorModeValue('black', 'white');
-  const hoverColor = useColorModeValue('black', 'white');
-  return (
-    <Box>
-      <Heading fontSize="lg" color={ titleColor }>{ title }</Heading>
-      <Box>
-        { links.map((li, i) => {
-          return (
-            <Box key={ i } py="1">
-              <Link href={ li.to || '' } color="#6B6A6A" _hover={{
-                color: hoverColor,
-              }} fontSize="sm">{ li.text }</Link>
-            </Box>
-          );
-        }) }
-      </Box>
-    </Box>
-  );
-};
 
 export default React.memo(Footer);

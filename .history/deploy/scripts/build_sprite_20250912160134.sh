@@ -54,7 +54,7 @@ if [ "$NEXT_PUBLIC_APP_ENV" != "pw" ]; then
     else
         # Linux and others
         HASH=$(md5sum $target_dir/sprite.svg | cut -d' ' -f1 | head -c 8)
-    fi
+
 
     # Remove old sprite files
     rm -f $target_dir/sprite.*.svg
