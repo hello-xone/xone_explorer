@@ -1,7 +1,9 @@
 import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import chain from 'configs/app/chain';
+import type { ResourceError } from 'lib/api/resources';
+import useApiFetch from 'lib/api/useApiFetch';
 import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
 import { Button } from 'toolkit/chakra/button';
@@ -9,7 +11,10 @@ import { useColorModeValue } from 'toolkit/chakra/color-mode';
 import { Heading } from 'toolkit/chakra/heading';
 import { Link } from 'toolkit/chakra/link';
 import { toaster } from 'toolkit/chakra/toaster';
+import { isEmail } from 'ui/address/contract/methods/utils';
 import IconSvg from 'ui/shared/IconSvg';
+
+import EmailInput from './EmailInput';
 
 //   const { data: backendVersionData } = useApiQuery('general:config_backend_version', {
 //     queryOptions: {
@@ -251,9 +256,18 @@ import IconSvg from 'ui/shared/IconSvg';
 // };
 
 const Footer = () => {
-  const handleAddToWalletClick = useAddChainClick();
-  const buttonColor = useColorModeValue('black', 'white');
+  const apiFetch = useApiFetch();
 
+  const handleAddToWalletClick = useAddChainClick();
+  const [ email, setEmail ] = useState<string>('');
+  const buttonColor = useColorModeValue('black', 'white');
+  // const formik = useFormik({
+  //   initialValues: {
+  //     email: '',
+  //   },
+  //   onSubmit: () => { },
+  // });
+  // const { values, getFieldProps, setFieldValue } = formik;
   const onAddChain = useCallback(async() => {
     try {
       await handleAddToWalletClick();
@@ -269,6 +283,40 @@ const Footer = () => {
 
     }
   }, [ handleAddToWalletClick ]);
+
+  const send = useCallback(async() => {
+    if (email && isEmail(email)) {
+      try {
+        // await addEmail({
+        //   email: values.email,
+        // });
+        apiFetch('userOps:addEmail', {
+          fetchParams: {
+            method: 'POST',
+            body: {
+              email: [ email ],
+            },
+          },
+        });
+        setEmail('');
+        toaster.success({
+          title: 'Success',
+          description: 'Subscribed',
+        });
+      } catch (error) {
+        toaster.error({
+          title: 'Error',
+          description: (error as ResourceError<{ message: string }>)?.payload?.message || 'Something went wrong. Try again later.',
+        });
+      }
+    } else {
+      toaster.error({
+        title: 'Error',
+        description: 'Please enter a valid email address',
+      });
+    }
+
+  }, [ apiFetch, email ]);
 
   return (
     <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
@@ -307,11 +355,23 @@ const Footer = () => {
         ] }/>
 
       </SimpleGrid>
+      <Box w="386px" position="relative">
+        <Heading fontSize="lg" mb={ 4 } color={ buttonColor }>Subscribe to Newsletter</Heading>
+        <Box fontSize="sm" color="#6B6A6A" mb={ 4 } >
+          Xone Chain is a modular Layer-1 that goes beyond scalability and efficiency, ensuring every on-chain action creates tangible, traceable value.
+        </Box>
+        <Box display="flex" alignItems="center" gap={ 2 }>
+          <EmailInput email={ email } setEmail={ setEmail }></EmailInput>
+          <Button onClick={ send } size="sm" flexShrink={ 0 }>
+            Join
+          </Button>
+        </Box>
+      </Box>
     </Box>
   );
 };
 
-const Links = ({ title, links }: { title: string;links: Array<{ text: string;to: string }> }) => {
+const Links = ({ title, links }: { title: string; links: Array<{ text: string; to: string }> }) => {
   const titleColor = useColorModeValue('black', 'white');
   const hoverColor = useColorModeValue('black', 'white');
   return (

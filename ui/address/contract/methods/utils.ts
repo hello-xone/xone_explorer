@@ -83,3 +83,8 @@ export const TYPE_FILTER_OPTIONS: Array<{ value: MethodType; title: string }> = 
   { value: 'read', title: 'Read' },
   { value: 'write', title: 'Write' },
 ];
+
+export function isEmail(email: string) {
+  const regex = /^[\w.%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+  return regex.test(email);
+}
