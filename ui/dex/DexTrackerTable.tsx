@@ -1,0 +1,43 @@
+import React from 'react';
+
+import type { Pool } from 'types/api/pools';
+
+import { TableBody, TableColumnHeader, TableHeaderSticky, TableRoot, TableRow } from 'toolkit/chakra/table';
+import { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
+
+import DexTrackerTableItem from './DexTrackerTableItem';
+
+type Props = {
+  items: Array<Pool>;
+  page: number;
+  isLoading?: boolean;
+  top?: number;
+};
+
+const DexTrackerTable = ({ items, page, isLoading, top }: Props) => {
+  return (
+    <TableRoot minWidth="900px">
+      <TableHeaderSticky top={ top ?? ACTION_BAR_HEIGHT_DESKTOP }>
+        <TableRow>
+          <TableColumnHeader width="50%">Pool</TableColumnHeader>
+          <TableColumnHeader width="20%">DEX</TableColumnHeader>
+          <TableColumnHeader width="25%" isNumeric>Liquidity</TableColumnHeader>
+          <TableColumnHeader width="5%" textAlign="center">View in</TableColumnHeader>
+        </TableRow>
+      </TableHeaderSticky>
+      <TableBody>
+        { items.map((item, index) => (
+          <DexTrackerTableItem
+            key={ item.pool_id + (isLoading ? index : '') }
+            item={ item }
+            index={ index }
+            page={ page }
+            isLoading={ isLoading }
+          />
+        )) }
+      </TableBody>
+    </TableRoot>
+  );
+};
+
+export default DexTrackerTable;

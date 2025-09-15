@@ -69,7 +69,13 @@ const TokensTable = ({ items, page, isLoading, sorting, setSorting, top }: Props
       </TableHeaderSticky>
       <TableBody>
         { items.map((item, index) => (
-          <TokensTableItem key={ item.address_hash + (isLoading ? index : '') } token={ item } index={ index } page={ page } isLoading={ isLoading }/>
+          <TokensTableItem
+            key={ (item.address_hash || `token-${ index }`) + index }
+            token={ item }
+            index={ index }
+            page={ page }
+            isLoading={ isLoading }
+          />
         )) }
       </TableBody>
     </TableRoot>

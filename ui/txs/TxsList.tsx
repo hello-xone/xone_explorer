@@ -36,7 +36,7 @@ const TxsList = (props: Props) => {
       { props.socketType && <TxsSocketNotice type={ props.socketType } place="list" isLoading={ props.isLoading }/> }
       { props.items.slice(0, renderedItemsNum).map((tx, index) => (
         <TxsListItem
-          key={ tx.hash + (props.isLoading ? index : '') }
+          key={ (tx.hash || `tx-${ index }`) + (props.isLoading ? index : '') }
           tx={ tx }
           showBlockInfo={ props.showBlockInfo }
           currentAddress={ props.currentAddress }

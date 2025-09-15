@@ -241,6 +241,12 @@ export default function useNavItems(): ReturnType {
         icon: 'dex-tracker',
         isActive: pathname === '/pools' || pathname.startsWith('/pool/'),
       },
+      {
+        text: 'DEX Tracker',
+        nextRoute: { pathname: '/dex-tracker' as const },
+        icon: 'dex-tracker',
+        isActive: pathname === '/dex-tracker',
+      },
     ].filter(Boolean);
 
     const apiNavItem: NavItem | null = config.features.apiDocs.isEnabled ? {

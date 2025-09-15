@@ -125,7 +125,7 @@ const TokensTableItem = ({
           fontWeight={ 500 }
           display="inline-block"
         >
-          { Number(holdersCount).toLocaleString() }
+          { holdersCount && Number(holdersCount).toLocaleString() }
         </Skeleton>
       </TableCell>
     </TableRow>

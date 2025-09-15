@@ -31,7 +31,7 @@ interface Props {
 
 const HashStringShortenDynamic = ({ hash, fontWeight = '400', noTooltip, tailLength = TAIL_LENGTH, as = 'span', tooltipInteractive }: Props) => {
   const elementRef = useRef<HTMLSpanElement>(null);
-  const [ displayedString, setDisplayedString ] = React.useState(hash);
+  const [ displayedString, setDisplayedString ] = React.useState(hash || '');
 
   const isFontFaceLoaded = useFontFaceObserver([
     { family: BODY_TYPEFACE, weight: String(fontWeight) as FontFace['weight'] },
@@ -40,7 +40,7 @@ const HashStringShortenDynamic = ({ hash, fontWeight = '400', noTooltip, tailLen
 
   const calculateString = useCallback(() => {
     const parent = elementRef?.current?.parentNode as HTMLElement;
-    if (!parent) {
+    if (!parent || !hash) {
       return;
     }
 
@@ -92,7 +92,7 @@ const HashStringShortenDynamic = ({ hash, fontWeight = '400', noTooltip, tailLen
   }, [ calculateString ]);
 
   const content = <chakra.span ref={ elementRef } as={ as }>{ displayedString }</chakra.span>;
-  const isTruncated = hash.length !== displayedString.length;
+  const isTruncated = hash && hash.length !== displayedString.length;
 
   if (isTruncated && !noTooltip) {
     return (
