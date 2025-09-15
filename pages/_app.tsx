@@ -25,6 +25,7 @@ import RewardsLoginModal from 'ui/rewards/login/RewardsLoginModal';
 import RewardsActivityTracker from 'ui/rewards/RewardsActivityTracker';
 import AppErrorBoundary from 'ui/shared/AppError/AppErrorBoundary';
 import AppErrorGlobalContainer from 'ui/shared/AppError/AppErrorGlobalContainer';
+import ClientAccessVerification from 'ui/shared/ClientAccessVerification';
 import GoogleAnalytics from 'ui/shared/GoogleAnalytics';
 import Layout from 'ui/shared/layout/Layout';
 import Web3ModalProvider from 'ui/shared/Web3ModalProvider';
@@ -91,7 +92,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                       <RewardsContextProvider>
                         <MarketplaceContextProvider>
                           <SettingsContextProvider>
-                            { content }
+                            <ClientAccessVerification>
+                              { content }
+                            </ClientAccessVerification>
                           </SettingsContextProvider>
                         </MarketplaceContextProvider>
                       </RewardsContextProvider>
