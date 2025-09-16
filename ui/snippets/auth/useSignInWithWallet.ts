@@ -96,14 +96,14 @@ function useSignInWithWallet({ onSuccess, onError, source = 'Login', isAuth, log
     }
   }, [ apiFetch, loginToRewards ]);
 
-  const authFetchFactory = React.useCallback((message: string, signature: string) => (recaptchaToken?: string) => {
+  const authFetchFactory = React.useCallback((message: string, signature: string) => (turnstileToken?: string) => {
     const authResource = isAuth ? 'general:auth_link_address' : 'general:auth_siwe_verify';
     return apiFetch<typeof authResource, UserInfo, unknown>(authResource, {
       fetchParams: {
         method: 'POST',
-        body: { message, signature, recaptcha_response: recaptchaToken },
+        body: { message, signature, turnstile_response: turnstileToken },
         headers: {
-          ...(recaptchaToken && { 'recaptcha-v2-response': recaptchaToken }),
+          ...(turnstileToken && { 'turnstile-response': turnstileToken }),
         },
       },
     });

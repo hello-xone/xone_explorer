@@ -5,7 +5,6 @@ export { flashblocks } from './flashblocks';
 export { gasHawk } from './gasHawk';
 export { googleAnalytics } from './googleAnalytics';
 export { googleFonts } from './googleFonts';
-export { googleReCaptcha } from './googleReCaptcha';
 export { growthBook } from './growthBook';
 export { helia } from './helia';
 export { marketplace } from './marketplace';

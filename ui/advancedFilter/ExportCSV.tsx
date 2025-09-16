@@ -2,16 +2,14 @@ import React from 'react';
 
 import type { AdvancedFilterParams } from 'types/api/advancedFilter';
 
-import config from 'configs/app';
 import buildUrl from 'lib/api/buildUrl';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import dayjs from 'lib/date/dayjs';
 import downloadBlob from 'lib/downloadBlob';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
-import { Tooltip } from 'toolkit/chakra/tooltip';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 type Props = {
   filters: AdvancedFilterParams;
@@ -19,20 +17,20 @@ type Props = {
 
 const ExportCSV = ({ filters }: Props) => {
   const multichainContext = useMultichainContext();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const [ isLoading, setIsLoading ] = React.useState(false);
 
-  const apiFetchFactory = React.useCallback(async(recaptchaToken?: string) => {
+  const apiFetchFactory = React.useCallback(async(turnstileToken?: string) => {
     const url = buildUrl('general:advanced_filter_csv', undefined, {
       ...filters,
-      recaptcha_response: recaptchaToken,
+      turnstile_response: turnstileToken,
     }, undefined, multichainContext?.chain);
 
     const response = await fetch(url, {
       headers: {
         'content-type': 'application/octet-stream',
-        ...(recaptchaToken && { 'recaptcha-v2-response': recaptchaToken }),
+        ...(turnstileToken && { 'turnstile-response': turnstileToken }),
       },
     });
 
@@ -51,7 +49,7 @@ const ExportCSV = ({ filters }: Props) => {
     try {
       setIsLoading(true);
 
-      const response = await recaptcha.fetchProtectedResource(apiFetchFactory);
+      const response = await turnstile.fetchProtectedResource(apiFetchFactory);
 
       const blob = await response.blob();
 
@@ -67,32 +65,20 @@ const ExportCSV = ({ filters }: Props) => {
     } finally {
       setIsLoading(false);
     }
-  }, [ apiFetchFactory, recaptcha, multichainContext?.chain ]);
-
-  const chainConfig = multichainContext?.chain.config || config;
-
-  if (!chainConfig.services.reCaptchaV2.siteKey) {
-    return null;
-  }
+  }, [ apiFetchFactory, turnstile, multichainContext?.chain ]);
 
   return (
     <>
-      <Tooltip
-        content="This feature is not available due to a reCAPTCHA initialization error. Please contact the project team on Discord to report this issue."
-        disabled={ !recaptcha.isInitError }
+      <Button
+        onClick={ handleExportCSV }
+        variant="outline"
+        loading={ isLoading }
+        size="sm"
+        mr={ 3 }
       >
-        <Button
-          onClick={ handleExportCSV }
-          variant="outline"
-          loading={ isLoading }
-          size="sm"
-          mr={ 3 }
-          disabled={ recaptcha.isInitError }
-        >
-          Export to CSV
-        </Button>
-      </Tooltip>
-      <ReCaptcha { ...recaptcha } hideWarning/>
+        Export to CSV
+      </Button>
+      <CloudflareTurnstileInvisible { ...turnstile } hideWarning/>
     </>
   );
 };

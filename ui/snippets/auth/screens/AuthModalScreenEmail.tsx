@@ -12,8 +12,8 @@ import * as mixpanel from 'lib/mixpanel';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
 import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 interface Props {
   onSubmit: (screen: Screen) => void;
@@ -28,7 +28,7 @@ interface Props {
 const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
 
   const apiFetch = useApiFetch();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const formApi = useForm<EmailFormFields>({
     mode: 'onBlur',
@@ -51,7 +51,7 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
 
   const onFormSubmit: SubmitHandler<EmailFormFields> = React.useCallback(async(formData) => {
     try {
-      await recaptcha.fetchProtectedResource(sendCodeFetchFactory(formData.email));
+      await turnstile.fetchProtectedResource(sendCodeFetchFactory(formData.email));
 
       if (isAuth) {
         mixpanelConfig?.account_link_info.source !== 'Profile' && mixpanel.logEvent(mixpanel.EventTypes.ACCOUNT_LINK_INFO, {
@@ -72,7 +72,7 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
         description: getErrorObjPayload<{ message: string }>(error)?.message || getErrorMessage(error) || 'Something went wrong',
       });
     }
-  }, [ recaptcha, sendCodeFetchFactory, isAuth, onSubmit, mixpanelConfig?.account_link_info.source ]);
+  }, [ turnstile, sendCodeFetchFactory, isAuth, onSubmit, mixpanelConfig?.account_link_info.source ]);
 
   return (
     <FormProvider { ...formApi }>
@@ -88,11 +88,11 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
           bgColor="dialog.bg"
           mt={ 6 }
         />
-        <ReCaptcha { ...recaptcha }/>
+        <CloudflareTurnstileInvisible { ...turnstile }/>
         <Button
           mt={ 6 }
           type="submit"
-          disabled={ formApi.formState.isSubmitting || recaptcha.isInitError }
+          disabled={ formApi.formState.isSubmitting || turnstile.isInitError }
           loading={ formApi.formState.isSubmitting }
           loadingText="Send a code"
         >

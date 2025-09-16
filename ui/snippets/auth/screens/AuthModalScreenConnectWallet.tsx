@@ -5,8 +5,8 @@ import type { ScreenSuccess } from '../types';
 import type { UserInfo } from 'types/api/account';
 
 import type * as mixpanel from 'lib/mixpanel';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import useSignInWithWallet from '../useSignInWithWallet';
 
@@ -20,7 +20,7 @@ interface Props {
 
 const AuthModalScreenConnectWallet = ({ onSuccess, onError, isAuth, source, loginToRewards }: Props) => {
   const isStartedRef = React.useRef(false);
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const handleSignInSuccess = React.useCallback(({ address, profile, rewardsToken }: { address: string; profile: UserInfo; rewardsToken?: string }) => {
     onSuccess({ type: 'success_wallet', address, isAuth, profile, rewardsToken });
@@ -35,7 +35,7 @@ const AuthModalScreenConnectWallet = ({ onSuccess, onError, isAuth, source, logi
     onError: handleSignInError,
     source,
     isAuth,
-    fetchProtectedResource: recaptcha.fetchProtectedResource,
+    fetchProtectedResource: turnstile.fetchProtectedResource,
     loginToRewards,
   });
 
@@ -48,8 +48,8 @@ const AuthModalScreenConnectWallet = ({ onSuccess, onError, isAuth, source, logi
 
   return (
     <Center minH="100px" flexDir="column">
-      { !recaptcha.isInitError && <Spinner size="xl"/> }
-      <ReCaptcha { ...recaptcha }/>
+      { !turnstile.isInitError && <Spinner size="xl"/> }
+      <CloudflareTurnstileInvisible { ...turnstile }/>
     </Center>
   );
 };

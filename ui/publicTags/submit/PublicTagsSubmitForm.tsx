@@ -19,8 +19,8 @@ import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
 import { FormFieldUrl } from 'toolkit/components/forms/fields/FormFieldUrl';
 import { Hint } from 'toolkit/components/Hint/Hint';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import PublicTagsSubmitFieldAddresses from './fields/PublicTagsSubmitFieldAddresses';
 import PublicTagsSubmitFieldTags from './fields/PublicTagsSubmitFieldTags';
@@ -36,7 +36,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
   const isMobile = useIsMobile();
   const router = useRouter();
   const apiFetch = useApiFetch();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
@@ -59,7 +59,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
     const requestsBody = convertFormDataToRequestsBody(data);
 
     const result = await Promise.all(requestsBody.map(async(body) => {
-      return recaptcha.executeAsync()
+      return turnstile.executeAsync()
         .then(() => {
           return apiFetch<'admin:public_tag_application', unknown, { message: string }>('admin:public_tag_application', {
             pathParams: { chainId: appConfig.chain.id },
@@ -80,9 +80,9 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
     }));
 
     onSubmitResult(result);
-  }, [ apiFetch, onSubmitResult, recaptcha ]);
+  }, [ apiFetch, onSubmitResult, turnstile ]);
 
-  if (!appConfig.services.reCaptchaV2.siteKey) {
+  if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;
   }
 
@@ -135,7 +135,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
           </GridItem>
 
           <GridItem colSpan={{ base: 1, lg: 2 }}>
-            <ReCaptcha { ...recaptcha }/>
+            <CloudflareTurnstile { ...turnstile }/>
           </GridItem>
           { !isMobile && <div/> }
 
@@ -146,7 +146,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
             loading={ formApi.formState.isSubmitting }
             loadingText="Send request"
             w="min-content"
-            disabled={ recaptcha.isInitError }
+            disabled={ turnstile.isInitError }
           >
             Send request
           </Button>

@@ -17,8 +17,8 @@ import { Heading } from 'toolkit/chakra/heading';
 import { toaster } from 'toolkit/chakra/toaster';
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
 import { useDisclosure } from 'toolkit/hooks/useDisclosure';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 import AuthModal from 'ui/snippets/auth/AuthModal';
 
 import MyProfileFieldsEmail from './fields/MyProfileFieldsEmail';
@@ -36,7 +36,7 @@ interface Props {
 const MyProfileEmail = ({ profileQuery }: Props) => {
   const authModal = useDisclosure();
   const apiFetch = useApiFetch();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
@@ -46,13 +46,13 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
     },
   });
 
-  const authFetchFactory = React.useCallback((email: string) => (recaptchaToken?: string) => {
+  const authFetchFactory = React.useCallback((email: string) => (turnstileToken?: string) => {
     return apiFetch('general:auth_send_otp', {
       fetchParams: {
         method: 'POST',
-        body: { email, recaptcha_response: recaptchaToken },
+        body: { email, turnstile_response: turnstileToken },
         headers: {
-          ...(recaptchaToken && { 'recaptcha-v2-response': recaptchaToken }),
+          ...(turnstileToken && { 'cf-turnstile-response': turnstileToken }),
         },
       },
     });
@@ -60,7 +60,7 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
 
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(formData) => {
     try {
-      await recaptcha.fetchProtectedResource(authFetchFactory(formData.email));
+      await turnstile.fetchProtectedResource(authFetchFactory(formData.email));
       mixpanel.logEvent(mixpanel.EventTypes.ACCOUNT_LINK_INFO, {
         Source: 'Profile',
         Status: 'OTP sent',
@@ -74,7 +74,7 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
         description: apiError?.message || getErrorMessage(error) || 'Something went wrong',
       });
     }
-  }, [ authFetchFactory, authModal, recaptcha ]);
+  }, [ authFetchFactory, authModal, turnstile ]);
 
   const hasDirtyFields = Object.keys(formApi.formState.dirtyFields).length > 0;
 
@@ -88,17 +88,17 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
         >
           <FormFieldText<FormFields> name="name" placeholder="Name" readOnly mb={ 3 }/>
           <MyProfileFieldsEmail
-            isReadOnly={ !config.services.reCaptchaV2.siteKey || Boolean(profileQuery.data?.email) }
+            isReadOnly={ !config.services.cloudflareTurnstile.siteKey || Boolean(profileQuery.data?.email) }
             defaultValue={ profileQuery.data?.email || undefined }
           />
-          { config.services.reCaptchaV2.siteKey && !profileQuery.data?.email && <ReCaptcha { ...recaptcha }/> }
-          { config.services.reCaptchaV2.siteKey && !profileQuery.data?.email && (
+          { config.services.cloudflareTurnstile.siteKey && !profileQuery.data?.email && <CloudflareTurnstile { ...turnstile }/> }
+          { config.services.cloudflareTurnstile.siteKey && !profileQuery.data?.email && (
             <Button
               mt={ 6 }
               size="sm"
               variant="outline"
               type="submit"
-              disabled={ formApi.formState.isSubmitting || !hasDirtyFields || recaptcha.isInitError }
+              disabled={ formApi.formState.isSubmitting || !hasDirtyFields || turnstile.isInitError }
               loading={ formApi.formState.isSubmitting }
               loadingText="Save changes"
             >

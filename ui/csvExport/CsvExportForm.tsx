@@ -15,8 +15,8 @@ import downloadBlob from 'lib/downloadBlob';
 import { Alert } from 'toolkit/chakra/alert';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import CsvExportFormField from './CsvExportFormField';
 
@@ -38,26 +38,26 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
     },
   });
   const { handleSubmit, formState } = formApi;
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
   const multichainContext = useMultichainContext();
 
   const chainConfig = multichainContext?.chain.config || config;
 
   const apiFetchFactory = React.useCallback((data: FormFields) => {
-    return async(recaptchaToken?: string) => {
+    return async(turnstileToken?: string) => {
       const url = buildUrl(resource, { hash } as never, {
         address_id: hash,
         from_period: exportType !== 'holders' ? dayjs(data.from).toISOString() : null,
         to_period: exportType !== 'holders' ? dayjs(data.to).toISOString() : null,
         filter_type: filterType,
         filter_value: filterValue,
-        recaptcha_response: recaptchaToken,
+        turnstile_response: turnstileToken,
       }, undefined, multichainContext?.chain);
 
       const response = await fetch(url, {
         headers: {
           'content-type': 'application/octet-stream',
-          ...(recaptchaToken && { 'recaptcha-v2-response': recaptchaToken }),
+          ...(turnstileToken && { 'cf-turnstile-response': turnstileToken }),
         },
       });
 
@@ -75,7 +75,7 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
 
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(data) => {
     try {
-      const response = await recaptcha.fetchProtectedResource<Response>(apiFetchFactory(data));
+      const response = await turnstile.fetchProtectedResource<Response>(apiFetchFactory(data));
       const chainText = multichainContext?.chain ? `${ multichainContext.chain.slug.replace(/-/g, '_') }_` : '';
 
       const blob = await response.blob();
@@ -92,12 +92,12 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
       });
     }
 
-  }, [ recaptcha, apiFetchFactory, multichainContext?.chain, exportType, fileNameTemplate, hash, filterType, filterValue ]);
+  }, [ turnstile, apiFetchFactory, multichainContext?.chain, exportType, fileNameTemplate, hash, filterType, filterValue ]);
 
-  if (!chainConfig.services.reCaptchaV2.siteKey) {
+  if (!chainConfig.services.cloudflareTurnstile.siteKey) {
     return (
       <Alert status="error">
-        CSV export is not available at the moment since reCaptcha is not configured for this application.
+        CSV export is not available at the moment since Cloudflare Turnstile is not configured for this application.
         Please contact the service maintainer to make necessary changes in the service configuration.
       </Alert>
     );
@@ -113,14 +113,14 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
           { exportType !== 'holders' && <CsvExportFormField name="from" formApi={ formApi }/> }
           { exportType !== 'holders' && <CsvExportFormField name="to" formApi={ formApi }/> }
         </Flex>
-        <ReCaptcha { ...recaptcha }/>
+        <CloudflareTurnstile { ...turnstile }/>
         <Button
           variant="solid"
           type="submit"
           mt={ 8 }
           loading={ formState.isSubmitting }
           loadingText="Download"
-          disabled={ Boolean(formState.errors.from || formState.errors.to || recaptcha.isInitError) }
+          disabled={ Boolean(formState.errors.from || formState.errors.to || turnstile.isInitError) }
         >
           Download
         </Button>

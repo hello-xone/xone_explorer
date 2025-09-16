@@ -51,6 +51,11 @@ class MyDocument extends Document {
             </>
           ) }
 
+          { /* Cloudflare Turnstile */ }
+          { config.services.cloudflareTurnstile.siteKey && (
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer/>
+          ) }
+
           { /* FAVICON */ }
           <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png"/>
           <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png"/>

@@ -1,8 +1,8 @@
+import { Turnstile } from '@marsidev/react-turnstile';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import React from 'react';
-import ReCaptcha from 'react-google-recaptcha';
 
 import config from 'configs/app';
-import { useMultichainContext } from 'lib/contexts/multichain';
 import { Alert } from 'toolkit/chakra/alert';
 import { Link } from 'toolkit/chakra/link';
 
@@ -11,13 +11,13 @@ interface Props {
   hideWarning?: boolean;
 }
 
-const ReCaptchaInvisible = ({ onInitError, hideWarning = false }: Props, ref: React.Ref<ReCaptcha>) => {
+const CloudflareTurnstileInvisible = ({
+  onInitError,
+  hideWarning = false,
+}: Props, ref: React.Ref<TurnstileInstance>) => {
   const [ attempt, setAttempt ] = React.useState(0);
   const [ isError, setIsError ] = React.useState(false);
   const [ , setIsVisible ] = React.useState(false);
-
-  const multichainContext = useMultichainContext();
-  const chainConfig = multichainContext?.chain.config || config;
 
   const handleChange = React.useCallback(() => {
     setAttempt(attempt + 1);
@@ -29,7 +29,7 @@ const ReCaptchaInvisible = ({ onInitError, hideWarning = false }: Props, ref: Re
   }, [ onInitError ]);
 
   const handleClick = React.useCallback(() => {
-    const badge = window.document.querySelector('.grecaptcha-badge');
+    const badge = window.document.querySelector('.cf-turnstile');
     if (badge) {
       setIsVisible((prev) => {
         const nextValue = !prev;
@@ -40,28 +40,32 @@ const ReCaptchaInvisible = ({ onInitError, hideWarning = false }: Props, ref: Re
     }
   }, [ ]);
 
-  if (!chainConfig.services.reCaptchaV2.siteKey) {
+  if (!config.services.cloudflareTurnstile.siteKey) {
     return null;
   }
 
   return (
     <>
-      <ReCaptcha
+      <Turnstile
         ref={ ref }
         key={ attempt }
-        sitekey={ chainConfig.services.reCaptchaV2.siteKey }
-        size="invisible"
-        onChange={ handleChange }
-        onErrored={ handleError }
+        siteKey={ config.services.cloudflareTurnstile.siteKey }
+        onSuccess={ handleChange }
+        onError={ handleError }
+        options={{
+          theme: 'auto',
+          size: 'invisible',
+        }}
       />
+
       { isError && !hideWarning && (
         <Alert status="warning" whiteSpace="pre-wrap" w="fit-content" mt={ 3 } descriptionProps={{ display: 'block' }}>
-          This feature is not available due to a reCAPTCHA initialization error. Please contact the project team on Discord to report this issue.
-          Click <Link onClick={ handleClick } display="inline">here</Link> to show/hide reCAPTCHA widget content.
+          This feature is not available due to a Cloudflare Turnstile initialization error. Please contact the project team on Discord to report this issue.
+          Click <Link onClick={ handleClick } display="inline">here</Link> to show/hide Turnstile widget content.
         </Alert>
       ) }
     </>
   );
 };
 
-export default React.forwardRef(ReCaptchaInvisible);
+export default React.forwardRef(CloudflareTurnstileInvisible);

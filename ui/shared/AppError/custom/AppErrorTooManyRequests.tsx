@@ -8,8 +8,8 @@ import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
 import { SECOND } from 'toolkit/utils/consts';
 import { apos } from 'toolkit/utils/htmlEntities';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import AppErrorIcon from '../AppErrorIcon';
 import AppErrorTitle from '../AppErrorTitle';
@@ -32,23 +32,23 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
   const [ timeLeft, setTimeLeft ] = React.useState(reset ? Math.ceil(Number(reset) / SECOND) : undefined);
 
   const fetch = useFetch();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const handleSubmit = React.useCallback(async() => {
     try {
-      const token = await recaptcha.executeAsync();
+      const token = await turnstile.executeAsync();
 
       if (!token) {
-        throw new Error('ReCaptcha is not solved');
+        throw new Error('Turnstile is not solved');
       }
 
       const url = buildUrl('general:api_v2_key');
 
       await fetch(url, {
         method: 'POST',
-        body: { recaptcha_response: token },
+        body: { turnstile_response: token },
         headers: {
-          'recaptcha-v2-response': token,
+          'cf-turnstile-response': token,
         },
         credentials: 'include',
       }, {
@@ -64,7 +64,7 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
         type: 'error',
       });
     }
-  }, [ recaptcha, fetch ]);
+  }, [ turnstile, fetch ]);
 
   React.useEffect(() => {
     if (reset === undefined) {
@@ -89,8 +89,8 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
     };
   }, [ reset ]);
 
-  if (!config.services.reCaptchaV2.siteKey) {
-    throw new Error('reCAPTCHA V2 site key is not set');
+  if (!config.services.cloudflareTurnstile.siteKey) {
+    throw new Error('Cloudflare Turnstile site key is not set');
   }
 
   const text = (() => {
@@ -112,8 +112,8 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
       <Text color="text.secondary" mt={ 3 }>
         { text }
       </Text>
-      <ReCaptcha { ...recaptcha }/>
-      { bypassOptions !== 'no_bypass' && <Button onClick={ handleSubmit } disabled={ recaptcha.isInitError } mt={ 8 }>I'm not a robot</Button> }
+      <CloudflareTurnstile { ...turnstile }/>
+      { bypassOptions !== 'no_bypass' && <Button onClick={ handleSubmit } disabled={ turnstile.isInitError } mt={ 8 }>I'm not a robot</Button> }
     </>
   );
 };

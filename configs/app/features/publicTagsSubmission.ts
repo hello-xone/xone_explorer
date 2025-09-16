@@ -7,7 +7,7 @@ import addressMetadata from './addressMetadata';
 const title = 'Public tag submission';
 
 const config: Feature<{}> = (() => {
-  if (services.reCaptchaV2.siteKey && addressMetadata.isEnabled && apis.admin) {
+  if (services.cloudflareTurnstile.siteKey && addressMetadata.isEnabled && apis.admin) {
     return Object.freeze({
       title,
       isEnabled: true,

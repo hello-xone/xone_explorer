@@ -14,7 +14,7 @@ const AccessVerificationProvider = ({ children, enabled = true }: Props) => {
 
   // 检查是否需要显示验证
   React.useEffect(() => {
-    if (!enabled || !config.services.reCaptchaV2.siteKey) {
+    if (!enabled || !config.services.cloudflareTurnstile.siteKey) {
       return;
     }
 
@@ -41,6 +41,8 @@ const AccessVerificationProvider = ({ children, enabled = true }: Props) => {
   }, []);
 
   const handleVerificationError = React.useCallback((error: Error) => {
+    // Access verification failed
+    // eslint-disable-next-line no-console
     console.error('Access verification failed:', error);
   }, []);
 

@@ -15,8 +15,8 @@ import { Alert } from 'toolkit/chakra/alert';
 import { DialogBody, DialogContent, DialogHeader, DialogRoot } from 'toolkit/chakra/dialog';
 import { toaster } from 'toolkit/chakra/toaster';
 import { MINUTE, SECOND } from 'toolkit/utils/consts';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import { useMetadataUpdateContext } from './contexts/metadataUpdate';
 
@@ -33,7 +33,7 @@ const TokenInstanceMetadataFetcher = ({ hash, id }: Props) => {
   const { status, setStatus } = useMetadataUpdateContext() || {};
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const handleRefreshError = React.useCallback(() => {
     setStatus?.('ERROR');
@@ -171,16 +171,16 @@ const TokenInstanceMetadataFetcher = ({ hash, id }: Props) => {
       <DialogContent>
         <DialogHeader fontWeight="500" textStyle="h3" mb={ 4 }>Sending request</DialogHeader>
         <DialogBody mb={ 0 } minH="78px">
-          { config.services.reCaptchaV2.siteKey ? (
+          { config.services.cloudflareTurnstile.siteKey ? (
             <>
               <Center h="80px">
                 <Spinner size="lg"/>
               </Center>
-              <ReCaptcha { ...recaptcha } hideWarning/>
+              <CloudflareTurnstileInvisible { ...turnstile } hideWarning/>
             </>
           ) : (
             <Alert status="error">
-              Metadata refresh is not available at the moment since reCaptcha is not configured for this application.
+              Metadata refresh is not available at the moment since Cloudflare Turnstile is not configured for this application.
               Please contact the service maintainer to make necessary changes in the service configuration.
             </Alert>
           ) }

@@ -1,6 +1,7 @@
 import { Box, Flex, Text, VStack } from '@chakra-ui/react';
+import { Turnstile } from '@marsidev/react-turnstile';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import React from 'react';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 import config from 'configs/app';
 import { Alert } from 'toolkit/chakra/alert';
@@ -18,6 +19,13 @@ interface Props {
   verificationDuration?: number; // 验证有效期（毫秒）
   enableRetry?: boolean; // 是否启用重试功能
   maxRetryAttempts?: number; // 最大重试次数
+  // Loading 时间控制
+  minLoadingTime?: number; // 最小加载时间（毫秒）
+  maxLoadingTime?: number; // 最大加载时间（毫秒）
+  // 自适应 loading 配置
+  adaptiveLoading?: boolean; // 是否启用自适应 loading
+  loadingMode?: 'fast' | 'normal' | 'slow' | 'custom'; // loading 模式
+  customLoadingTime?: number; // 自定义 loading 时间
 }
 
 const AccessVerification = ({
@@ -29,22 +37,64 @@ const AccessVerification = ({
   verificationDuration = 24 * 60 * 60 * 1000, // 默认24小时
   enableRetry = true,
   maxRetryAttempts = 3,
+  minLoadingTime = 1500, // 默认最小加载时间 1.5 秒
+  maxLoadingTime = 8000, // 默认最大加载时间 8 秒
+  adaptiveLoading = true, // 默认启用自适应 loading
+  loadingMode = 'normal', // 默认正常模式
+  customLoadingTime = 2000, // 默认自定义时间 2 秒
 }: Props) => {
-  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
+  const turnstileRef = React.useRef<TurnstileInstance>(null);
   const [ isVerifying, setIsVerifying ] = React.useState(false);
   const [ verificationError, setVerificationError ] = React.useState<string | null>(null);
   const [ isVerified, setIsVerified ] = React.useState(false);
-  const [ isRecaptchaLoaded, setIsRecaptchaLoaded ] = React.useState(false);
-  const [ checkAttempts, setCheckAttempts ] = React.useState(0);
   const [ retryCount, setRetryCount ] = React.useState(0);
+  const [ isTurnstileLoaded, setIsTurnstileLoaded ] = React.useState(false);
+  const [ showTurnstile, setShowTurnstile ] = React.useState(false);
 
   // 主题适配颜色
   const bgOverlay = useColorModeValue('rgba(0,0,0,0.8)', 'rgba(0,0,0,0.9)');
   const modalBg = useColorModeValue('white', 'gray.800');
-  const loadingBg = useColorModeValue('gray.50', 'gray.700');
-  const loadingBorder = useColorModeValue('gray.200', 'gray.600');
-  const loadingText = useColorModeValue('gray.600', 'gray.400');
-  const recaptchaTheme = 'light';
+
+  // 自适应 loading 时间计算
+  const calculateAdaptiveLoadingTime = React.useCallback(() => {
+    if (!adaptiveLoading) {
+      return minLoadingTime;
+    }
+
+    // 基于内容长度计算基础时间
+    const titleLength = title.length;
+    const descriptionLength = description.length;
+    const contentComplexity = titleLength + descriptionLength;
+
+    // 基于内容复杂度的基础时间
+    let baseTime = 800; // 基础时间 800ms
+
+    // 根据内容长度调整
+    if (contentComplexity > 100) {
+      baseTime += 400; // 长内容增加 400ms
+    } else if (contentComplexity > 50) {
+      baseTime += 200; // 中等内容增加 200ms
+    }
+
+    // 根据 loading 模式调整
+    switch (loadingMode) {
+      case 'fast':
+        baseTime = Math.min(baseTime, 1000);
+        break;
+      case 'normal':
+        baseTime = Math.max(baseTime, 1200);
+        break;
+      case 'slow':
+        baseTime = Math.max(baseTime, 2000);
+        break;
+      case 'custom':
+        baseTime = customLoadingTime;
+        break;
+    }
+
+    // 确保在合理范围内
+    return Math.max(minLoadingTime, Math.min(maxLoadingTime, baseTime));
+  }, [ adaptiveLoading, title, description, loadingMode, customLoadingTime, minLoadingTime, maxLoadingTime ]);
 
   // 检查是否已经验证过（可配置有效期）
   const isAlreadyVerified = React.useMemo(() => {
@@ -79,6 +129,38 @@ const AccessVerification = ({
     };
   }, []);
 
+  // 延迟加载 Turnstile 组件
+  React.useEffect(() => {
+    if (isAlreadyVerified) {
+      return;
+    }
+
+    const startTime = Date.now();
+    const adaptiveTime = calculateAdaptiveLoadingTime();
+
+    // 延迟 500ms 后开始加载 Turnstile
+    const timer = setTimeout(() => {
+      setIsTurnstileLoaded(true);
+
+      // 计算剩余的自适应加载时间
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, adaptiveTime - elapsedTime);
+
+      // 如果已经超过了最小加载时间，立即显示
+      if (remainingTime <= 0) {
+        setShowTurnstile(true);
+      } else {
+        // 否则等待剩余时间，但最多等待 500ms（减少空白时间）
+        const maxWaitTime = Math.min(remainingTime, 500);
+        setTimeout(() => {
+          setShowTurnstile(true);
+        }, maxWaitTime);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [ isAlreadyVerified, calculateAdaptiveLoadingTime ]);
+
   // 如果已经验证过，直接调用成功回调
   React.useEffect(() => {
     if (isAlreadyVerified) {
@@ -86,7 +168,7 @@ const AccessVerification = ({
     }
   }, [ isAlreadyVerified, onVerificationSuccess ]);
 
-  const handleReCaptchaChange = React.useCallback((token: string | null) => {
+  const handleTurnstileChange = React.useCallback((token: string | null) => {
     if (token) {
       setIsVerifying(true);
       setVerificationError(null);
@@ -109,77 +191,23 @@ const AccessVerification = ({
     }
   }, [ onVerificationSuccess, enableLocalStorage ]);
 
-  const handleReCaptchaError = React.useCallback(() => {
-    setVerificationError('reCAPTCHA failed to load. Please refresh the page and try again');
-    onVerificationError?.(new Error('reCAPTCHA initialization failed'));
+  // Turnstile 组件加载完成回调
+  const handleTurnstileLoad = React.useCallback(() => {
+    // Turnstile 组件已加载完成，立即显示
+    setShowTurnstile(true);
+  }, []);
+
+  const handleTurnstileError = React.useCallback(() => {
+    setVerificationError('Cloudflare Turnstile failed to load. Please refresh the page and try again');
+    onVerificationError?.(new Error('Cloudflare Turnstile initialization failed'));
   }, [ onVerificationError ]);
 
-  const handleReCaptchaExpired = React.useCallback(() => {
+  const handleTurnstileExpired = React.useCallback(() => {
     setVerificationError('The verification has expired, please reverify');
     setIsVerified(false);
   }, []);
 
-  // 检测 ReCAPTCHA 是否已加载完成
-  const checkRecaptchaLoaded = React.useCallback(() => {
-    const maxAttempts = 20; // 减少到20次（20秒）
-
-    if (checkAttempts >= maxAttempts) {
-      // 超时后直接显示reCAPTCHA，让用户尝试
-      setIsRecaptchaLoaded(true);
-      return;
-    }
-
-    setCheckAttempts(prev => prev + 1);
-
-    try {
-      // 简化的检测逻辑：只要window.grecaptcha存在就认为加载完成
-      if (typeof window !== 'undefined') {
-        const grecaptcha = (window as unknown as { grecaptcha?: unknown }).grecaptcha;
-        if (grecaptcha) {
-          setIsRecaptchaLoaded(true);
-          return;
-        }
-      }
-
-      // 检查DOM中是否有reCAPTCHA元素
-      const recaptchaElement = document.querySelector('.g-recaptcha');
-      if (recaptchaElement) {
-        setIsRecaptchaLoaded(true);
-        return;
-      }
-
-      // 检查是否有reCAPTCHA脚本
-      const recaptchaScript = document.querySelector('script[src*="recaptcha"]');
-      if (recaptchaScript) {
-        setIsRecaptchaLoaded(true);
-        return;
-      }
-
-    } catch {}
-
-    // 如果还没加载完成，继续检查
-    setTimeout(checkRecaptchaLoaded, 1000);
-  }, [ checkAttempts ]);
-
-  // 启动 ReCAPTCHA 加载检测
-  React.useEffect(() => {
-    // 延迟一点时间再开始检测，给组件渲染时间
-    const timer = setTimeout(() => {
-      checkRecaptchaLoaded();
-    }, 500);
-
-    // 备用方案：3秒后强制显示reCAPTCHA
-    const fallbackTimer = setTimeout(() => {
-      if (!isRecaptchaLoaded) {
-        setIsRecaptchaLoaded(true);
-      }
-    }, 4000);
-
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(fallbackTimer);
-    };
-  }, [ checkRecaptchaLoaded, isRecaptchaLoaded ]);
+  // Turnstile 组件会自动处理加载
 
   const handleRetry = React.useCallback(() => {
     if (!enableRetry || retryCount >= maxRetryAttempts) {
@@ -190,23 +218,96 @@ const AccessVerification = ({
     setRetryCount(prev => prev + 1);
     setVerificationError(null);
     setIsVerified(false);
-    setIsRecaptchaLoaded(false);
-    setCheckAttempts(0);
-    recaptchaRef.current?.reset();
+    setIsTurnstileLoaded(false);
+    setShowTurnstile(false);
 
-    // 重新开始检测
+    // 延迟重新加载 Turnstile
+    const retryStartTime = Date.now();
+    const adaptiveTime = calculateAdaptiveLoadingTime();
+
     setTimeout(() => {
-      checkRecaptchaLoaded();
-    }, 500);
-  }, [ checkRecaptchaLoaded, enableRetry, retryCount, maxRetryAttempts ]);
+      setIsTurnstileLoaded(true);
+
+      // 计算重试时的剩余自适应加载时间
+      const elapsedTime = Date.now() - retryStartTime;
+      const remainingTime = Math.max(0, adaptiveTime - elapsedTime);
+
+      // 如果已经超过了最小加载时间，立即显示
+      if (remainingTime <= 0) {
+        setShowTurnstile(true);
+        turnstileRef.current?.reset();
+      } else {
+        // 否则等待剩余时间，但最多等待 300ms（重试时更快）
+        const maxWaitTime = Math.min(remainingTime, 300);
+        setTimeout(() => {
+          setShowTurnstile(true);
+          turnstileRef.current?.reset();
+        }, maxWaitTime);
+      }
+    }, 300);
+  }, [ enableRetry, retryCount, maxRetryAttempts, calculateAdaptiveLoadingTime ]);
+
+  const renderTurnstileContent = React.useCallback(() => {
+    if (!isTurnstileLoaded) {
+      return (
+        <VStack gap={ 2 }>
+          <Box
+            w="8"
+            h="8"
+            border="2px solid"
+            borderColor="blue.200"
+            borderTopColor="blue.500"
+            borderRadius="50%"
+            animation="spin 1s linear infinite"
+          />
+          <Text fontSize="sm" color="text.secondary">
+            Loading verification...
+          </Text>
+        </VStack>
+      );
+    }
+
+    if (showTurnstile) {
+      return (
+        <Box position="relative" zIndex={ 10000 }>
+          <Turnstile
+            ref={ turnstileRef }
+            siteKey={ config.services.cloudflareTurnstile.siteKey! }
+            onSuccess={ handleTurnstileChange }
+            onError={ handleTurnstileError }
+            onExpire={ handleTurnstileExpired }
+            onLoad={ handleTurnstileLoad }
+          />
+        </Box>
+      );
+    }
+
+    // 中间状态：已加载但还未显示 Turnstile
+    return (
+      <VStack gap={ 2 }>
+        <Box
+          w="6"
+          h="6"
+          border="2px solid"
+          borderColor="green.200"
+          borderTopColor="green.500"
+          borderRadius="50%"
+          animation="spin 0.8s linear infinite"
+        />
+        <Text fontSize="sm" color="green.500">
+          Preparing verification...
+        </Text>
+      </VStack>
+    );
+  }, [ isTurnstileLoaded, showTurnstile, handleTurnstileChange, handleTurnstileError, handleTurnstileExpired, handleTurnstileLoad ]);
 
   if (isAlreadyVerified) {
     return null;
   }
 
-  if (!config.services.reCaptchaV2.siteKey) {
+  if (!config.services.cloudflareTurnstile.siteKey) {
     return (
-      <Box position="fixed" top={ 0 } left={ 0 } right={ 0 } bottom={ 0 } bg="rgba(0,0,0,0.8)" zIndex={ 9999 }>
+      <Box position="fixed" top={ 0 } left={ 0 } right={ 0 } bottom={ 0 } bg="rgba(0,0,0,0.8)" zIndex={ 10001 }>
         <Flex align="center" justify="center" h="100vh">
           <Box p={ 8 } maxW="400px" w="100%" bg="white" borderRadius="md" boxShadow="lg">
             <VStack gap={ 4 }>
@@ -215,7 +316,7 @@ const AccessVerification = ({
                 Restricted access
               </Text>
               <Text color="text.secondary" textAlign="center">
-                The reCAPTCHA service is not configured, please contact the administrator
+                The Cloudflare Turnstile service is not configured, please contact the administrator
               </Text>
             </VStack>
           </Box>
@@ -225,7 +326,7 @@ const AccessVerification = ({
   }
 
   return (
-    <Box position="fixed" top={ 0 } left={ 0 } right={ 0 } bottom={ 0 } bg={ bgOverlay } zIndex={ 9999 }>
+    <Box position="fixed" top={ 0 } left={ 0 } right={ 0 } bottom={ 0 } bg={ bgOverlay } zIndex={ 10001 }>
       <Flex align="center" justify="center" h="100vh">
         <Box p={ 8 } maxW="400px" w="100%" bg={ modalBg } borderRadius="md" boxShadow="lg">
           <VStack gap={ 6 }>
@@ -252,53 +353,8 @@ const AccessVerification = ({
             ) }
 
             <VStack gap={ 4 } w="100%">
-              <Box position="relative" minH="78px" w="100%" maxW="304px" mx="auto">
-                { !isRecaptchaLoaded && (
-                  <Box
-                    position="absolute"
-                    top={ 0 }
-                    left={ 0 }
-                    right={ 0 }
-                    bottom={ 0 }
-                    bg={ loadingBg }
-                    borderRadius="md"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    border="1px solid"
-                    borderColor={ loadingBorder }
-                    zIndex={ 1 }
-                    w="100%"
-                    h="100%"
-                  >
-                    <VStack gap={ 2 }>
-                      <Box
-                        w="20px"
-                        h="20px"
-                        border="2px solid"
-                        borderColor="blue.200"
-                        borderTopColor="blue.500"
-                        borderRadius="50%"
-                        animation="spin 1s linear infinite"
-                      />
-                      <Text fontSize="sm" color={ loadingText } textAlign="center">
-                        Loading verification...
-                      </Text>
-                    </VStack>
-                  </Box>
-                ) }
-                <Box w="100%" display="flex" justifyContent="center">
-                  <ReCAPTCHA
-                    ref={ recaptchaRef }
-                    sitekey={ config.services.reCaptchaV2.siteKey }
-                    onChange={ handleReCaptchaChange }
-                    onErrored={ handleReCaptchaError }
-                    onExpired={ handleReCaptchaExpired }
-                    theme={ recaptchaTheme }
-                    size="normal"
-                    hl="en"
-                  />
-                </Box>
+              <Box w="100%" display="flex" justifyContent="center" minH="65px">
+                { renderTurnstileContent() }
               </Box>
 
               { verificationError && enableRetry && retryCount < maxRetryAttempts && (

@@ -12,8 +12,8 @@ import getErrorObjPayload from 'lib/errors/getErrorObjPayload';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
-import ReCaptcha from 'ui/shared/reCaptcha/ReCaptcha';
-import useReCaptcha from 'ui/shared/reCaptcha/useReCaptcha';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import AuthModalFieldOtpCode from '../fields/AuthModalFieldOtpCode';
 
@@ -26,7 +26,7 @@ interface Props {
 const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
 
   const apiFetch = useApiFetch();
-  const recaptcha = useReCaptcha();
+  const turnstile = useCloudflareTurnstile();
   const [ isCodeSending, setIsCodeSending ] = React.useState(false);
 
   const formApi = useForm<OtpCodeFormFields>({
@@ -124,12 +124,12 @@ const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
           <IconSvg name="repeat" boxSize={ 5 }/>
           <Box fontSize="sm">Resend code</Box>
         </Button>
-        <ReCaptcha { ...recaptcha }/>
+        <CloudflareTurnstileInvisible { ...turnstile }/>
         <Button
           mt={ 6 }
           type="submit"
           loading={ formApi.formState.isSubmitting }
-          disabled={ formApi.formState.isSubmitting || isCodeSending || recaptcha.isInitError }
+          disabled={ formApi.formState.isSubmitting || isCodeSending || turnstile.isInitError }
           loadingText="Submit"
           onClick={ formApi.handleSubmit(onFormSubmit) }
         >

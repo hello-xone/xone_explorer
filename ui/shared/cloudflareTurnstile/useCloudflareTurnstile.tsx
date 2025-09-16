@@ -1,11 +1,11 @@
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import React from 'react';
-import type ReCAPTCHA from 'react-google-recaptcha';
 
 import getErrorCauseStatusCode from 'lib/errors/getErrorCauseStatusCode';
 import getErrorObjStatusCode from 'lib/errors/getErrorObjStatusCode';
 
-export default function useReCaptcha() {
-  const ref = React.useRef<ReCAPTCHA>(null);
+export default function useCloudflareTurnstile() {
+  const ref = React.useRef<TurnstileInstance>(null);
   const rejectCb = React.useRef<((error: Error) => void) | null>(null);
 
   const [ isOpen, setIsOpen ] = React.useState(false);
@@ -13,7 +13,8 @@ export default function useReCaptcha() {
 
   const executeAsync: () => Promise<string | null> = React.useCallback(async() => {
     setIsOpen(true);
-    const tokenPromise = ref.current?.executeAsync() || Promise.reject(new Error('Unable to execute ReCaptcha'));
+
+    const tokenPromise = (ref.current as any)?.executeAsync() || Promise.reject(new Error('Unable to execute Turnstile'));
     const modalOpenPromise = new Promise<null>((resolve, reject) => {
       rejectCb.current = reject;
     });
@@ -23,7 +24,7 @@ export default function useReCaptcha() {
 
   const handleContainerClick = React.useCallback(() => {
     setIsOpen(false);
-    rejectCb.current?.(new Error('ReCaptcha is not solved'));
+    rejectCb.current?.(new Error('Turnstile is not solved'));
   }, []);
 
   const handleInitError = React.useCallback(() => {
@@ -35,7 +36,7 @@ export default function useReCaptcha() {
       return;
     }
 
-    const container = window.document.querySelector('div:has(div):has(iframe[title="recaptcha challenge expires in two minutes"])');
+    const container = window.document.querySelector('div:has(div):has(iframe[title*="turnstile"])');
     container?.addEventListener('click', handleContainerClick);
 
     return () => {
@@ -53,7 +54,7 @@ export default function useReCaptcha() {
         const token = await executeAsync();
 
         if (!token) {
-          throw new Error('ReCaptcha is not solved');
+          throw new Error('Turnstile is not solved');
         }
 
         return fetchProtectedResource(fetcher, token);
