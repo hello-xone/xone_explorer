@@ -1,6 +1,6 @@
 import type { ContractCodeIde } from 'types/client/contract';
 import { type NavItemExternal, type NavigationLayout, type NavigationPromoBannerConfig } from 'types/client/navigation';
-import { HOME_STATS_WIDGET_IDS, type ChainIndicatorId, type HeroBannerConfig, type HomeStatsWidgetId } from 'types/homepage';
+import { HOME_STATS_WIDGET_IDS, type HeroBannerConfig, type HomeStatsWidgetId } from 'types/homepage';
 import type { NetworkExplorer } from 'types/networks';
 import type { ColorThemeId } from 'types/settings';
 import type { FontFamily } from 'types/ui';
@@ -41,20 +41,20 @@ const navigationPromoBanner = (() => {
   const envValue = parseEnvJson<NavigationPromoBannerConfig>(getEnvValue('NEXT_PUBLIC_NAVIGATION_PROMO_BANNER_CONFIG'));
   return envValue || undefined;
 })();
-
 const UI = Object.freeze({
   navigation: {
     logo: {
-      'default': getExternalAssetFilePath('NEXT_PUBLIC_NETWORK_LOGO'),
-      dark: getExternalAssetFilePath('NEXT_PUBLIC_NETWORK_LOGO_DARK'),
+      'default': '/static/Xone_Scan_Logo_Light.svg',
+      dark: '/static/Xone_Scan_Logo_Dark.svg',
     },
     icon: {
-      'default': getExternalAssetFilePath('NEXT_PUBLIC_NETWORK_ICON'),
-      dark: getExternalAssetFilePath('NEXT_PUBLIC_NETWORK_ICON_DARK'),
+      'default': '/assets/favicon/android-chrome-192x192.png',
+      dark: '/assets/favicon/android-chrome-192x192.png',
     },
     highlightedRoutes,
     otherLinks: parseEnvJson<Array<NavItemExternal>>(getEnvValue('NEXT_PUBLIC_OTHER_LINKS')) || [],
     layout: (getEnvValue('NEXT_PUBLIC_NAVIGATION_LAYOUT') || 'vertical') as NavigationLayout,
+    featuredNetworks: getExternalAssetFilePath('NEXT_PUBLIC_FEATURED_NETWORKS'),
     promoBanner: navigationPromoBanner,
   },
   featuredNetworks: {
@@ -67,7 +67,7 @@ const UI = Object.freeze({
     frontendCommit: getEnvValue('NEXT_PUBLIC_GIT_COMMIT_SHA'),
   },
   homepage: {
-    charts: parseEnvJson<Array<ChainIndicatorId>>(getEnvValue('NEXT_PUBLIC_HOMEPAGE_CHARTS')) || [],
+    charts: [ 'daily_txs', 'tvl', 'coin_price', 'market_cap' ],
     stats: homePageStats,
     heroBanner: parseEnvJson<HeroBannerConfig>(getEnvValue('NEXT_PUBLIC_HOMEPAGE_HERO_BANNER_CONFIG')),
     // !!! DEPRECATED !!!

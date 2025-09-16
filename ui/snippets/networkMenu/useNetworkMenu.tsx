@@ -6,18 +6,19 @@ import { NETWORK_GROUPS } from 'types/networks';
 
 import config from 'configs/app';
 import type { ResourceError } from 'lib/api/resources';
-import useFetch from 'lib/hooks/useFetch';
 import * as mixpanel from 'lib/mixpanel/index';
 import { useDisclosure } from 'toolkit/hooks/useDisclosure';
+
+import networks from './networks.json';
 
 export default function useNetworkMenu() {
   const { open, onClose, onOpen, onOpenChange, onToggle } = useDisclosure();
 
-  const fetch = useFetch();
   const { isPending, data } = useQuery<unknown, ResourceError<unknown>, Array<FeaturedNetwork>>({
     queryKey: [ 'featured-network' ],
-    queryFn: async() => fetch(config.UI.featuredNetworks.items || '', undefined, { resource: 'featured-network' }),
-    enabled: Boolean(config.UI.featuredNetworks.items) && open,
+    queryFn: async() => networks.map(network => ({ ...network,
+      url: window.location.host.includes('xonescan') ? network.url : network.xscUrl, isActive: new URL(network.url).host === window.location.host })),
+    enabled: Boolean(config.UI.navigation.featuredNetworks) && open,
     staleTime: Infinity,
   });
 

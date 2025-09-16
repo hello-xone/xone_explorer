@@ -71,7 +71,6 @@ const TokenPageContent = () => {
       placeholderData: addressStubs.ADDRESS_INFO,
     },
   });
-
   React.useEffect(() => {
     if (tokenQuery.data && totalSupplySocket) {
       queryClient.setQueryData(getResourceKey('general:token', { pathParams: { hash: hashString } }), (prevData: TokenInfo | undefined) => {
