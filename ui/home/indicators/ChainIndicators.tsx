@@ -18,7 +18,6 @@ import getIndicatorValues from './utils/getIndicatorValues';
 import INDICATORS from './utils/indicators';
 
 const isStatsFeatureEnabled = config.features.stats.isEnabled;
-
 const indicators = INDICATORS
   .filter(({ id }) => config.UI.homepage.charts.includes(id))
   .sort((a, b) => {
@@ -53,11 +52,9 @@ const ChainIndicators = () => {
       placeholderData: HOMEPAGE_STATS,
     },
   });
-
   if (indicators.length === 0) {
     return null;
   }
-
   const isPlaceholderData = (isStatsFeatureEnabled && statsMicroserviceQueryResult.isPlaceholderData) || statsApiQueryResult.isPlaceholderData;
   const hasData = Boolean(statsApiQueryResult?.data || statsMicroserviceQueryResult?.data);
 
@@ -147,7 +144,7 @@ const ChainIndicators = () => {
           rowGap="6px"
           m={{ base: 'auto 0', lg: 0 }}
         >
-          { indicators.map((indicator) => (
+          { indicators.slice(1).map((indicator) => (
             <ChainIndicatorItem
               key={ indicator.id }
               id={ indicator.id }

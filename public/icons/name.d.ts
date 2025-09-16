@@ -32,6 +32,7 @@
 	| "brands/tac"
 	| "brands/ton"
 	| "burger"
+	| "bvi"
 	| "certified"
 	| "check"
 	| "checkered_flag"

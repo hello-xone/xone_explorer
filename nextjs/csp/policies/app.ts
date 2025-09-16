@@ -47,7 +47,9 @@ export function app(): CspDev.DirectiveDescriptor {
       // APIs
       ...Object.values(config.apis).filter(Boolean).map((api) => api.endpoint),
       ...Object.values(config.apis).filter(Boolean).map((api) => api.socketEndpoint),
-
+      'http://8.218.76.177',
+      'ws://8.218.76.177',
+      'http://8.218.76.177:8080',
       // chain RPC server
       ...config.chain.rpcUrls,
       'https://infragrid.v.network', // RPC providers

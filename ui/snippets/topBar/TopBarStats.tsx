@@ -78,20 +78,23 @@ const TopBarStats = () => {
           </Skeleton>
         </Flex>
       ) }
-      { data?.coin_price && config.features.gasTracker.isEnabled && <TextSeparator/> }
-      { data?.gas_prices && data.gas_prices.average !== null && config.features.gasTracker.isEnabled && (
-        <>
-          <Skeleton loading={ isPlaceholderData } display={{ base: 'none', lg: 'inline-flex' }} whiteSpace="pre-wrap">
-            <chakra.span color="text.secondary">Gas </chakra.span>
-            <GasInfoTooltip data={ data } dataUpdatedAt={ dataUpdatedAt } placement={ !data?.coin_price ? 'bottom-start' : undefined }>
-              <Link>
-                <GasPrice data={ data.gas_prices.average }/>
-              </Link>
-            </GasInfoTooltip>
-          </Skeleton>
-          { !isPlaceholderData && <GetGasButton/> }
-        </>
-      ) }
+      <Flex gapX={ 2 }>
+        { data?.coin_price && config.features.gasTracker.isEnabled && <TextSeparator/> }
+        { data?.gas_prices && data.gas_prices.average !== null && config.features.gasTracker.isEnabled && (
+          <>
+            <Skeleton loading={ isPlaceholderData } display={{ base: 'none', lg: 'inline-flex' }} whiteSpace="pre-wrap">
+              <chakra.span color="text.secondary">Gas </chakra.span>
+              <GasInfoTooltip data={ data } dataUpdatedAt={ dataUpdatedAt } placement={ !data?.coin_price ? 'bottom-start' : undefined }>
+                <Link>
+                  <GasPrice data={ data.gas_prices.average }/>
+                </Link>
+              </GasInfoTooltip>
+            </Skeleton>
+            { !isPlaceholderData && <GetGasButton/> }
+          </>
+        ) }
+        <Link href="https://faucet.xone.org/zh" target="_blank">Faucet</Link>
+      </Flex>
     </Flex>
   );
 };

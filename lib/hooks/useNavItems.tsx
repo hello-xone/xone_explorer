@@ -64,12 +64,12 @@ export default function useNavItems(): ReturnType {
     } : null;
 
     const verifiedContracts: NavItem | null =
-     {
-       text: 'Verified contracts',
-       nextRoute: { pathname: '/verified-contracts' as const },
-       icon: 'verified',
-       isActive: pathname === '/verified-contracts',
-     };
+    {
+      text: 'Verified contracts',
+      nextRoute: { pathname: '/verified-contracts' as const },
+      icon: 'verified',
+      isActive: pathname === '/verified-contracts',
+    };
     const ensLookup = config.features.nameService.isEnabled ? {
       text: 'Name services lookup',
       nextRoute: { pathname: '/name-domains' as const },
@@ -309,6 +309,11 @@ export default function useNavItems(): ReturnType {
         icon: 'stats',
         isActive: pathname.startsWith('/stats'),
       } : null,
+      {
+        text: 'BVI',
+        icon: 'bvi',
+        subItems: [],
+      },
       apiNavItem,
       {
         text: 'Other',

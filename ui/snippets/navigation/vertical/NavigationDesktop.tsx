@@ -1,12 +1,14 @@
 import { Flex, Box, VStack } from '@chakra-ui/react';
 import React from 'react';
 
+import config from 'configs/app';
 import { useAppContext } from 'lib/contexts/app';
 import * as cookies from 'lib/cookies';
 import useNavItems, { isGroupItem } from 'lib/hooks/useNavItems';
 import IconSvg from 'ui/shared/IconSvg';
 import useIsAuth from 'ui/snippets/auth/useIsAuth';
 import NetworkLogo from 'ui/snippets/networkMenu/NetworkLogo';
+import NetworkMenu from 'ui/snippets/topBar/NetworkMenu';
 
 import NavigationPromoBanner from '../promoBanner/NavigationPromoBanner';
 import RollupStageBadge from '../RollupStageBadge';
@@ -70,7 +72,7 @@ const NavigationDesktop = () => {
       <Box
         as="header"
         display="flex"
-        justifyContent="flex-start"
+        justifyContent="space-between"
         alignItems="center"
         flexDirection="row"
         w="100%"
@@ -82,6 +84,7 @@ const NavigationDesktop = () => {
         transitionTimingFunction="ease"
       >
         <NetworkLogo isCollapsed={ isCollapsed }/>
+        { Boolean(config.UI.navigation.featuredNetworks) && <NetworkMenu/> }
       </Box>
       <Box as="nav" mt={ 6 } w="100%">
         <VStack as="ul" gap="1" alignItems="flex-start">
