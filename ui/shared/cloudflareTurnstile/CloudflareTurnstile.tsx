@@ -55,6 +55,7 @@ const CloudflareTurnstileInvisible = ({
         options={{
           theme: 'auto',
           size: 'invisible',
+          language: 'en',
         }}
       />
 

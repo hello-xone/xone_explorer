@@ -277,6 +277,9 @@ const AccessVerification = ({
             onError={ handleTurnstileError }
             onExpire={ handleTurnstileExpired }
             onLoad={ handleTurnstileLoad }
+            options={{
+              language: 'en',
+            }}
           />
         </Box>
       );
