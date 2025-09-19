@@ -11,9 +11,9 @@ import getErrorMessage from 'lib/errors/getErrorMessage';
 import getErrorObjPayload from 'lib/errors/getErrorObjPayload';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
-import IconSvg from 'ui/shared/IconSvg';
 import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
 import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
+import IconSvg from 'ui/shared/IconSvg';
 
 import AuthModalFieldOtpCode from '../fields/AuthModalFieldOtpCode';
 
@@ -84,7 +84,7 @@ const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
     try {
       formApi.clearErrors('code');
       setIsCodeSending(true);
-      await recaptcha.fetchProtectedResource(resendCodeFetchFactory);
+      await turnstile.fetchProtectedResource(resendCodeFetchFactory);
 
       toaster.success({
         title: 'Success',
@@ -100,7 +100,7 @@ const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
     } finally {
       setIsCodeSending(false);
     }
-  }, [ formApi, recaptcha, resendCodeFetchFactory ]);
+  }, [ formApi, turnstile, resendCodeFetchFactory ]);
 
   return (
     <FormProvider { ...formApi }>
@@ -118,7 +118,7 @@ const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
           variant="link"
           columnGap={ 2 }
           mt={ 3 }
-          disabled={ isCodeSending || recaptcha.isInitError }
+          disabled={ isCodeSending || turnstile.isInitError }
           onClick={ handleResendCodeClick }
         >
           <IconSvg name="repeat" boxSize={ 5 }/>

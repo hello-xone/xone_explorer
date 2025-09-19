@@ -60,7 +60,7 @@ const TokenInstanceMetadataFetcher = ({ hash, id }: Props) => {
 
   const initializeUpdate = React.useCallback(async() => {
     try {
-      await recaptcha.fetchProtectedResource(apiFetchFactory);
+      await turnstile.fetchProtectedResource(apiFetchFactory);
       setStatus?.('WAITING_FOR_RESPONSE');
       toaster.loading({
         id: TOAST_ID,
@@ -78,7 +78,7 @@ const TokenInstanceMetadataFetcher = ({ hash, id }: Props) => {
       setStatus?.('ERROR');
     }
 
-  }, [ apiFetchFactory, handleRefreshError, recaptcha, setStatus ]);
+  }, [ apiFetchFactory, handleRefreshError, turnstile, setStatus ]);
 
   const handleModalClose = React.useCallback(({ open }: { open: boolean }) => {
     if (!open) {
