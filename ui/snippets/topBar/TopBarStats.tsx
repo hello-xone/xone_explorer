@@ -1,5 +1,5 @@
 import { Flex, chakra } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import config from 'configs/app';
 import useApiQuery from 'lib/api/useApiQuery';
@@ -17,12 +17,34 @@ import GetGasButton from './GetGasButton';
 const TopBarStats = () => {
   const isMobile = useIsMobile();
 
+  const { data: xonePublicData } = useApiQuery('xonePublic:chart');
+
   const { data, isPlaceholderData, isError, refetch, dataUpdatedAt } = useApiQuery('general:stats', {
     queryOptions: {
       placeholderData: HOMEPAGE_STATS,
       refetchOnMount: false,
     },
   });
+
+  const { coinPrice, priceFluctuation } = useMemo(() => {
+    if (data?.coin_price) {
+      return {
+        coinPrice: data.coin_price,
+        priceFluctuation: data.coin_price_change_percentage,
+      };
+    } else {
+      if (xonePublicData && xonePublicData?.data?.current_price) {
+        return {
+          coinPrice: xonePublicData.data.current_price,
+          priceFluctuation: xonePublicData.data.price_fluctuation,
+        };
+      }
+      return {
+        coinPrice: undefined,
+        priceFluctuation: undefined,
+      };
+    }
+  }, [ data, xonePublicData ]);
 
   React.useEffect(() => {
     if (isPlaceholderData || !data?.gas_price_updated_at) {
@@ -55,16 +77,16 @@ const TopBarStats = () => {
       fontSize="xs"
       fontWeight={ 500 }
     >
-      { data?.coin_price && (
+      { coinPrice && (
         <Flex columnGap={ 1 }>
           <Skeleton loading={ isPlaceholderData }>
             <chakra.span color="text.secondary">{ config.chain.currency.symbol } </chakra.span>
-            <span>${ Number(data.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) }</span>
+            <span>${ Number(coinPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) }</span>
           </Skeleton>
-          { data.coin_price_change_percentage && (
+          { priceFluctuation && (
             <Skeleton loading={ isPlaceholderData }>
-              <chakra.span color={ Number(data.coin_price_change_percentage) >= 0 ? 'green.500' : 'red.500' }>
-                { Number(data.coin_price_change_percentage).toFixed(2) }%
+              <chakra.span color={ Number(priceFluctuation) >= 0 ? 'green.500' : 'red.500' }>
+                { Number(priceFluctuation).toFixed(2) }%
               </chakra.span>
             </Skeleton>
           ) }
@@ -78,8 +100,8 @@ const TopBarStats = () => {
           </Skeleton>
         </Flex>
       ) }
-      <Flex gapX={ 2 }>
-        { data?.coin_price && config.features.gasTracker.isEnabled && <TextSeparator/> }
+      <Flex>
+        { coinPrice && config.features.gasTracker.isEnabled && <TextSeparator/> }
         { data?.gas_prices && data.gas_prices.average !== null && config.features.gasTracker.isEnabled && (
           <>
             <Skeleton loading={ isPlaceholderData } display={{ base: 'none', lg: 'inline-flex' }} whiteSpace="pre-wrap">
@@ -93,6 +115,7 @@ const TopBarStats = () => {
             { !isPlaceholderData && <GetGasButton/> }
           </>
         ) }
+        <TextSeparator/>
         <Link href="https://faucet.xone.org/zh" target="_blank">Faucet</Link>
       </Flex>
     </Flex>

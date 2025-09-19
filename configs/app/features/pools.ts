@@ -17,7 +17,7 @@ const config: Feature<{ }> = (() => {
 
   return Object.freeze({
     title,
-    isEnabled: false,
+    isEnabled: true,
   });
 })();
 

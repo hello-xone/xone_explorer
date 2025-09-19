@@ -19,7 +19,6 @@ interface Props<Pathname extends Route['pathname']> {
 
 const PageNextJs = <Pathname extends Route['pathname']>(props: Props<Pathname>) => {
   const isMounted = useIsMounted();
-
   useGetCsrfToken();
   useAdblockDetect();
   useNotifyOnNavigation();

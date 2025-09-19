@@ -37,7 +37,6 @@ export function getContentProps(variant: EntityBaseProps['variant'] = 'content')
 export function distributeEntityProps<Props extends EntityBaseProps>(props: Props, multichainContext?: TMultichainContext | null) {
   const { className, onClick, icon, linkVariant, chain, ...mainProps } = props;
   const { variant, ...restProps } = mainProps;
-
   return {
     container: { className },
     // For entities within the multichain views, we decided not to highlight the chain in the entity icon unless the chain data is passed manually via props.

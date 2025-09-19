@@ -50,6 +50,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'http://8.218.76.177',
       'ws://8.218.76.177',
       'http://8.218.76.177:8080',
+      'https://explorer-api.xonetest.plus',
       // chain RPC server
       ...config.chain.rpcUrls,
       'https://infragrid.v.network', // RPC providers

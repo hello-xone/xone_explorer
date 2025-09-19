@@ -61,7 +61,6 @@ const ChartsWidgetsList = ({ filterQuery, isError, isPlaceholderData, charts, in
       { isSomeChartLoadingError && (
         <ChartsLoadingErrorAlert/>
       ) }
-
       <section ref={ sectionRef }>
         {
           charts?.map((section) => (

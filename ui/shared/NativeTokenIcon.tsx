@@ -22,7 +22,6 @@ const NativeTokenIcon = ({ isLoading, className, type }: Props) => {
       placeholderData: HOMEPAGE_STATS,
     },
   });
-
   if (isLoading || statsQueryResult.isPlaceholderData) {
     return <Skeleton borderRadius="base" loading className={ className }/>;
   }

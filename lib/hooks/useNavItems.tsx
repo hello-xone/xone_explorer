@@ -312,7 +312,8 @@ export default function useNavItems(): ReturnType {
       {
         text: 'BVI',
         icon: 'bvi',
-        subItems: [],
+        url: 'https://bvi.xone.org',
+        isActive: false,
       },
       apiNavItem,
       {

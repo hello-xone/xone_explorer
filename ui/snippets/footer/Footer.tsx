@@ -287,10 +287,7 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        // await addEmail({
-        //   email: values.email,
-        // });
-        apiFetch('userOps:addEmail', {
+        apiFetch('xonePublic:subscribe', {
           fetchParams: {
             method: 'POST',
             body: {

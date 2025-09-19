@@ -5,6 +5,7 @@ import type { TokenInfo } from 'types/api/token';
 
 import { route } from 'nextjs/routes';
 
+import { getEnvValue } from 'configs/app/utils';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import getChainTooltipText from 'lib/multichain/getChainTooltipText';
 import getIconUrl from 'lib/multichain/getIconUrl';
@@ -39,7 +40,6 @@ const Icon = (props: IconProps) => {
   if (props.noIcon) {
     return null;
   }
-
   const styles = {
     ...getIconProps(props, Boolean(props.shield ?? props.chain)),
     borderRadius: props.token.type === 'ERC-20' ? 'full' : 'base',
@@ -49,7 +49,8 @@ const Icon = (props: IconProps) => {
     <EntityBase.Icon
       { ...styles }
       className={ props.className }
-      src={ props.token.icon_url ?? undefined }
+      src={ props.token.icon_url ?? getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address_hash)
+        .replace('[chain]', (window.location.origin.includes('testnet') || window.location.origin.includes('localhost')) ? 'xone_testnet' : 'xone') }
       alt={ `${ props.token.name || 'token' } logo` }
       fallback={ <TokenLogoPlaceholder/> }
       shield={ props.shield ?? (props.chain ? { src: getIconUrl(props.chain) } : undefined) }

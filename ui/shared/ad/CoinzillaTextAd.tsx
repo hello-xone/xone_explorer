@@ -34,19 +34,23 @@ const CoinzillaTextAd = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     if (isBrowser()) {
-      fetch('https://request-global.czilladx.com/serve/native.php?z=19260bf627546ab7242')
-        .then(res => res.status === 200 ? res.json() : null)
-        .then((_data) => {
-          const data = _data as AdData;
-          setAdData(data);
-          if (data?.ad?.impressionUrl) {
-            fetch(data.ad.impressionUrl);
-          }
-        })
-        .finally(() => {
+      try {
+        fetch('https://request-global.czilladx.com/serve/native.php?z=19260bf627546ab7242')
+          .then(res => res.status === 200 ? res.json() : null)
+          .then((_data) => {
+            const data = _data as AdData;
+            setAdData(data);
+            if (data?.ad?.impressionUrl) {
+              fetch(data.ad.impressionUrl);
+            }
+          })
+          .finally(() => {
           // setAdData(MOCK);
-          setIsLoading(false);
-        });
+            setIsLoading(false);
+          });
+      } catch {
+        setIsLoading(false);
+      }
     }
   }, [ ]);
 

@@ -1,11 +1,12 @@
 import { Grid } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import type { HomeStatsWidgetId } from 'types/homepage';
 
 import config from 'configs/app';
 import useApiQuery from 'lib/api/useApiQuery';
+import useQueryEpochs from 'lib/api/useQueryEpochs';
 import { HOMEPAGE_STATS, HOMEPAGE_STATS_MICROSERVICE } from 'stubs/stats';
 import { WEI } from 'toolkit/utils/consts';
 import GasInfoTooltip from 'ui/shared/gas/GasInfoTooltip';
@@ -21,6 +22,8 @@ const isStatsFeatureEnabled = config.features.stats.isEnabled;
 
 const Stats = () => {
   const [ hasGasTracker, setHasGasTracker ] = React.useState(config.features.gasTracker.isEnabled);
+  const { fetchEpochs } = useQueryEpochs();
+  const [ currentEpoch, setCurrentEpoch ] = React.useState<number | null>(null);
 
   // data from stats microservice is prioritized over data from stats api
   const statsQuery = useApiQuery('stats:pages_main', {
@@ -37,6 +40,18 @@ const Stats = () => {
       placeholderData: HOMEPAGE_STATS,
     },
   });
+
+  const getCurrentEpoch = useCallback(async() => {
+    const res = await fetchEpochs({
+      limit: 1,
+      page: 0,
+    });
+    setCurrentEpoch(res.epochInfoss[0].id);
+  }, [ fetchEpochs ]);
+
+  React.useEffect(() => {
+    getCurrentEpoch();
+  }, [ getCurrentEpoch ]);
 
   const isPlaceholderData = statsQuery.isPlaceholderData || apiQuery.isPlaceholderData;
 
@@ -93,7 +108,6 @@ const Stats = () => {
   interface Item extends StatsWidgetProps {
     id: HomeStatsWidgetId;
   }
-
   const apiData = apiQuery.data;
   const statsData = statsQuery.data;
 
@@ -198,12 +212,12 @@ const Stats = () => {
         value: `${ BigNumber(apiData.rootstock_locked_btc).div(WEI).dp(0).toFormat() } RBTC`,
         isLoading,
       },
-      apiData?.celo && {
+      {
         id: 'current_epoch' as const,
         icon: 'hourglass_slim' as const,
         label: 'Current epoch',
-        value: `#${ apiData.celo.epoch_number }`,
-        href: { pathname: '/epochs/[number]' as const, query: { number: String(apiData.celo.epoch_number) } },
+        value: `#${ currentEpoch }`,
+        href: { pathname: '/epochs/[number]' as const, query: { number: String(currentEpoch) } },
         isLoading,
       },
     ]

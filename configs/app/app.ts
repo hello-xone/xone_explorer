@@ -12,6 +12,7 @@ const baseUrl = [
 const isDev = getEnvValue('NEXT_PUBLIC_APP_ENV') === 'development';
 const isPw = getEnvValue('NEXT_PUBLIC_APP_INSTANCE') === 'pw';
 const spriteHash = getEnvValue('NEXT_PUBLIC_ICON_SPRITE_HASH');
+const epochApiHost = getEnvValue('NEXT_PUBLIC_EPOCH_API_HOST');
 
 const app = Object.freeze({
   isDev,
@@ -22,6 +23,7 @@ const app = Object.freeze({
   baseUrl,
   useProxy: getEnvValue('NEXT_PUBLIC_USE_NEXT_JS_PROXY') === 'true',
   spriteHash,
+  epochApiHost,
 });
 
 export default app;

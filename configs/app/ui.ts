@@ -18,10 +18,10 @@ const homePageStats: Array<HomeStatsWidgetId> = (() => {
     const rollupFeature = features.rollup;
 
     if (rollupFeature.isEnabled && [ 'zkEvm', 'zkSync', 'arbitrum' ].includes(rollupFeature.type)) {
-      return [ 'latest_batch', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker' ];
+      return [ 'latest_batch', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker', 'current_epoch' ];
     }
 
-    return [ 'total_blocks', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker' ];
+    return [ 'total_blocks', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker', 'current_epoch' ];
   }
 
   return parsedValue.filter((item) => HOME_STATS_WIDGET_IDS.includes(item));

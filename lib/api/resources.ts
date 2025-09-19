@@ -12,6 +12,8 @@ import type { MetadataApiResourceName, MetadataApiResourcePayload } from './serv
 import { METADATA_API_RESOURCES } from './services/metadata';
 import type { MultichainApiPaginationFilters, MultichainApiResourceName, MultichainApiResourcePayload } from './services/multichain';
 import { MULTICHAIN_API_RESOURCES } from './services/multichain';
+import type { XonePublicApiResourceName, XonePublicApiResourcePayload } from './services/public';
+import { XONEPUBLIC_API_RESOURCES } from './services/public';
 import type { RewardsApiResourceName, RewardsApiResourcePayload } from './services/rewards';
 import { REWARDS_API_RESOURCES } from './services/rewards';
 import type { StatsApiResourceName, StatsApiResourcePayload } from './services/stats';
@@ -39,6 +41,7 @@ export const RESOURCES = {
   tac: TAC_OPERATION_LIFECYCLE_API_RESOURCES,
   userOps: USER_OPS_API_RESOURCES,
   visualize: VISUALIZE_API_RESOURCES,
+  xonePublic: XONEPUBLIC_API_RESOURCES,
 } satisfies Record<ApiName, Record<string, ApiResource>>;
 
 export const resourceKey = (x: ResourceName) => x;
@@ -61,6 +64,7 @@ R extends RewardsApiResourceName ? RewardsApiResourcePayload<R> :
 R extends StatsApiResourceName ? StatsApiResourcePayload<R> :
 R extends TacOperationLifecycleApiResourceName ? TacOperationLifecycleApiResourcePayload<R> :
 R extends VisualizeApiResourceName ? VisualizeApiResourcePayload<R> :
+R extends XonePublicApiResourceName ? XonePublicApiResourcePayload<R> :
 never;
 /* eslint-enable @stylistic/indent */
 
