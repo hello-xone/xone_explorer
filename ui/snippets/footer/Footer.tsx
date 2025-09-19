@@ -287,19 +287,40 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        apiFetch('xonePublic:subscribe', {
-          fetchParams: {
-            method: 'POST',
-            body: {
-              email: [ email ],
-            },
+        fetch('https://mail.xone.org/api/subscribe/submit?token=70963c658730', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ email }),
+        }).then(async res => {
+          if (res.ok) {
+            setEmail('');
+            toaster.success({
+              title: 'Success',
+              description: 'Subscribed',
+            });
+          } else {
+            const result = await res.json() as { message: string };
+            toaster.error({
+              title: 'Error',
+              description: result.message || 'Something went wrong',
+            });
+          }
         });
-        setEmail('');
-        toaster.success({
-          title: 'Success',
-          description: 'Subscribed',
-        });
+        // apiFetch('xonePublic:subscribe', {
+        //   fetchParams: {
+        //     method: 'POST',
+        //     body: {
+        //       email: [ email ],
+        //     },
+        //   },
+        // });
+        // setEmail('');
+        // toaster.success({
+        //   title: 'Success',
+        //   description: 'Subscribed',
+        // });
       } catch (error) {
         toaster.error({
           title: 'Error',
