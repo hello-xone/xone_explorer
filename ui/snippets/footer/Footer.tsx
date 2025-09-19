@@ -324,7 +324,21 @@ const Footer = () => {
           <IconSvg name={ WALLETS_INFO['metamask'].icon } boxSize={ 6 } mr="2"/>
           <Text color={ buttonColor }>Add { chain.name }</Text>
         </Button>
-        <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
+        <Box marginTop={ 6 }>
+          <Box w="386px" position="relative" marginBottom={ 4 }>
+            <Heading fontSize="lg" mb={ 4 } color={ buttonColor }>Subscribe to Newsletter</Heading>
+            <Box fontSize="sm" color="#6B6A6A" mb={ 4 } >
+              Xone Chain is a modular Layer-1 that goes beyond scalability and efficiency, ensuring every on-chain action creates tangible, traceable value.
+            </Box>
+            <Box display="flex" alignItems="center" gap={ 2 }>
+              <EmailInput email={ email } setEmail={ setEmail }></EmailInput>
+              <Button onClick={ send } size="sm" flexShrink={ 0 }>
+                Join
+              </Button>
+            </Box>
+          </Box>
+          <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
+        </Box>
       </VStack>
       <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
         <Links title="Xone" links={ [
@@ -352,18 +366,6 @@ const Footer = () => {
         ] }/>
 
       </SimpleGrid>
-      <Box w="386px" position="relative">
-        <Heading fontSize="lg" mb={ 4 } color={ buttonColor }>Subscribe to Newsletter</Heading>
-        <Box fontSize="sm" color="#6B6A6A" mb={ 4 } >
-          Xone Chain is a modular Layer-1 that goes beyond scalability and efficiency, ensuring every on-chain action creates tangible, traceable value.
-        </Box>
-        <Box display="flex" alignItems="center" gap={ 2 }>
-          <EmailInput email={ email } setEmail={ setEmail }></EmailInput>
-          <Button onClick={ send } size="sm" flexShrink={ 0 }>
-            Join
-          </Button>
-        </Box>
-      </Box>
     </Box>
   );
 };
