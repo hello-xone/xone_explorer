@@ -1,0 +1,39 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Upload code to remote server
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: 8.218.76.177
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "."
+          target: "/root/frontend"
+          rm: true
+
+      - name: Build and run Docker on remote server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: 8.218.76.177
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            cd /root/frontend
+            docker build -t sc-frontend:latest .
+            if docker ps -q -f name=sc-frontend | grep -q .; then
+              docker stop sc-frontend
+              docker rm sc-frontend
+            fi
+            docker run -d -p 3000:3000 --env-file .env --name sc-frontend sc-frontend:latest
