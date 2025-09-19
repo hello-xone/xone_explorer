@@ -21,13 +21,12 @@ const useQueryEpochs = () => {
     const { page, limit = DEFAULT_PAGE_LIMIT } = pagination;
     try {
       const res = (await fetch(
-        `${ config.api.epochApiHost }/api/v1/epochInfos/list`,
+        `${ config.app.epochApiHost }/api/v1/epochInfos/list`,
         {
           headers: {
             'Content-Type': 'application/json',
           },
           method: 'POST',
-          mode: 'cors',
           body: {
             sort: '-id',
             limit,

@@ -1,7 +1,9 @@
 import type { Transaction } from 'types/api/transaction';
 
 import type { UserTags, AddressImplementation, AddressParam, AddressFilecoinParams } from './addressParams';
-import type { Block, EpochRewardsType } from './block';
+import type { Block } from './block';
+import type { SmartContractCreationStatus, SmartContractProxyType } from './contract';
+import type { CeloEpochRewardsType } from './epochs';
 import type { InternalTransaction } from './internalTransaction';
 import type { MudWorldSchema, MudWorldTable } from './mudWorlds';
 import type { NFTTokenType, TokenInfo, TokenInstance, TokenType } from './token';
@@ -13,12 +15,13 @@ export interface Address extends UserTags {
   creator_address_hash: string | null;
   creator_filecoin_robust_address?: string | null;
   creation_transaction_hash: string | null;
+  creation_status: SmartContractCreationStatus | null;
   exchange_rate: string | null;
   ens_domain_name: string | null;
   filecoin?: AddressFilecoinParams;
+  zilliqa?: AddressZilliqaParams;
   // TODO: if we are happy with tabs-counters method, should we delete has_something fields?
   has_beacon_chain_withdrawals?: boolean;
-  has_decompiled_code: boolean;
   has_logs: boolean;
   has_token_transfers: boolean;
   has_tokens: boolean;
@@ -30,6 +33,11 @@ export interface Address extends UserTags {
   name: string | null;
   token: TokenInfo | null;
   watchlist_address_id: number | null;
+  proxy_type?: SmartContractProxyType | null;
+}
+
+export interface AddressZilliqaParams {
+  is_scilla_contract: boolean;
 }
 
 export interface AddressCounters {
@@ -186,13 +194,14 @@ export type AddressWithdrawalsItem = {
 };
 
 export type AddressTabsCounters = {
-  internal_txs_count: number | null;
+  internal_transactions_count: number | null;
   logs_count: number | null;
   token_balances_count: number | null;
   token_transfers_count: number | null;
   transactions_count: number | null;
   validations_count: number | null;
   withdrawals_count: number | null;
+  beacon_deposits_count: number | null;
   celo_election_rewards_count?: number | null;
 };
 
@@ -254,18 +263,16 @@ export type AddressEpochRewardsResponse = {
   next_page_params: {
     amount: string;
     associated_account_address_hash: string;
-    block_number: number;
+    epoch_number: number;
     items_count: number;
-    type: EpochRewardsType;
+    type: CeloEpochRewardsType;
   } | null;
 };
 
 export type AddressEpochRewardsItem = {
-  type: EpochRewardsType;
+  type: CeloEpochRewardsType;
   token: TokenInfo;
   amount: string;
-  block_number: number;
-  block_hash: string;
   block_timestamp: string;
   account: AddressParam;
   epoch_number: number;

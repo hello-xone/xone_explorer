@@ -56,12 +56,18 @@ beforeEach(() => {
   fetch.resetMocks();
 });
 
+const responseInit = {
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
+
 it('returns correct data if there is only one page', async() => {
-  const params: Params<'address_txs'> = {
-    resourceName: 'address_txs',
+  const params: Params<'general:address_txs'> = {
+    resourceName: 'general:address_txs',
     pathParams: { hash: addressMock.hash },
   };
-  fetch.mockResponse(JSON.stringify(responses.page_empty));
+  fetch.mockResponse(JSON.stringify(responses.page_empty), responseInit);
 
   const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
   await waitForApiResponse();
@@ -78,13 +84,13 @@ it('returns correct data if there is only one page', async() => {
 });
 
 describe('if there are multiple pages', () => {
-  const params: Params<'address_txs'> = {
-    resourceName: 'address_txs',
+  const params: Params<'general:address_txs'> = {
+    resourceName: 'general:address_txs',
     pathParams: { hash: addressMock.hash },
   };
 
   it('return correct data for the first page', async() => {
-    fetch.mockResponse(JSON.stringify(responses.page_1));
+    fetch.mockResponse(JSON.stringify(responses.page_1), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -102,17 +108,17 @@ describe('if there are multiple pages', () => {
   describe('correctly navigates forward and backward', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     let result: {
-      current: QueryWithPagesResult<'address_txs'>;
+      current: QueryWithPagesResult<'general:address_txs'>;
     };
 
     beforeEach(async() => {
       routerPush.mockClear();
       useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush });
 
-      fetch.once(JSON.stringify(responses.page_1));
-      fetch.once(JSON.stringify(responses.page_2));
-      fetch.once(JSON.stringify(responses.page_3));
-      fetch.once(JSON.stringify(responses.page_1));
+      fetch.once(JSON.stringify(responses.page_1), responseInit);
+      fetch.once(JSON.stringify(responses.page_2), responseInit);
+      fetch.once(JSON.stringify(responses.page_3), responseInit);
+      fetch.once(JSON.stringify(responses.page_1), responseInit);
 
       // INITIAL LOAD
       const { result: r } = renderHook(() => useQueryWithPages(params), { wrapper });
@@ -285,10 +291,10 @@ describe('if there are multiple pages', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush });
 
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
-    fetch.once(JSON.stringify(responses.page_3));
-    fetch.once(JSON.stringify(responses.page_1));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
+    fetch.once(JSON.stringify(responses.page_3), responseInit);
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -338,13 +344,13 @@ describe('if there are multiple pages', () => {
         scrollIntoView: jest.fn(),
       },
     };
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
       scrollRef: scrollRef as unknown as React.RefObject<HTMLDivElement>,
     };
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -361,13 +367,13 @@ describe('if there are multiple pages', () => {
 
 describe('if there is page query param in URL', () => {
   it('sets this param as the page number', async() => {
-    useRouter.mockReturnValueOnce({ ...router, query: { page: '3' } });
+    useRouter.mockReturnValue({ ...router, query: { page: '3' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
     };
-    fetch.mockResponse(JSON.stringify(responses.page_empty));
+    fetch.mockResponse(JSON.stringify(responses.page_empty), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -387,12 +393,12 @@ describe('if there is page query param in URL', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush, query: { page: '2' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
     };
-    fetch.once(JSON.stringify(responses.page_2));
-    fetch.once(JSON.stringify(responses.page_3));
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
+    fetch.once(JSON.stringify(responses.page_3), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -432,16 +438,16 @@ describe('queries with filters', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush, query: { foo: 'bar', sort: 'val-desc' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
 
       // @ts-ignore:
       sorting: { sort: 'val-desc' },
     };
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
-    fetch.once(JSON.stringify(responses.page_filtered));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
+    fetch.once(JSON.stringify(responses.page_filtered), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -484,12 +490,12 @@ describe('queries with filters', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush, query: { filter: 'from', foo: 'bar' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
     };
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -521,14 +527,14 @@ describe('queries with sorting', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush, query: { foo: 'bar', filter: 'from' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
       filters: { filter: 'from' },
     };
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
-    fetch.once(JSON.stringify(responses.page_sorted));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
+    fetch.once(JSON.stringify(responses.page_sorted), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -573,15 +579,15 @@ describe('queries with sorting', () => {
     const routerPush = jest.fn(() => Promise.resolve());
     useRouter.mockReturnValue({ ...router, pathname: '/current-route', push: routerPush, query: { foo: 'bar', sort: 'val-desc' } });
 
-    const params: Params<'address_txs'> = {
-      resourceName: 'address_txs',
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
       pathParams: { hash: addressMock.hash },
 
       // @ts-ignore:
       sorting: { sort: 'val-desc' },
     };
-    fetch.once(JSON.stringify(responses.page_1));
-    fetch.once(JSON.stringify(responses.page_2));
+    fetch.once(JSON.stringify(responses.page_1), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
 
     const { result } = renderHook(() => useQueryWithPages(params), { wrapper });
     await waitForApiResponse();
@@ -605,6 +611,56 @@ describe('queries with sorting', () => {
       undefined,
       { shallow: true },
     );
+  });
+});
+
+describe('router query changes', () => {
+  it('refetches correct page when page number changes in URL', async() => {
+    const routerPush = jest.fn(() => Promise.resolve());
+    const router = {
+      pathname: '/current-route',
+      push: routerPush,
+      query: {
+        page: '3',
+        next_page_params: encodeURIComponent(JSON.stringify(responses.page_2.next_page_params)),
+      },
+    };
+    useRouter.mockReturnValue(router);
+
+    const params: Params<'general:address_txs'> = {
+      resourceName: 'general:address_txs',
+      pathParams: { hash: addressMock.hash },
+    };
+
+    fetch.once(JSON.stringify(responses.page_3), responseInit);
+    fetch.once(JSON.stringify(responses.page_2), responseInit);
+
+    const { result, rerender } = renderHook(() => useQueryWithPages(params), { wrapper });
+    await waitForApiResponse();
+
+    expect(result.current.data).toEqual(responses.page_3);
+    expect(result.current.pagination.page).toBe(3);
+
+    // Simulate URL change to page 2
+    useRouter.mockReturnValue({
+      ...router,
+      query: {
+        page: '2',
+        next_page_params: encodeURIComponent(JSON.stringify(responses.page_1.next_page_params)),
+      },
+    });
+
+    rerender();
+    await waitForApiResponse();
+
+    expect(result.current.data).toEqual(responses.page_2);
+    expect(result.current.pagination).toMatchObject({
+      page: 2,
+      canGoBackwards: false,
+      hasNextPage: true,
+      isLoading: false,
+      isVisible: true,
+    });
   });
 });
 

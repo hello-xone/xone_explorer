@@ -1,7 +1,6 @@
-import { Button, chakra, Heading, useDisclosure } from '@chakra-ui/react';
+import { chakra } from '@chakra-ui/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import type { SubmitHandler } from 'react-hook-form';
 import { FormProvider, useForm } from 'react-hook-form';
 
@@ -12,10 +11,14 @@ import config from 'configs/app';
 import useApiFetch from 'lib/api/useApiFetch';
 import getErrorMessage from 'lib/errors/getErrorMessage';
 import getErrorObjPayload from 'lib/errors/getErrorObjPayload';
-import useToast from 'lib/hooks/useToast';
 import * as mixpanel from 'lib/mixpanel';
-import FormFieldReCaptcha from 'ui/shared/forms/fields/FormFieldReCaptcha';
-import FormFieldText from 'ui/shared/forms/fields/FormFieldText';
+import { Button } from 'toolkit/chakra/button';
+import { Heading } from 'toolkit/chakra/heading';
+import { toaster } from 'toolkit/chakra/toaster';
+import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
+import { useDisclosure } from 'toolkit/hooks/useDisclosure';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 import AuthModal from 'ui/snippets/auth/AuthModal';
 
 import MyProfileFieldsEmail from './fields/MyProfileFieldsEmail';
@@ -33,7 +36,7 @@ interface Props {
 const MyProfileEmail = ({ profileQuery }: Props) => {
   const authModal = useDisclosure();
   const apiFetch = useApiFetch();
-  const toast = useToast();
+  const turnstile = useCloudflareTurnstile();
 
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
@@ -43,17 +46,21 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
     },
   });
 
+  const authFetchFactory = React.useCallback((email: string) => (turnstileToken?: string) => {
+    return apiFetch('general:auth_send_otp', {
+      fetchParams: {
+        method: 'POST',
+        body: { email, turnstile_response: turnstileToken },
+        headers: {
+          ...(turnstileToken && { 'cf-turnstile-response': turnstileToken }),
+        },
+      },
+    });
+  }, [ apiFetch ]);
+
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(formData) => {
     try {
-      await apiFetch('auth_send_otp', {
-        fetchParams: {
-          method: 'POST',
-          body: {
-            email: formData.email,
-            recaptcha_v3_response: formData.reCaptcha,
-          },
-        },
-      });
+      await turnstile.fetchProtectedResource(authFetchFactory(formData.email));
       mixpanel.logEvent(mixpanel.EventTypes.ACCOUNT_LINK_INFO, {
         Source: 'Profile',
         Status: 'OTP sent',
@@ -62,42 +69,37 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
       authModal.onOpen();
     } catch (error) {
       const apiError = getErrorObjPayload<{ message: string }>(error);
-      toast({
-        status: 'error',
+      toaster.error({
         title: 'Error',
         description: apiError?.message || getErrorMessage(error) || 'Something went wrong',
       });
     }
-  }, [ apiFetch, authModal, toast ]);
+  }, [ authFetchFactory, authModal, turnstile ]);
 
   const hasDirtyFields = Object.keys(formApi.formState.dirtyFields).length > 0;
 
   return (
     <section>
-      <Heading as="h2" size="sm" mb={ 3 }>Notifications</Heading>
+      <Heading level="2" mb={ 3 }>Notifications</Heading>
       <FormProvider { ...formApi }>
         <chakra.form
           noValidate
           onSubmit={ formApi.handleSubmit(onFormSubmit) }
         >
-          <FormFieldText<FormFields> name="name" placeholder="Name" isReadOnly mb={ 3 }/>
+          <FormFieldText<FormFields> name="name" placeholder="Name" readOnly mb={ 3 }/>
           <MyProfileFieldsEmail
-            isReadOnly={ !config.services.reCaptchaV3.siteKey || Boolean(profileQuery.data?.email) }
+            isReadOnly={ !config.services.cloudflareTurnstile.siteKey || Boolean(profileQuery.data?.email) }
             defaultValue={ profileQuery.data?.email || undefined }
           />
-          { config.services.reCaptchaV3.siteKey && !profileQuery.data?.email && (
-            <GoogleReCaptchaProvider reCaptchaKey={ config.services.reCaptchaV3.siteKey }>
-              <FormFieldReCaptcha/>
-            </GoogleReCaptchaProvider>
-          ) }
-          { config.services.reCaptchaV3.siteKey && !profileQuery.data?.email && (
+          { config.services.cloudflareTurnstile.siteKey && !profileQuery.data?.email && <CloudflareTurnstile { ...turnstile }/> }
+          { config.services.cloudflareTurnstile.siteKey && !profileQuery.data?.email && (
             <Button
               mt={ 6 }
               size="sm"
               variant="outline"
               type="submit"
-              isDisabled={ formApi.formState.isSubmitting || !hasDirtyFields }
-              isLoading={ formApi.formState.isSubmitting }
+              disabled={ formApi.formState.isSubmitting || !hasDirtyFields || turnstile.isInitError }
+              loading={ formApi.formState.isSubmitting }
               loadingText="Save changes"
             >
               Save changes
@@ -105,7 +107,7 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
           ) }
         </chakra.form>
       </FormProvider>
-      { authModal.isOpen && (
+      { authModal.open && (
         <AuthModal
           initialScreen={{ type: 'otp_code', isAuth: true, email: formApi.getValues('email') }}
           onClose={ authModal.onClose }

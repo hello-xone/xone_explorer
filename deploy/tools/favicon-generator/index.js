@@ -8,31 +8,19 @@ generateFavicons();
 async function generateFavicons() {
   console.log('Generating favicons...');
   const masterUrl = process.env.MASTER_URL;
-  
-  const localFilePath = path.resolve(process.cwd(), './favicon.png'); 
   try {
-    
-    // if (!masterUrl) {
-    //   throw new Error('FAVICON_MASTER_URL or NEXT_PUBLIC_NETWORK_ICON must be set');
-    // }
-
-    let source;
-    if (masterUrl) {
-      const fetch = await import('node-fetch');
-      const response = await fetch.default(masterUrl);
-      const buffer = await response.arrayBuffer();
-      source = Buffer.from(buffer);
-    } else {
-      try {
-        source = await fs.readFile(localFilePath);
-      } catch (fileError) {
-        throw new Error(`Could not load favicon source from URL or local file. Ensure ${localFilePath} exists or set MASTER_URL.`);
-      }
+    if (!masterUrl) {
+      throw new Error('FAVICON_MASTER_URL or NEXT_PUBLIC_NETWORK_ICON must be set');
     }
+
+    const fetch = await import('node-fetch');
+    const response = await fetch.default(masterUrl);
+    const buffer = await response.arrayBuffer();
+    const source = Buffer.from(buffer);
 
     const configuration = {
       path: '/output',
-      appName: 'Xone',
+      appName: 'Blockscout',
       icons: {
         android: true,
         appleIcon: {

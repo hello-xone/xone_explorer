@@ -1,6 +1,5 @@
-import { Alert, Button, chakra, Flex } from '@chakra-ui/react';
+import { chakra, Flex } from '@chakra-ui/react';
 import React from 'react';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -10,10 +9,14 @@ import type { CsvExportParams } from 'types/client/address';
 import config from 'configs/app';
 import buildUrl from 'lib/api/buildUrl';
 import type { ResourceName } from 'lib/api/resources';
+import { useMultichainContext } from 'lib/contexts/multichain';
 import dayjs from 'lib/date/dayjs';
 import downloadBlob from 'lib/downloadBlob';
-import useToast from 'lib/hooks/useToast';
-import FormFieldReCaptcha from 'ui/shared/forms/fields/FormFieldReCaptcha';
+import { Alert } from 'toolkit/chakra/alert';
+import { Button } from 'toolkit/chakra/button';
+import { toaster } from 'toolkit/chakra/toaster';
+import CloudflareTurnstile from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 import CsvExportFormField from './CsvExportFormField';
 
@@ -30,89 +33,99 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
     defaultValues: {
-      from: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-      to: dayjs().format('YYYY-MM-DD'),
+      from: dayjs().subtract(1, 'day').format('YYYY-MM-DDTHH:mm'),
+      to: dayjs().format('YYYY-MM-DDTHH:mm'),
     },
   });
   const { handleSubmit, formState } = formApi;
-  const toast = useToast();
+  const turnstile = useCloudflareTurnstile();
+  const multichainContext = useMultichainContext();
 
-  const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(data) => {
-    try {
+  const chainConfig = multichainContext?.chain.config || config;
+
+  const apiFetchFactory = React.useCallback((data: FormFields) => {
+    return async(turnstileToken?: string) => {
       const url = buildUrl(resource, { hash } as never, {
         address_id: hash,
-        from_period: exportType !== 'holders' ? data.from : null,
-        to_period: exportType !== 'holders' ? data.to : null,
+        from_period: exportType !== 'holders' ? dayjs(data.from).toISOString() : null,
+        to_period: exportType !== 'holders' ? dayjs(data.to).toISOString() : null,
         filter_type: filterType,
         filter_value: filterValue,
-        recaptcha_v3_response: data.reCaptcha,
-      });
+        turnstile_response: turnstileToken,
+      }, undefined, multichainContext?.chain);
 
       const response = await fetch(url, {
         headers: {
           'content-type': 'application/octet-stream',
+          ...(turnstileToken && { 'cf-turnstile-response': turnstileToken }),
         },
       });
 
       if (!response.ok) {
-        throw new Error();
+        throw new Error(response.statusText, {
+          cause: {
+            status: response.status,
+          },
+        });
       }
+
+      return response;
+    };
+  }, [ resource, hash, exportType, filterType, filterValue, multichainContext?.chain ]);
+
+  const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(data) => {
+    try {
+      const response = await turnstile.fetchProtectedResource<Response>(apiFetchFactory(data));
+      const chainText = multichainContext?.chain ? `${ multichainContext.chain.slug.replace(/-/g, '_') }_` : '';
 
       const blob = await response.blob();
       const fileName = exportType === 'holders' ?
-        `${ fileNameTemplate }_${ hash }.csv` :
+        `${ chainText }${ fileNameTemplate }_${ hash }.csv` :
         // eslint-disable-next-line max-len
-        `${ fileNameTemplate }_${ hash }_${ data.from }_${ data.to }${ filterType && filterValue ? '_with_filter_type_' + filterType + '_value_' + filterValue : '' }.csv`;
+        `${ chainText }${ fileNameTemplate }_${ hash }_${ data.from }_${ data.to }${ filterType && filterValue ? '_with_filter_type_' + filterType + '_value_' + filterValue : '' }.csv`;
       downloadBlob(blob, fileName);
 
     } catch (error) {
-      toast({
-        position: 'top-right',
+      toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong. Try again later.',
-        status: 'error',
-        variant: 'subtle',
-        isClosable: true,
       });
     }
 
-  }, [ resource, hash, exportType, filterType, filterValue, fileNameTemplate, toast ]);
+  }, [ turnstile, apiFetchFactory, multichainContext?.chain, exportType, fileNameTemplate, hash, filterType, filterValue ]);
 
-  if (!config.services.reCaptchaV3.siteKey) {
+  if (!chainConfig.services.cloudflareTurnstile.siteKey) {
     return (
       <Alert status="error">
-        CSV export is not available at the moment since reCaptcha is not configured for this application.
+        CSV export is not available at the moment since Cloudflare Turnstile is not configured for this application.
         Please contact the service maintainer to make necessary changes in the service configuration.
       </Alert>
     );
   }
 
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={ config.services.reCaptchaV3.siteKey }>
-      <FormProvider { ...formApi }>
-        <chakra.form
-          noValidate
-          onSubmit={ handleSubmit(onFormSubmit) }
+    <FormProvider { ...formApi }>
+      <chakra.form
+        noValidate
+        onSubmit={ handleSubmit(onFormSubmit) }
+      >
+        <Flex columnGap={ 5 } rowGap={ 3 } flexDir={{ base: 'column', lg: 'row' }} alignItems={{ base: 'flex-start', lg: 'center' }} flexWrap="wrap">
+          { exportType !== 'holders' && <CsvExportFormField name="from" formApi={ formApi }/> }
+          { exportType !== 'holders' && <CsvExportFormField name="to" formApi={ formApi }/> }
+        </Flex>
+        <CloudflareTurnstile { ...turnstile }/>
+        <Button
+          variant="solid"
+          type="submit"
+          mt={ 8 }
+          loading={ formState.isSubmitting }
+          loadingText="Download"
+          disabled={ Boolean(formState.errors.from || formState.errors.to || turnstile.isInitError) }
         >
-          <Flex columnGap={ 5 } rowGap={ 3 } flexDir={{ base: 'column', lg: 'row' }} alignItems={{ base: 'flex-start', lg: 'center' }} flexWrap="wrap">
-            { exportType !== 'holders' && <CsvExportFormField name="from" formApi={ formApi }/> }
-            { exportType !== 'holders' && <CsvExportFormField name="to" formApi={ formApi }/> }
-            <FormFieldReCaptcha/>
-          </Flex>
-          <Button
-            variant="solid"
-            size="lg"
-            type="submit"
-            mt={ 8 }
-            isLoading={ formState.isSubmitting }
-            loadingText="Download"
-            isDisabled={ Boolean(formState.errors.from || formState.errors.to) }
-          >
-            Download
-          </Button>
-        </chakra.form>
-      </FormProvider>
-    </GoogleReCaptchaProvider>
+          Download
+        </Button>
+      </chakra.form>
+    </FormProvider>
   );
 };
 

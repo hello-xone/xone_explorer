@@ -22,10 +22,6 @@ const AdBanner = ({ className, isLoading, platform }: Props) => {
 
   const hasAdblockCookie = cookies.get(cookies.NAMES.ADBLOCK_DETECTED, useAppContext().cookies);
 
-  if (1 === Number(1)) {
-    return null;
-  }
-
   if (!feature.isEnabled || hasAdblockCookie === 'true' || !provider) {
     return null;
   }

@@ -1,7 +1,5 @@
 import type * as stats from '@blockscout/stats-types';
 
-import { currencyUnits } from 'lib/units';
-
 export const base: stats.LineCharts = {
   sections: [
     {
@@ -38,8 +36,8 @@ export const base: stats.LineCharts = {
         {
           id: 'averageTxnFee',
           title: 'Average transaction fee',
-          description: `The average amount in ${ currencyUnits.ether } spent per transaction`,
-          units: 'XOC',
+          description: 'The average amount in ETH spent per transaction',
+          units: 'ETH',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -53,7 +51,7 @@ export const base: stats.LineCharts = {
           id: 'txnsFee',
           title: 'Transactions fees',
           description: 'Amount of tokens paid as fees',
-          units: 'XOC',
+          units: 'ETH',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -80,7 +78,7 @@ export const base: stats.LineCharts = {
           id: 'averageBlockRewards',
           title: 'Average block rewards',
           description: 'Average amount of distributed reward in tokens per day',
-          units: 'XOC',
+          units: 'ETH',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -105,7 +103,7 @@ export const base: stats.LineCharts = {
       charts: [
         {
           id: 'newNativeCoinTransfers',
-          title: 'New XOC transfers',
+          title: 'New ETH transfers',
           description: 'New token transfers number for the period',
           units: undefined,
           resolutions: [ 'DAY', 'MONTH' ],
