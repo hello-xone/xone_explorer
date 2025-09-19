@@ -41,4 +41,4 @@ export const chainDataA = {
       },
     },
   },
-} as ChainConfig;
+} as unknown as ChainConfig;
