@@ -5,10 +5,7 @@
 /node_modules_linux
 /.pnp
 .pnp.js
-<<<<<<< HEAD
-=======
 
->>>>>>> feature-v2.1.0
 pnpm-lock.yaml
 # testing
 /coverage
