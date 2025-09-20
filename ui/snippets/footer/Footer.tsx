@@ -3,7 +3,6 @@ import React, { useCallback, useState } from 'react';
 
 import chain from 'configs/app/chain';
 import type { ResourceError } from 'lib/api/resources';
-import useApiFetch from 'lib/api/useApiFetch';
 import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
 import { Button } from 'toolkit/chakra/button';
@@ -256,7 +255,6 @@ import EmailInput from './EmailInput';
 // };
 
 const Footer = () => {
-  const apiFetch = useApiFetch();
 
   const handleAddToWalletClick = useAddChainClick();
   const [ email, setEmail ] = useState<string>('');
@@ -334,7 +332,7 @@ const Footer = () => {
       });
     }
 
-  }, [ apiFetch, email ]);
+  }, [ email ]);
 
   return (
     <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
