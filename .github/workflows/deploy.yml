@@ -8,10 +8,21 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
+        
+      - name: Delete on remote server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: 8.218.76.177
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            rm -rf /root/frontend
+            
       - name: Upload code to remote server
         uses: appleboy/scp-action@v0.1.3
         with:
@@ -22,7 +33,19 @@ jobs:
           target: "/root/frontend"
           rm: true
 
-      - name: Build and run Docker on remote server
+      - name: Build Docker on remote server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: 8.218.76.177
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 60m
+          script: |
+            set -e
+            cd /root/frontend
+            docker build -t sc-frontend:latest .
+
+      - name: Stop Docker on remote server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: 8.218.76.177
@@ -31,9 +54,17 @@ jobs:
           script: |
             set -e
             cd /root/frontend
-            docker build -t sc-frontend:latest .
-            if docker ps -q -f name=sc-frontend | grep -q .; then
-              docker stop sc-frontend
-              docker rm sc-frontend
-            fi
+            docker kill sc-frontend || true
+            docker rm sc-frontend || true
+
+      - name: Run Docker on remote server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: 8.218.76.177
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            cd /root/frontend
             docker run -d -p 3000:3000 --env-file .env --name sc-frontend sc-frontend:latest
+  
