@@ -58,6 +58,9 @@ RUN yarn --frozen-lockfile --network-timeout 100000 --ignore-engines
 FROM node:20.17.0-alpine AS builder
 RUN apk add --no-cache --upgrade libc6-compat bash jq
 
+# Skip environment variables validation during startup
+ENV SKIP_ENVS_VALIDATION=true
+
 # pass build args to env variables
 ARG GIT_COMMIT_SHA
 ENV NEXT_PUBLIC_GIT_COMMIT_SHA=$GIT_COMMIT_SHA
@@ -130,6 +133,9 @@ WORKDIR /app
 
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
+
+# Skip environment variables validation during startup
+ENV SKIP_ENVS_VALIDATION=true
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

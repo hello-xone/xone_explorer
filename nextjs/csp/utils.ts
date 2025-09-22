@@ -34,6 +34,15 @@ export function mergeDescriptors(...descriptors: Array<CspDev.DirectiveDescripto
 }
 
 export function makePolicyString(policyDescriptor: CspDev.DirectiveDescriptor) {
+  // 确保只包含ASCII字符
+  const ensureAscii = (str: string): string => {
+    return str.split('').map(char => {
+      const code = char.charCodeAt(0);
+      // 如果字符码大于255，替换为安全的ASCII字符
+      return code > 255 ? ' ' : char;
+    }).join('');
+  };
+
   return Object.entries(policyDescriptor)
     .map(([ key, value ]) => {
       if (!value || value.length === 0) {
@@ -41,7 +50,10 @@ export function makePolicyString(policyDescriptor: CspDev.DirectiveDescriptor) {
       }
 
       const uniqueValues = uniq(value);
-      return [ key, uniqueValues.join(' ') ].join(' ');
+      // 对每个值和最终的策略字符串进行ASCII检查
+      const asciiValues = uniqueValues.map(val => ensureAscii(val));
+      const policyPart = [ key, asciiValues.join(' ') ].join(' ');
+      return ensureAscii(policyPart);
     })
     .filter(Boolean)
     .join(';');
