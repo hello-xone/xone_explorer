@@ -59,9 +59,9 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
     const requestsBody = convertFormDataToRequestsBody(data);
 
     const result = await Promise.all(requestsBody.map(async(body) => {
-      return turnstile.executeAsync()
+      return new Promise<void>((resolve) => resolve())
         .then(() => {
-          return apiFetch<'admin:public_tag_application', unknown, { message: string }>('admin:public_tag_application', {
+          return apiFetch<'metadata:public_tag_application', unknown, { message: string }>('metadata:public_tag_application', {
             pathParams: { chainId: appConfig.chain.id },
             fetchParams: {
               method: 'POST',
@@ -71,7 +71,6 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
         })
         .then(() => ({ error: null, payload: body }))
         .catch((error: unknown) => {
-          debugger
           const errorObj = getErrorObj(error);
           const messageFromPayload = getErrorObjPayload<{ message?: string }>(errorObj)?.message;
           const messageFromError = errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined;
@@ -89,7 +88,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
     // }));
     // debugger
     onSubmitResult(result as FormSubmitResult);
-  }, [ apiFetch, onSubmitResult, turnstile ]);
+  }, [ apiFetch, onSubmitResult ]);
 
   if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;

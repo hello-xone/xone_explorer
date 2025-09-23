@@ -3,10 +3,6 @@ import type { TokenInfoApplicationConfig, TokenInfoApplications } from 'types/ap
 import type { MarketplaceApp } from 'types/client/marketplace';
 
 export const ADMIN_API_RESOURCES = {
-  public_tag_application: {
-    path: '/api/v1/chains/:chainId/metadata-submissions/tag',
-    pathParams: [ 'chainId' as const ],
-  },
   token_info_applications_config: {
     path: '/api/v1/chains/:chainId/token-info-submissions/selectors',
     pathParams: [ 'chainId' as const ],

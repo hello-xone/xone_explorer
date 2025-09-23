@@ -61,7 +61,6 @@ export function groupSubmitResult(data: FormSubmitResult | undefined): FormSubmi
       existingItem.tags.push({ name: item.payload.name, tagType: item.payload.tagType, meta: item.payload.meta });
       continue;
     }
-    debugger
     _items.push({
       error: item.error,
       addresses: [ item.payload.address ],

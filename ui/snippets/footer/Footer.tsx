@@ -356,7 +356,19 @@ const Footer = () => {
               </Button>
             </Box>
           </Box>
-          <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
+          <Box display="flex" fontSize="sm" color="#6B6A6A" gap={ 2 }>
+            <Text mt="auto" fontSize="sm" color="#828E9D">&copy; © 2025 Xone Foundation</Text>
+            <Box ml={ 4 } pl={ 4 } display="flex" alignItems="center" borderLeft="1px" borderColor="#828E9D">
+              <Link color="#828E9D" href="https://docs.xone.org/study/privacy" target="_blank">
+                Privacy
+              </Link>
+              <Box w="2px" h="2px" borderRadius="full" bg="#828E9D" mx={ 4 }></Box>
+              <Link color="#828E9D" href="https://docs.xone.org/study/service" target="_blank">
+                Terms
+              </Link>
+            </Box>
+          </Box>
+
         </Box>
       </VStack>
       <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
