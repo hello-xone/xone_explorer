@@ -9,6 +9,9 @@ export const METADATA_API_RESOURCES = {
   info: {
     path: '/api/v1/metadata',
   },
+  addresses: {
+    path: '/api/v1/addresses',
+  },
   tags_search: {
     path: '/api/v1/tags:search',
   },

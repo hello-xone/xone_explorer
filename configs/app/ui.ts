@@ -67,7 +67,7 @@ const UI = Object.freeze({
     frontendCommit: getEnvValue('NEXT_PUBLIC_GIT_COMMIT_SHA'),
   },
   homepage: {
-    charts: [ 'daily_txs', 'tvl', 'coin_price', 'market_cap' ],
+    charts: [ 'daily_txs', 'coin_price', 'market_cap' ],
     stats: homePageStats,
     heroBanner: parseEnvJson<HeroBannerConfig>(getEnvValue('NEXT_PUBLIC_HOMEPAGE_HERO_BANNER_CONFIG')),
     // !!! DEPRECATED !!!

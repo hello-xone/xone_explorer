@@ -131,6 +131,9 @@ WORKDIR /app
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Skip environment variables validation during startup
+ENV SKIP_ENVS_VALIDATION=true
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 

@@ -86,7 +86,6 @@ const TokenDetails = ({ tokenQuery }: Props) => {
     symbol,
     type,
   } = tokenQuery.data || {};
-
   let totalSupplyValue;
 
   if (decimals) {
@@ -95,7 +94,6 @@ const TokenDetails = ({ tokenQuery }: Props) => {
   } else {
     totalSupplyValue = Number(totalSupply).toLocaleString();
   }
-
   return (
     <DetailedInfo.Container>
       { exchangeRate && (
