@@ -238,14 +238,8 @@ export default function useNavItems(): ReturnType {
       config.features.pools.isEnabled && {
         text: 'DEX tracker',
         nextRoute: { pathname: '/pools' as const },
-        icon: 'dex-tracker',
+        icon: 'token',
         isActive: pathname === '/pools' || pathname.startsWith('/pool/'),
-      },
-      {
-        text: 'DEX Tracker',
-        nextRoute: { pathname: '/dex-tracker' as const },
-        icon: 'dex-tracker',
-        isActive: pathname === '/dex-tracker',
       },
     ].filter(Boolean);
 
