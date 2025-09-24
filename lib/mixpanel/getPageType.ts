@@ -42,7 +42,6 @@ export const PAGE_TYPE_DICT: Record<Route['pathname'], string> = {
   '/dispute-games': 'Dispute games',
   '/batches': 'Txn batches',
   '/batches/[number]': 'L2 txn batch details',
-  '/dex-tracker': 'DEX pools',
   '/batches/celestia/[height]/[commitment]': 'L2 txn batch details',
   '/blobs/[hash]': 'Blob details',
   '/ops': 'User operations',

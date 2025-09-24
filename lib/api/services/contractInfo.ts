@@ -1,6 +1,6 @@
 import type { ApiResource } from '../types';
 import type { VerifiedAddressResponse } from 'types/api/account';
-import type { Pool, PoolsResponse } from 'types/api/pools';
+import type { Pool, PoolsResponse, PoolResponse } from 'types/api/pools';
 import type { TokenVerifiedInfo } from 'types/api/token';
 
 export const CONTRACT_INFO_API_RESOURCES = {
@@ -19,12 +19,13 @@ export const CONTRACT_INFO_API_RESOURCES = {
   pools: {
     path: '/api/v1/chains/:chainId/pools',
     pathParams: [ 'chainId' as const ],
-    filterFields: [ 'query' as const ],
+    filterFields: [ 'query' as const, 'order' as const, 'include' as const ],
     paginated: true,
   },
   pool: {
     path: '/api/v1/chains/:chainId/pools/:hash',
     pathParams: [ 'chainId' as const, 'hash' as const ],
+    filterFields: [ 'include' as const ],
   },
 } satisfies Record<string, ApiResource>;
 
@@ -35,12 +36,12 @@ export type ContractInfoApiResourcePayload<R extends ContractInfoApiResourceName
 R extends 'contractInfo:verified_addresses' ? VerifiedAddressResponse :
 R extends 'contractInfo:token_verified_info' ? TokenVerifiedInfo :
 R extends 'contractInfo:pools' ? PoolsResponse :
-R extends 'contractInfo:pool' ? Pool :
+R extends 'contractInfo:pool' ? PoolResponse :
 never;
 /* eslint-enable @stylistic/indent */
 
 /* eslint-disable @stylistic/indent */
 export type ContractInfoApiPaginationFilters<R extends ContractInfoApiResourceName> =
-R extends 'contractInfo:pools' ? { query: string } :
+R extends 'contractInfo:pools' ? { query?: string; order?: string; include?: string } :
 never;
 /* eslint-enable @stylistic/indent */

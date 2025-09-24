@@ -1,4 +1,4 @@
-import { Grid } from '@chakra-ui/react';
+import { Box, Grid, Progress, Stack } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import React, { useCallback } from 'react';
 
@@ -19,6 +19,14 @@ const rollupFeature = config.features.rollup;
 const isOptimisticRollup = rollupFeature.isEnabled && rollupFeature.type === 'optimistic';
 const isArbitrumRollup = rollupFeature.isEnabled && rollupFeature.type === 'arbitrum';
 const isStatsFeatureEnabled = config.features.stats.isEnabled;
+
+function getTimeRatioOfDay() {
+  const now = new Date();
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0); // 设置为本地时区的 0 点
+  const elapsedMs = now.getTime() - startOfDay.getTime(); // 本地时区经过的毫秒数
+  return elapsedMs / 86400000;
+}
 
 const Stats = () => {
   const [ hasGasTracker, setHasGasTracker ] = React.useState(config.features.gasTracker.isEnabled);
@@ -59,8 +67,8 @@ const Stats = () => {
     if (!isPlaceholderData && !apiQuery.data?.gas_prices?.average) {
       setHasGasTracker(false);
     }
-  // should run only after initial fetch
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // should run only after initial fetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ isPlaceholderData ]);
 
   const zkEvmLatestBatchQuery = useApiQuery('general:homepage_zkevm_latest_batch', {
@@ -130,6 +138,8 @@ const Stats = () => {
       </GasInfoTooltip>
     ) : null;
 
+    const currentTimePercentage = getTimeRatioOfDay();
+
     return [
       latestBatchQuery?.data !== undefined && {
         id: 'latest_batch' as const,
@@ -151,10 +161,9 @@ const Stats = () => {
         id: 'average_block_time' as const,
         icon: 'clock-light' as const,
         label: statsData?.average_block_time?.title || 'Average block time',
-        value: `${
-          statsData?.average_block_time?.value ?
-            Number(statsData.average_block_time.value).toFixed(1) :
-            (apiData!.average_block_time / 1000).toFixed(1)
+        value: `${ statsData?.average_block_time?.value ?
+          Number(statsData.average_block_time.value).toFixed(1) :
+          (apiData!.average_block_time / 1000).toFixed(1)
         }s`,
         isLoading,
       },
@@ -216,8 +225,26 @@ const Stats = () => {
         id: 'current_epoch' as const,
         icon: 'hourglass_slim' as const,
         label: 'Current epoch',
-        value: `#${ currentEpoch }`,
-        href: { pathname: '/epochs/[number]' as const, query: { number: String(currentEpoch) } },
+        value: <Box display="flex" alignItems="center" gap={ 2 }>
+          <Box>
+            #{ currentEpoch || '-' }
+          </Box>
+          <Stack gap="4" maxW="240px">
+            <Progress.Root width="100px"
+              value={ currentTimePercentage * 100 }
+              size="sm"
+              colorPalette="blue"
+              borderRadius="md" variant="subtle">
+              <Progress.Track>
+                <Progress.Range/>
+              </Progress.Track>
+            </Progress.Root>
+          </Stack>
+          <Box fontSize="xs">
+            { (currentTimePercentage * 100).toFixed(1) }%
+          </Box>
+        </Box>,
+        href: { pathname: '/epochs' as const },
         isLoading,
       },
     ]

@@ -58,7 +58,7 @@ const PoolsListItem = ({ item, isLoading }: Props) => {
         <Skeleton loading={ isLoading }>
           { externalLinks.map((link) => (
             <Link external href={ link.url } key={ link.url } display="inline-flex">
-              <Image src={ link.image } alt={ link.title } boxSize={ 5 } mr={ 2 }/>
+              { link.image ? <Image src={ link.image } alt={ link.title } boxSize={ 5 } mr={ 2 }/> : null }
               { link.title }
             </Link>
           )) }

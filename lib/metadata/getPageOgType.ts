@@ -43,7 +43,6 @@ const OG_TYPE_DICT: Record<Route['pathname'], OGPageType> = {
   '/output-roots': 'Root page',
   '/dispute-games': 'Root page',
   '/batches': 'Root page',
-  '/dex-tracker': 'Root page',
   '/batches/[number]': 'Regular page',
   '/batches/celestia/[height]/[commitment]': 'Regular page',
   '/blobs/[hash]': 'Regular page',

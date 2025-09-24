@@ -144,7 +144,7 @@ const ChainIndicators = () => {
           rowGap="6px"
           m={{ base: 'auto 0', lg: 0 }}
         >
-          { indicators.slice(1).map((indicator) => (
+          { indicators.map((indicator) => (
             <ChainIndicatorItem
               key={ indicator.id }
               id={ indicator.id }

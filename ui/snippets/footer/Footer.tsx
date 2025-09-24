@@ -357,7 +357,7 @@ const Footer = () => {
             </Box>
           </Box>
           <Box display="flex" fontSize="sm" color="#6B6A6A" gap={ 2 }>
-            <Text mt="auto" fontSize="sm" color="#828E9D">&copy; © 2025 Xone Foundation</Text>
+            <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone Foundation</Text>
             <Box ml={ 4 } pl={ 4 } display="flex" alignItems="center" borderLeft="1px" borderColor="#828E9D">
               <Link color="#828E9D" href="https://docs.xone.org/study/privacy" target="_blank">
                 Privacy

@@ -13,7 +13,7 @@ import useQueryWithPages from 'ui/shared/pagination/useQueryWithPages';
 export default function useSearchQuery(withRedirectCheck?: boolean) {
   const router = useRouter();
   const q = React.useRef(getQueryParamString(router.query.q));
-  const initialValue = q.current;
+  const initialValue = q.current || '';
 
   const [ searchTerm, setSearchTerm ] = React.useState(initialValue);
 

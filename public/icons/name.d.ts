@@ -51,7 +51,6 @@
 	| "copy"
 	| "cross"
 	| "delete"
-	| "dex-tracker"
 	| "docs"
 	| "donate"
 	| "dots"

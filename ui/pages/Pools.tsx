@@ -1,11 +1,12 @@
 import { Box, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useMemo } from 'react';
+
+import type { Pool, PoolV2, Token, Dex, PoolsResponse } from 'types/api/pools';
 
 import config from 'configs/app';
 import useDebounce from 'lib/hooks/useDebounce';
 import getQueryParamString from 'lib/router/getQueryParamString';
-import { POOL } from 'stubs/pools';
 import { FilterInput } from 'toolkit/components/filters/FilterInput';
 import { apos } from 'toolkit/utils/htmlEntities';
 import PoolsListItem from 'ui/pools/PoolsListItem';
@@ -23,14 +24,68 @@ const Pools = () => {
   const [ searchTerm, setSearchTerm ] = React.useState<string>(q ?? '');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // 获取当前 chain_id
+  const currentChainId = config.chain.id?.toString() ?? '';
+
+  // 直接使用 useQueryWithPages
   const poolsQuery = useQueryWithPages({
     resourceName: 'contractInfo:pools',
-    pathParams: { chainId: config.chain.id },
-    filters: { query: debouncedSearchTerm },
-    options: {
-      placeholderData: { items: Array(50).fill(POOL), next_page_params: { page_token: 'a', page_size: 50 } },
+    pathParams: { chainId: currentChainId },
+    filters: {
+      query: debouncedSearchTerm,
+      order: 'h24_volume_usd_desc',
+      include: 'base_token,quote_token,dex',
     },
   });
+
+  // 转换数据的逻辑直接在这里
+  const transformedData = useMemo((): Array<Pool> | undefined => {
+    if (!poolsQuery.data) {
+      return undefined;
+    }
+
+    // 如果数据是新格式，转换它
+    if ('data' in poolsQuery.data && 'included' in poolsQuery.data) {
+      const poolsResponse = poolsQuery.data as PoolsResponse;
+      const tokens = poolsResponse.included.filter((item): item is Token => item.type === 'token');
+      const dexes = poolsResponse.included.filter((item): item is Dex => item.type === 'dex');
+
+      return poolsResponse.data.map((poolV2: PoolV2) => {
+        const baseToken = tokens.find(token => token.id === poolV2.relationships.base_token.data.id);
+        const quoteToken = tokens.find(token => token.id === poolV2.relationships.quote_token.data.id);
+        const dex = dexes.find(dex => dex.id === poolV2.relationships.dex.data.id);
+
+        if (!baseToken || !quoteToken || !dex) {
+          throw new Error('Missing required token or dex data');
+        }
+
+        return {
+          pool_id: poolV2.attributes.address,
+          is_contract: true,
+          chain_id: currentChainId,
+          base_token_address: baseToken.attributes.address,
+          base_token_symbol: baseToken.attributes.symbol,
+          base_token_icon_url: baseToken.attributes.image_url,
+          quote_token_address: quoteToken.attributes.address,
+          quote_token_symbol: quoteToken.attributes.symbol,
+          quote_token_icon_url: quoteToken.attributes.image_url,
+          base_token_fully_diluted_valuation_usd: poolV2.attributes.fdv_usd,
+          base_token_market_cap_usd: poolV2.attributes.market_cap_usd,
+          quote_token_fully_diluted_valuation_usd: null,
+          quote_token_market_cap_usd: null,
+          liquidity: poolV2.attributes.reserve_in_usd,
+          dex: {
+            id: dex.id,
+            name: dex.attributes.name,
+          },
+          coin_gecko_terminal_url: '',
+        };
+      });
+    }
+
+    // 如果是旧格式，返回 items
+    return (poolsQuery.data as { items?: Array<Pool> })?.items || [];
+  }, [ poolsQuery.data, currentChainId ]);
 
   const handleSearchTermChange = React.useCallback((value: string) => {
     poolsQuery.onFilterChange({ query: value });
@@ -40,7 +95,7 @@ const Pools = () => {
   const content = (
     <>
       <Box hideFrom="lg">
-        { poolsQuery.data?.items.map((item, index) => (
+        { transformedData?.map((item: Pool, index: number) => (
           <PoolsListItem
             key={ item.pool_id + (poolsQuery.isPlaceholderData ? index : '') }
             isLoading={ poolsQuery.isPlaceholderData }
@@ -50,7 +105,7 @@ const Pools = () => {
       </Box>
       <Box hideBelow="lg">
         <PoolsTable
-          items={ poolsQuery.data?.items ?? [] }
+          items={ transformedData ?? [] }
           top={ poolsQuery.pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
           isLoading={ poolsQuery.isPlaceholderData }
           page={ poolsQuery.pagination.page }
@@ -94,7 +149,7 @@ const Pools = () => {
       />
       <DataListDisplay
         isError={ poolsQuery.isError }
-        itemsNum={ poolsQuery.data?.items.length }
+        itemsNum={ transformedData?.length }
         emptyText="There are no pools."
         actionBar={ actionBar }
         filterProps={{
