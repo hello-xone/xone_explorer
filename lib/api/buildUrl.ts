@@ -8,7 +8,7 @@ import getResourceParams from './getResourceParams';
 import isNeedProxy from './isNeedProxy';
 import type { ResourceName, ResourcePathParams } from './resources';
 
-const apis: Record<ResourceName, string> = {
+const apis: Record<string, string> = {
   'general:stats': 'https://stats.xone.works',
 };
 

@@ -120,11 +120,11 @@ export type PaginatedResourceName = {
 export type PaginatedResourceResponse<R extends PaginatedResourceName> = ResourcePayload<R>;
 
 export type PaginatedResourceResponseItems<R extends ResourceName> = R extends PaginatedResourceName ?
-  ResourcePayload<R>['items'] :
+  ResourcePayload<R> extends { items: infer I } ? I : never :
   never;
 
 export type PaginatedResourceResponseNextPageParams<R extends ResourceName> = R extends PaginatedResourceName ?
-  ResourcePayload<R>['next_page_params'] :
+  ResourcePayload<R> extends { next_page_params: infer P } ? P : never :
   never;
 
 // TESTS
