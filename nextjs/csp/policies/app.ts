@@ -53,6 +53,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'https://explorer-api.xonetest.plus',
       'https://mail.xone.org',
       'https://*.xone.works',
+      'https://api.web3modal.org',
       // chain RPC server
       ...config.chain.rpcUrls,
       'https://infragrid.v.network', // RPC providers
