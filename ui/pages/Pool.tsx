@@ -1,6 +1,8 @@
 import { Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useMemo } from 'react';
+
+import type { Pool, Token, Dex, PoolResponse } from 'types/api/pools';
 
 import config from 'configs/app';
 import useApiQuery from 'lib/api/useApiQuery';
@@ -9,7 +11,6 @@ import getPoolLinks from 'lib/pools/getPoolLinks';
 import { getPoolTitle } from 'lib/pools/getPoolTitle';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import * as addressStubs from 'stubs/address';
-import { POOL } from 'stubs/pools';
 import { Image } from 'toolkit/chakra/image';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
@@ -25,17 +26,74 @@ import InfoButton from 'ui/shared/InfoButton';
 import PageTitle from 'ui/shared/Page/PageTitle';
 import VerifyWith from 'ui/shared/VerifyWith';
 
-const Pool = () => {
+const PoolPage = () => {
   const router = useRouter();
   const hash = getQueryParamString(router.query.hash);
 
-  const { data, isPlaceholderData, isError, error } = useApiQuery('contractInfo:pool', {
-    pathParams: { hash, chainId: config.chain.id },
+  // 获取当前 chain_id
+  const currentChainId = config.chain.id?.toString() ?? '';
+
+  // 获取单个 pool 数据，使用 include 参数获取关联的 token 和 dex 信息
+  const poolQuery = useApiQuery('contractInfo:pool', {
+    pathParams: { hash: hash || '', chainId: currentChainId },
+    queryParams: { include: 'base_token,quote_token,dex' },
     queryOptions: {
-      placeholderData: POOL,
       refetchOnMount: false,
     },
   });
+
+  // 转换数据的逻辑直接在这里
+  const transformedData = useMemo((): Pool | undefined => {
+    // 如果是旧格式（向后兼容）
+    if (poolQuery.data && 'pool_id' in poolQuery.data) {
+      return poolQuery.data as unknown as Pool;
+    }
+
+    // 处理新格式的 PoolResponse
+    if (poolQuery.data && 'data' in poolQuery.data && 'included' in poolQuery.data) {
+      const poolResponse = poolQuery.data as PoolResponse;
+      const tokens = poolResponse.included.filter((item): item is Token => item.type === 'token');
+      const dexes = poolResponse.included.filter((item): item is Dex => item.type === 'dex');
+
+      const poolData = poolResponse.data;
+      const baseToken = tokens.find(token => token.id === poolData.relationships.base_token.data.id);
+      const quoteToken = tokens.find(token => token.id === poolData.relationships.quote_token.data.id);
+      const dex = dexes.find(dexItem => dexItem.id === poolData.relationships.dex.data.id);
+
+      if (!baseToken || !quoteToken || !dex) {
+        throw new Error('Missing required token or dex data');
+      }
+
+      return {
+        pool_id: poolData.attributes.address,
+        is_contract: true,
+        chain_id: currentChainId,
+        base_token_address: baseToken.attributes.address,
+        base_token_symbol: baseToken.attributes.symbol,
+        base_token_icon_url: baseToken.attributes.image_url,
+        quote_token_address: quoteToken.attributes.address,
+        quote_token_symbol: quoteToken.attributes.symbol,
+        quote_token_icon_url: quoteToken.attributes.image_url,
+        base_token_fully_diluted_valuation_usd: poolData.attributes.fdv_usd,
+        base_token_market_cap_usd: poolData.attributes.market_cap_usd,
+        quote_token_fully_diluted_valuation_usd: null,
+        quote_token_market_cap_usd: null,
+        liquidity: poolData.attributes.reserve_in_usd,
+        dex: {
+          id: dex.id,
+          name: dex.attributes.name,
+        },
+        coin_gecko_terminal_url: '',
+      };
+    }
+
+    return undefined;
+  }, [ poolQuery.data, currentChainId ]);
+
+  const data = transformedData;
+  const isPlaceholderData = poolQuery.isPlaceholderData;
+  const isError = poolQuery.isError;
+  const error = poolQuery.error;
 
   const addressQuery = useApiQuery('general:address', {
     pathParams: { hash: data?.pool_id },
@@ -45,9 +103,18 @@ const Pool = () => {
     },
   });
 
+  // 获取原始 PoolV2 数据用于传递给 PoolInfo
+  const poolV2Data = React.useMemo(() => {
+    if (poolQuery.data && 'data' in poolQuery.data) {
+      const poolResponse = poolQuery.data as PoolResponse;
+      return poolResponse.data;
+    }
+    return undefined;
+  }, [ poolQuery.data ]);
+
   const content = (() => {
     if (isError) {
-      if (isCustomAppError(error)) {
+      if (error && isCustomAppError(error)) {
         throwOnResourceLoadError({ resource: 'contractInfo:pool', error, isError: true });
       }
 
@@ -62,6 +129,7 @@ const Pool = () => {
       <PoolInfo
         data={ data }
         isPlaceholderData={ isPlaceholderData }
+        poolV2Data={ poolV2Data }
       />
     );
   })();
@@ -140,4 +208,4 @@ const Pool = () => {
   );
 };
 
-export default Pool;
+export default PoolPage;

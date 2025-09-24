@@ -2,7 +2,7 @@ import type { Pool } from 'types/api/pools';
 
 type PoolLink = {
   url: string;
-  image: string;
+  image?: string;
   title: string;
 };
 
@@ -13,9 +13,8 @@ export default function getPoolLinks(pool?: Pool): Array<PoolLink> {
 
   return [
     {
-      url: pool.coin_gecko_terminal_url,
-      image: '/static/gecko_terminal.png',
-      title: 'GeckoTerminal',
+      url: `https://swapx.exchange/zh/pool/v2?id=${ pool.pool_id }`,
+      title: 'SwapX',
     },
   ].filter(link => Boolean(link.url));
 }

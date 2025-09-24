@@ -65,15 +65,25 @@ const PoolsTableItem = ({
         </Skeleton>
       </TableCell>
       <TableCell isNumeric>
-        <Skeleton loading={ isLoading } display="flex" gap={ 2 } justifyContent="center">
-          { externalLinks.map((link) => (
-            <Tooltip content={ link.title } key={ link.url }>
-              <Box display="inline-block">
-                <Link external noIcon href={ link.url } display="inline-flex">
-                  <Image src={ link.image } alt={ link.title } boxSize={ 5 }/>
-                </Link>
-              </Box>
-            </Tooltip>
+        <Skeleton loading={ isLoading } display="flex" gap={ 2 } justifyContent="flex-end">
+          { externalLinks.map((link, index) => (
+            <Box key={ index }>
+              {
+                link.image ? (
+                  <Tooltip content={ link.title } key={ link.url }>
+                    <Box display="inline-block">
+                      <Link external noIcon href={ link.url } display="inline-flex">
+                        <Image src={ link.image } alt={ link.title } boxSize={ 5 }/>
+                      </Link>
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Link external noIcon href={ link.url } display="inline-flex">
+                    { link.title }
+                  </Link>
+                )
+              }
+            </Box>
           )) }
         </Skeleton>
       </TableCell>
