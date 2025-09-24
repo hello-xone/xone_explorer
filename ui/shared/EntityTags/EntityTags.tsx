@@ -65,7 +65,7 @@ const EntityTags = ({ tags, className, isLoading }: Props) => {
 
     return (
       <>
-        { tags.map((tag) => <EntityTag key={ tag.slug } data={ tag } isLoading={ isLoading } maxW={ tagMaxW }/>) }
+        { tags.map((tag) => <EntityTag key={ tag.slug || tag.name } data={ tag } isLoading={ isLoading } maxW={ tagMaxW }/>) }
         { metaSuitesPlaceholder }
       </>
     );
