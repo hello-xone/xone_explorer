@@ -38,67 +38,105 @@ interface Props {
 
 const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
   const multichainContext = useMultichainContext();
-  const addressHash = !tokenQuery.isPlaceholderData ? (tokenQuery.data?.address_hash || '') : '';
+  const addressHash = !tokenQuery.isPlaceholderData ?
+    tokenQuery.data?.address_hash || '' :
+    '';
 
   const verifiedInfoQuery = useApiQuery('contractInfo:token_verified_info', {
     pathParams: { hash: addressHash, chainId: config.chain.id },
-    queryOptions: { enabled: Boolean(tokenQuery.data) && !tokenQuery.isPlaceholderData && config.features.verifiedTokens.isEnabled },
+    queryOptions: {
+      enabled:
+        Boolean(tokenQuery.data) &&
+        !tokenQuery.isPlaceholderData &&
+        config.features.verifiedTokens.isEnabled,
+    },
   });
 
-  const addressesForMetadataQuery = React.useMemo(() => ([ hash ].filter(Boolean)), [ hash ]);
-  const addressMetadataQuery = useAddressMetadataInfoQuery(addressesForMetadataQuery);
+  const addressesForMetadataQuery = React.useMemo(
+    () => [ hash ].filter(Boolean),
+    [ hash ],
+  );
+  const addressMetadataQuery = useAddressMetadataInfoQuery(
+    addressesForMetadataQuery,
+  );
 
-  const isLoading = tokenQuery.isPlaceholderData ||
+  const isLoading =
+    tokenQuery.isPlaceholderData ||
     addressQuery.isPlaceholderData ||
     (config.features.verifiedTokens.isEnabled && verifiedInfoQuery.isPending);
 
-  const tokenSymbolText = tokenQuery.data?.symbol ? ` (${ tokenQuery.data.symbol })` : '';
+  const tokenSymbolText = tokenQuery.data?.symbol ?
+    ` (${ tokenQuery.data.symbol })` :
+    '';
 
   const [ bridgedTokenTagBgColor ] = useToken('colors', 'blue.500');
   const [ bridgedTokenTagTextColor ] = useToken('colors', 'white');
 
   const tags: Array<EntityTag> = React.useMemo(() => {
     return [
-      tokenQuery.data ? {
-        slug: tokenQuery.data?.type,
-        name: getTokenTypeName(tokenQuery.data.type),
-        tagType: 'custom' as const,
-        ordinal: PREDEFINED_TAG_PRIORITY,
-      } : undefined,
+      tokenQuery.data ?
+        {
+          slug: tokenQuery.data?.type,
+          name: getTokenTypeName(tokenQuery.data.type),
+          tagType: 'custom' as const,
+          ordinal: PREDEFINED_TAG_PRIORITY,
+        } :
+        undefined,
       config.features.bridgedTokens.isEnabled && tokenQuery.data?.is_bridged ?
         {
           slug: 'bridged',
           name: 'Bridged',
           tagType: 'custom' as const,
           ordinal: PREDEFINED_TAG_PRIORITY,
-          meta: { bgColor: bridgedTokenTagBgColor, textColor: bridgedTokenTagTextColor },
+          meta: {
+            bgColor: bridgedTokenTagBgColor,
+            textColor: bridgedTokenTagTextColor,
+          },
         } :
         undefined,
       ...formatUserTags(addressQuery.data),
       verifiedInfoQuery.data?.projectSector ?
-        { slug: verifiedInfoQuery.data.projectSector, name: verifiedInfoQuery.data.projectSector, tagType: 'custom' as const, ordinal: -30 } :
+        {
+          slug: verifiedInfoQuery.data.projectSector,
+          name: verifiedInfoQuery.data.projectSector,
+          tagType: 'custom' as const,
+          ordinal: -30,
+        } :
         undefined,
-      ...(addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags.filter(tag => tag.tagType !== 'note') || []),
-    ].filter(Boolean).sort(sortEntityTags);
+      ...(addressMetadataQuery.data?.addresses[0]?.tags.filter(
+        (tag) => tag.tagType !== 'note',
+      ) || []),
+    ]
+      .filter(Boolean)
+      .sort(sortEntityTags);
   }, [
     addressMetadataQuery.data?.addresses,
     addressQuery.data,
     bridgedTokenTagBgColor,
     bridgedTokenTagTextColor,
     tokenQuery.data,
-    verifiedInfoQuery.data?.projectSector,
-    hash,
+    verifiedInfoQuery?.data?.projectSector,
   ]);
-
   const contentAfter = (
     <>
       { verifiedInfoQuery.data?.tokenAddress && (
-        <Tooltip content={ `Information on this token has been verified by ${ config.chain.name }` }>
-          <IconSvg name="certified" color="green.500" boxSize={ 6 } cursor="pointer"/>
+        <Tooltip
+          content={ `Information on this token has been verified by ${ config.chain.name }` }
+        >
+          <IconSvg
+            name="certified"
+            color="green.500"
+            boxSize={ 6 }
+            cursor="pointer"
+          />
         </Tooltip>
       ) }
       <EntityTags
-        isLoading={ isLoading || (config.features.addressMetadata.isEnabled && addressMetadataQuery.isPending) }
+        isLoading={
+          isLoading ||
+          (config.features.addressMetadata.isEnabled &&
+            addressMetadataQuery.isPending)
+        }
         tags={ tags }
         flexGrow={ 1 }
       />
@@ -106,23 +144,46 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
   );
 
   const secondRow = (
-    <Flex alignItems="center" w="100%" minW={ 0 } columnGap={ 2 } rowGap={ 2 } flexWrap={{ base: 'wrap', lg: 'nowrap' }}>
+    <Flex
+      alignItems="center"
+      w="100%"
+      minW={ 0 }
+      columnGap={ 2 }
+      rowGap={ 2 }
+      flexWrap={{ base: 'wrap', lg: 'nowrap' }}
+    >
       { addressQuery.data && (
         <AddressEntity
           address={{ ...addressQuery.data, name: '' }}
           isLoading={ isLoading }
           variant="subheading"
-          icon={ multichainContext?.chain ? {
-            shield: { name: 'pie_chart', isLoading },
-          } : undefined }
+          icon={
+            multichainContext?.chain ?
+              {
+                shield: { name: 'pie_chart', isLoading },
+              } :
+              undefined
+          }
         />
       ) }
-      { !isLoading && tokenQuery.data && <AddressAddToWallet token={ tokenQuery.data } variant="button"/> }
-      { addressQuery.data && <AddressQrCode hash={ addressQuery.data.hash } isLoading={ isLoading }/> }
+      { !isLoading && tokenQuery.data && (
+        <AddressAddToWallet token={ tokenQuery.data } variant="button"/>
+      ) }
+      { addressQuery.data && (
+        <AddressQrCode hash={ addressQuery.data.hash } isLoading={ isLoading }/>
+      ) }
       <AccountActionsMenu isLoading={ isLoading }/>
-      <Flex ml={{ base: 0, lg: 'auto' }} columnGap={ 2 } flexGrow={{ base: 1, lg: 0 }}>
+      <Flex
+        ml={{ base: 0, lg: 'auto' }}
+        columnGap={ 2 }
+        flexGrow={{ base: 1, lg: 0 }}
+      >
         <TokenVerifiedInfo verifiedInfoQuery={ verifiedInfoQuery }/>
-        <NetworkExplorers type="token" pathParam={ addressHash } ml={{ base: 'auto', lg: 0 }}/>
+        <NetworkExplorers
+          type="token"
+          pathParam={ addressHash }
+          ml={{ base: 'auto', lg: 0 }}
+        />
       </Flex>
     </Flex>
   );
@@ -132,19 +193,28 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
       <PageTitle
         title={ `${ tokenQuery.data?.name || 'Unnamed token' }${ tokenSymbolText }` }
         isLoading={ tokenQuery.isPlaceholderData }
-        beforeTitle={ tokenQuery.data ? (
-          <TokenEntity.Icon
-            token={ tokenQuery.data }
-            isLoading={ tokenQuery.isPlaceholderData }
-            variant="heading"
-            chain={ multichainContext?.chain }
-          />
-        ) : null }
+        beforeTitle={
+          tokenQuery.data ? (
+            <TokenEntity.Icon
+              token={ tokenQuery.data }
+              isLoading={ tokenQuery.isPlaceholderData }
+              variant="heading"
+              chain={ multichainContext?.chain }
+            />
+          ) : null
+        }
         contentAfter={ contentAfter }
         secondRow={ secondRow }
       />
-      { !addressMetadataQuery.isPending &&
-        <AddressMetadataAlert tags={ addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags } mt="-4px" mb={ 6 }/> }
+      { !addressMetadataQuery.isPending && (
+        <AddressMetadataAlert
+          tags={
+            addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags
+          }
+          mt="-4px"
+          mb={ 6 }
+        />
+      ) }
     </>
   );
 };
