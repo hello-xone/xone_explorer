@@ -278,7 +278,6 @@ const TokenPageContent = () => {
 
       <TokenDetails tokenQuery={ tokenQuery }/>
 
-      { /* should stay before tabs to scroll up with pagination */ }
       <Box ref={ scrollRef }></Box>
 
       <RoutedTabs
