@@ -1,6 +1,6 @@
 import type { ApiResource } from '../types';
 import type { VerifiedAddressResponse } from 'types/api/account';
-import type { Pool, PoolsResponse, PoolResponse } from 'types/api/pools';
+import type { PoolsResponse, PoolResponse } from 'types/api/pools';
 import type { TokenVerifiedInfo } from 'types/api/token';
 
 export const CONTRACT_INFO_API_RESOURCES = {
