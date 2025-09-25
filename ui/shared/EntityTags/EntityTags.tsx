@@ -19,7 +19,6 @@ interface Props {
 const EntityTags = ({ tags, className, isLoading }: Props) => {
   const isMobile = useIsMobile();
   const visibleNum = isMobile ? 2 : 3;
-
   const metaSuitesPlaceholder = config.features.metasuites.isEnabled ?
     <Box display="none" id="meta-suites__address-tag" data-ready={ !isLoading }/> :
     null;

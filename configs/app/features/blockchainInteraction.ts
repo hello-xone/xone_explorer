@@ -5,6 +5,7 @@ import { getEnvValue } from '../utils';
 import opSuperchain from './opSuperchain';
 
 const walletConnectProjectId = getEnvValue('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID');
+
 const title = 'Blockchain interaction (writing to contract, etc.)';
 
 const config: Feature<{ walletConnect: { projectId: string } }> = (() => {

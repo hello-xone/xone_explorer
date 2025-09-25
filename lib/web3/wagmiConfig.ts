@@ -1,16 +1,12 @@
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import type { AppKitNetwork } from '@reown/appkit/networks';
-import type { Chain, Transport } from 'viem';
-import { fallback, http } from 'viem';
-import { createConfig } from 'wagmi';
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
+import { http } from 'viem';
+import type { CreateConfigParameters, Transport } from 'wagmi';
+import { createConfig, fallback } from 'wagmi';
 
 import appConfig from 'configs/app';
 import multichainConfig from 'configs/multichain';
-import { currentChain, parentChain, clusterChains } from 'lib/web3/chains';
-
+import { currentChain, parentChain } from 'lib/web3/chains';
 const feature = appConfig.features.blockchainInteraction;
-
-const chains = [ currentChain, parentChain, ...(clusterChains ?? []) ].filter(Boolean);
 
 const getChainTransportFromConfig = (config: typeof appConfig, readOnly?: boolean): Record<string, Transport> => {
   if (!config.chain.id) {
@@ -44,11 +40,15 @@ const reduceClusterChainsToTransportConfig = (readOnly: boolean): Record<string,
     }, {} as Record<string, Transport>);
 };
 
-const wagmi = (() => {
+const wagmiConfig = (() => {
+  if (!currentChain) {
+    return null;
+  }
+  const chains: CreateConfigParameters['chains'] = [ currentChain ];
 
   if (!feature.isEnabled) {
     const wagmiConfig = createConfig({
-      chains: chains as [Chain, ...Array<Chain>],
+      chains: [ currentChain ],
       transports: {
         ...getChainTransportFromConfig(appConfig, true),
         ...(parentChain ? { [parentChain.id]: http(parentChain.rpcUrls.default.http[0]) } : {}),
@@ -58,24 +58,31 @@ const wagmi = (() => {
       batch: { multicall: { wait: 100 } },
     });
 
-    return { config: wagmiConfig, adapter: null };
+    return wagmiConfig;
   }
 
-  const wagmiAdapter = new WagmiAdapter({
-    networks: chains as Array<AppKitNetwork>,
+  const wagmiConfig = defaultWagmiConfig({
+    chains,
     multiInjectedProviderDiscovery: true,
     transports: {
-      ...getChainTransportFromConfig(appConfig, false),
-      ...(parentChain ? { [parentChain.id]: http() } : {}),
-      ...reduceClusterChainsToTransportConfig(false),
+      [currentChain.id]: http(),
     },
     projectId: feature.walletConnect.projectId,
+    metadata: {
+      name: `${ appConfig.chain.name } explorer`,
+      description: `${ appConfig.chain.name } explorer`,
+      url: appConfig.app.baseUrl,
+      icons: [ appConfig.UI.navigation.icon.default ].filter(Boolean),
+    },
+    auth: {
+      email: true,
+      socials: [],
+    },
     ssr: true,
     batch: { multicall: { wait: 100 } },
-    syncConnectedChain: false,
   });
 
-  return { config: wagmiAdapter.wagmiConfig, adapter: wagmiAdapter };
+  return wagmiConfig;
 })();
 
-export default wagmi;
+export default wagmiConfig;

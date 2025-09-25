@@ -48,7 +48,6 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
       walletMenu.onClose();
     }
   }, [ walletMenu, web3Wallet ]);
-
   return (
     <PopoverRoot positioning={{ placement: 'bottom-end' }} lazyMount open={ walletMenu.open } onOpenChange={ handleOpenChange }>
       <PopoverTrigger>
