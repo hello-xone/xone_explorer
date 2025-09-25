@@ -42,6 +42,7 @@ export const RESOURCES = {
   userOps: USER_OPS_API_RESOURCES,
   visualize: VISUALIZE_API_RESOURCES,
   xonePublic: XONEPUBLIC_API_RESOURCES,
+  xone: XONEPUBLIC_API_RESOURCES,
 } satisfies Record<ApiName, Record<string, ApiResource>>;
 
 export const resourceKey = (x: ResourceName) => x;

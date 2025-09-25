@@ -1,8 +1,8 @@
-import { Box } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useRouter } from 'next/router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { scroller } from 'react-scroll';
 
 import type { TokenInfo } from 'types/api/token';
@@ -34,6 +34,50 @@ const TokenDetails = ({ tokenQuery }: Props) => {
   const isMounted = useIsMounted();
 
   const hash = router.query.hash?.toString();
+
+  // 格式化数字的辅助函数
+  const formatNumber = useCallback((value: string | number, options?: Intl.NumberFormatOptions) => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return numValue.toLocaleString(undefined, { maximumFractionDigits: 2, ...options });
+  }, []);
+
+  // 检测是否从 pool 页面导航过来
+  const isFromPoolPage = useMemo(() => {
+    const fromPool = router.query.from_pool;
+    return fromPool === 'true';
+  }, [ router.query.from_pool ]);
+
+  // 获取当前 chain_id
+  const currentChainId = config.chain.id?.toString() ?? '';
+
+  // 如果从 pool 页面导航过来，获取 pool 数据
+  const poolQuery = useApiQuery('contractInfo:pool', {
+    pathParams: { hash: router.query.pool_id as string, chainId: currentChainId },
+    queryParams: { include: 'base_token,quote_token,dex' },
+    queryOptions: {
+      enabled: isFromPoolPage && Boolean(router.query.pool_id),
+      refetchOnMount: false,
+    },
+  });
+
+  // 从 pool 数据中提取 base_token_price_usd 和 market_cap_usd
+  const poolPriceData = useMemo(() => {
+    if (!poolQuery.data || !isFromPoolPage) {
+      return null;
+    }
+
+    // 处理新格式的 PoolResponse
+    if ('data' in poolQuery.data && 'included' in poolQuery.data) {
+      const poolResponse = poolQuery.data;
+      const result = {
+        base_token_price_usd: poolResponse.data.attributes.base_token_price_usd,
+        market_cap_usd: poolResponse.data.attributes.market_cap_usd,
+      };
+      return result;
+    }
+
+    return null;
+  }, [ poolQuery.data, isFromPoolPage ]);
 
   const tokenCountersQuery = useApiQuery('general:token_counters', {
     pathParams: { hash },
@@ -183,6 +227,53 @@ const TokenDetails = ({ tokenQuery }: Props) => {
               { decimals }
             </Skeleton>
           </DetailedInfo.ItemValue>
+        </>
+      ) }
+
+      { (isFromPoolPage && (poolQuery.isLoading || poolPriceData)) && (
+        <>
+          <DetailedInfo.ItemLabel
+            hint="Base token price in USD from pool data"
+          >
+            Base Token Price (USD)
+          </DetailedInfo.ItemLabel>
+          <DetailedInfo.ItemValue>
+            <Skeleton loading={ poolQuery.isLoading || !poolPriceData }>
+              <Text>
+                { poolPriceData ?
+                  `$${ formatNumber(poolPriceData.base_token_price_usd, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 6,
+                    notation: parseFloat(poolPriceData.base_token_price_usd) < 0.01 ? 'scientific' : 'standard',
+                  }) }` :
+                  '$0.000000'
+                }
+              </Text>
+            </Skeleton>
+          </DetailedInfo.ItemValue>
+
+          { (poolQuery.isLoading || (poolPriceData && poolPriceData.market_cap_usd)) && (
+            <>
+              <DetailedInfo.ItemLabel
+                hint="Market capitalization in USD from pool data"
+              >
+                Market Cap (USD)
+              </DetailedInfo.ItemLabel>
+              <DetailedInfo.ItemValue>
+                <Skeleton loading={ poolQuery.isLoading || !poolPriceData?.market_cap_usd }>
+                  <Text>
+                    { poolPriceData?.market_cap_usd ?
+                      `$${ formatNumber(poolPriceData.market_cap_usd, {
+                        notation: 'compact',
+                        maximumFractionDigits: 2,
+                      }) }` :
+                      '$0.00M'
+                    }
+                  </Text>
+                </Skeleton>
+              </DetailedInfo.ItemValue>
+            </>
+          ) }
         </>
       ) }
 

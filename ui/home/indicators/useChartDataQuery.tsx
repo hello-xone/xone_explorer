@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+
 import type { ChainIndicatorId } from 'types/homepage';
 import type { TimeChartData, TimeChartDataItem, TimeChartItemRaw } from 'ui/shared/chart/types';
 
@@ -38,6 +40,31 @@ const CHART_ITEMS: Record<ChainIndicatorId, Pick<TimeChartDataItem, 'name' | 'va
 };
 
 const isStatsFeatureEnabled = config.features.stats.isEnabled;
+
+// 使用配置的市场数据API地址
+const MARKET_API_URL = `${ config.apis.xone?.endpoint }/api/v2/stats/charts/market`;
+
+// 定义市场数据的类型
+interface MarketDataItem {
+  closing_price: string;
+  date: string;
+  market_cap: string;
+  tvl: string | null;
+}
+
+interface MarketDataResponse {
+  chartdata: Array<MarketDataItem>;
+}
+
+// 自定义的市场数据获取函数
+const fetchMarketData = async(): Promise<MarketDataResponse> => {
+  const response = await fetch(MARKET_API_URL);
+  if (!response.ok) {
+    throw new Error('Failed to fetch market data');
+  }
+  const data = await response.json() as MarketDataResponse;
+  return data;
+};
 
 type UseFetchChartDataResult = {
   isError: boolean;
@@ -85,12 +112,13 @@ export default function useChartDataQuery(indicatorId: ChainIndicatorId): UseFet
     },
   });
 
-  const coinPriceQuery = useApiQuery('general:stats_charts_market', {
-    queryOptions: {
-      refetchOnMount: false,
-      enabled: indicatorId === 'coin_price',
-      select: (data) => data.chart_data.map((item) => ({ date: new Date(item.date), value: item.closing_price })),
-    },
+  // 使用硬编码API的币价查询
+  const coinPriceQuery = useQuery({
+    queryKey: [ 'market-chart-data', 'coin_price' ],
+    queryFn: fetchMarketData,
+    enabled: indicatorId === 'coin_price',
+    refetchOnMount: false,
+    select: (data) => data.chartdata.map((item) => ({ date: new Date(item.date), value: parseFloat(item.closing_price) })),
   });
 
   const secondaryCoinPriceQuery = useApiQuery('general:stats_charts_secondary_coin_price', {
@@ -101,38 +129,28 @@ export default function useChartDataQuery(indicatorId: ChainIndicatorId): UseFet
     },
   });
 
-  const marketCapQuery = useApiQuery('general:stats_charts_market', {
-    queryOptions: {
-      refetchOnMount: false,
-      enabled: indicatorId === 'market_cap',
-      select: (data) => data.chart_data.map((item) => (
-        {
-          date: new Date(item.date),
-          value: (() => {
-            if (item.market_cap !== undefined) {
-              return item.market_cap;
-            }
-
-            if (item.closing_price === null) {
-              return null;
-            }
-
-            return Number(item.closing_price) * Number(data.available_supply);
-          })(),
-        })),
-    },
+  // 使用硬编码API的市值查询
+  const marketCapQuery = useQuery({
+    queryKey: [ 'market-chart-data', 'market_cap' ],
+    queryFn: fetchMarketData,
+    enabled: indicatorId === 'market_cap',
+    refetchOnMount: false,
+    select: (data) => data.chartdata.map((item) => ({
+      date: new Date(item.date),
+      value: item.market_cap ? parseFloat(item.market_cap) : null,
+    })),
   });
 
-  const tvlQuery = useApiQuery('general:stats_charts_market', {
-    queryOptions: {
-      refetchOnMount: false,
-      enabled: indicatorId === 'tvl',
-      select: (data) => data.chart_data.map((item) => (
-        {
-          date: new Date(item.date),
-          value: item.tvl !== undefined ? item.tvl : 0,
-        })),
-    },
+  // 使用硬编码API的TVL查询
+  const tvlQuery = useQuery({
+    queryKey: [ 'market-chart-data', 'tvl' ],
+    queryFn: fetchMarketData,
+    enabled: indicatorId === 'tvl',
+    refetchOnMount: false,
+    select: (data) => data.chartdata.map((item) => ({
+      date: new Date(item.date),
+      value: item.tvl !== undefined && item.tvl !== null ? parseFloat(item.tvl) : 0,
+    })),
   });
 
   switch (indicatorId) {

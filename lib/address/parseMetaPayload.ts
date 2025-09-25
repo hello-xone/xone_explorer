@@ -5,7 +5,9 @@ type MetaParsed = NonNullable<AddressMetadataTagFormatted['meta']>;
 
 export default function parseMetaPayload(meta: AddressMetadataTag['meta']): AddressMetadataTagFormatted['meta'] {
   try {
-    const parsedMeta = JSON.parse(meta || '');
+    const parsedMeta = typeof meta === 'object' && meta !== null && !Array.isArray(meta) ?
+      meta :
+      JSON.parse(meta || '');
 
     if (typeof parsedMeta !== 'object' || parsedMeta === null || Array.isArray(parsedMeta)) {
       throw new Error('Invalid JSON');

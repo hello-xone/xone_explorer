@@ -86,6 +86,7 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             icon_url: data.base_token_icon_url,
           }}
           isLoading={ isPlaceholderData }
+          query={{ from_pool: 'true', pool_id: data.pool_id }}
         />
       </DetailedInfo.ItemValue>
 
@@ -105,6 +106,7 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             icon_url: data.quote_token_icon_url,
           }}
           isLoading={ isPlaceholderData }
+          query={{ from_pool: 'true', pool_id: data.pool_id }}
         />
       </DetailedInfo.ItemValue>
 

@@ -1,5 +1,5 @@
 export type ApiName = 'general' | 'admin' | 'bens' | 'contractInfo' | 'metadata' | 'multichain' | 'rewards' | 'stats' | 'tac' | 'userOps' | 'visualize' |
-'xonePublic';
+'xonePublic' | 'xone';
 
 export interface ApiResource {
   path: string;

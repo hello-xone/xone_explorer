@@ -49,7 +49,7 @@ const Icon = (props: IconProps) => {
     <EntityBase.Icon
       { ...styles }
       className={ props.className }
-      src={ props.token.icon_url ?? getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address_hash)
+      src={ getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address_hash)
         .replace('[chain]', (window.location.origin.includes('testnet') || window.location.origin.includes('localhost')) ? 'xone_testnet' : 'xone') }
       alt={ `${ props.token.name || 'token' } logo` }
       fallback={ <TokenLogoPlaceholder/> }
