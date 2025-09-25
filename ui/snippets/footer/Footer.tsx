@@ -2,6 +2,7 @@ import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import React, { useCallback, useState } from 'react';
 
 import chain from 'configs/app/chain';
+import { getEnvValue } from 'configs/app/utils';
 import type { ResourceError } from 'lib/api/resources';
 import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
@@ -285,7 +286,7 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        fetch('https://mail.xone.org/api/subscribe/submit?token=70963c658730', {
+        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=45186e736c77`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -293,16 +294,25 @@ const Footer = () => {
           body: JSON.stringify({ email }),
         }).then(async res => {
           if (res.ok) {
+            const result = await res.json() as { msg: string; code: number };
             setEmail('');
-            toaster.success({
-              title: 'Success',
-              description: 'Subscribed',
-            });
+            if (result.code === 200) {
+              toaster.success({
+                title: 'Success',
+                description: result.msg,
+              });
+            } else {
+              toaster.error({
+                title: 'Error',
+                description: result.msg || 'Something went wrong',
+              });
+            }
+
           } else {
-            const result = await res.json() as { message: string };
+            const result = await res.json() as { msg: string };
             toaster.error({
               title: 'Error',
-              description: result.message || 'Something went wrong',
+              description: result.msg || 'Something went wrong',
             });
           }
         });

@@ -51,7 +51,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'ws://8.218.76.177',
       'http://8.218.76.177:8080',
       'https://explorer-api.xonetest.plus',
-      'https://mail.xone.org',
+      'http://3.1.195.162',
       'https://*.xone.works',
       'https://api.web3modal.org',
       'https://www.smartwallet.dev',
