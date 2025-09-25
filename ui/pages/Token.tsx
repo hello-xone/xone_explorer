@@ -287,6 +287,7 @@ const TokenPageContent = () => {
         rightSlotProps={ TABS_RIGHT_SLOT_PROPS }
         stickyEnabled={ !isMobile }
         isLoading={ isLoading }
+        preservedParams={ [ 'from_pool', 'pool_id' ] }
       />
     </>
   );
