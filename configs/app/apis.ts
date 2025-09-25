@@ -178,6 +178,17 @@ const xonePublicApi = (() => {
   });
 })();
 
+const xoneApi = (() => {
+  const apiHost = getEnvValue('NEXT_PUBLIC_XONE_API_HOST');
+  if (!apiHost) {
+    return;
+  }
+
+  return Object.freeze({
+    endpoint: apiHost,
+  });
+})();
+
 export type Apis = {
   general: ApiPropsFull;
 } & Partial<Record<Exclude<ApiName, 'general'>, ApiPropsBase>>;
@@ -195,6 +206,7 @@ const apis: Apis = Object.freeze({
   userOps: userOpsApi,
   visualize: visualizeApi,
   xonePublic: xonePublicApi,
+  xone: xoneApi,
 });
 
 export default apis;
