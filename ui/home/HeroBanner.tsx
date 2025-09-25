@@ -81,7 +81,6 @@ const HeroBanner = () => {
                 (config.features.account.isEnabled && <UserProfileDesktop buttonVariant="hero"/>) ||
                 (config.features.blockchainInteraction.isEnabled && <UserWalletDesktop buttonVariant="hero"/>)
               }
-              <appkit-button/>
             </Box>
           ) }
         </Flex>

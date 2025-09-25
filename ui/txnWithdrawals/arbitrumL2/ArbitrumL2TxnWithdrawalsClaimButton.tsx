@@ -72,7 +72,7 @@ const ArbitrumL2TxnWithdrawalsClaimButton = ({ messageId, txHash, completionTxHa
     }
   }, [ apiFetch, messageId, sendTransactionAsync, switchChainAsync ]);
 
-  const web3Wallet = useWallet({ source: 'Smart contracts', onConnect: sendClaimTx });
+  const web3Wallet = useWallet({ source: 'Smart contracts' });
 
   const handleClaimClick = React.useCallback(async() => {
     if (!web3Wallet.address) {
