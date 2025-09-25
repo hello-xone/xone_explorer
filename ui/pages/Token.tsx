@@ -65,14 +65,6 @@ const TokenPageContent = () => {
   const queryClient = useQueryClient();
 
   const tokenQuery = useTokenQuery(hashString);
-  // // 获取单个 pool 数据，使用 include 参数获取关联的 token 和 dex 信息
-  // const poolQuery = useApiQuery('contractInfo:pool', {
-  //   pathParams: { hash: hashString || '', chainId: currentChainId },
-  //   queryOptions: {
-  //     refetchOnMount: false,
-  //   },
-  // });
-  // console.log(poolQuery, 'poolQuery');
   const addressQuery = useApiQuery('general:address', {
     pathParams: { hash: hashString },
     queryOptions: {
