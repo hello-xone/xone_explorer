@@ -268,19 +268,7 @@ const Footer = () => {
   // });
   // const { values, getFieldProps, setFieldValue } = formik;
   const onAddChain = useCallback(async() => {
-    try {
-      await handleAddToWalletClick();
-      toaster.success({
-        title: 'Success',
-        description: 'Successfully added network to your wallet',
-      });
-    } catch (error) {
-      toaster.error({
-        title: 'Error',
-        description: (error as Error)?.message || 'Something went wrong',
-      });
-
-    }
+    await handleAddToWalletClick();
   }, [ handleAddToWalletClick ]);
 
   const send = useCallback(async() => {
@@ -354,7 +342,7 @@ const Footer = () => {
           <Text color={ buttonColor }>Add { chain.name }</Text>
         </Button>
         <Box marginTop={ 6 }>
-          <Box w="386px" position="relative" marginBottom={ 4 }>
+          <Box w={{ base: '100%', md: '386px' }} position="relative" marginBottom={ 4 }>
             <Heading fontSize="lg" mb={ 4 } color={ buttonColor }>Subscribe to Newsletter</Heading>
             <Box fontSize="sm" color="#6B6A6A" mb={ 4 } >
               Xone Chain is a modular Layer-1 that goes beyond scalability and efficiency, ensuring every on-chain action creates tangible, traceable value.
