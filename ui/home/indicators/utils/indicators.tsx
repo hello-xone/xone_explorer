@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import React from 'react';
 
 import type { TChainIndicator } from '../types';
@@ -58,8 +59,8 @@ const INDICATORS: Array<TChainIndicator> = [
     title: `${ config.chain.currency.symbol } price`,
     value: (stats) => stats.coin_price === null ?
       '$N/A' :
-      '$' + Number(stats.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
-    valueDiff: (stats) => stats?.coin_price !== null ? stats?.coin_price_change_percentage : null,
+      '$' + Number(stats.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }),
+    valueDiff: (stats) => stats?.coin_price !== null ? Number(new BigNumber(stats?.coin_price_change_percentage || 0).toFixed(2, 1)) : null,
     icon: <NativeTokenIcon boxSize={ 6 }/>,
     hint: `${ config.chain.currency.symbol } token daily price in USD.`,
   },
@@ -68,7 +69,7 @@ const INDICATORS: Array<TChainIndicator> = [
     title: `${ config.chain.secondaryCoin.symbol } price`,
     value: (stats) => !stats.secondary_coin_price || stats.secondary_coin_price === null ?
       '$N/A' :
-      '$' + Number(stats.secondary_coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+      '$' + Number(stats.secondary_coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }),
     valueDiff: () => null,
     icon: <NativeTokenIcon boxSize={ 6 } type="secondary"/>,
     hint: `${ config.chain.secondaryCoin.symbol } token daily price in USD.`,
