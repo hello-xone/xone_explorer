@@ -1,7 +1,17 @@
 import { isBrowser } from 'toolkit/utils/isBrowser';
 import * as regexp from 'toolkit/utils/regexp';
 
-export const replaceQuotes = (value: string | undefined) => value?.replaceAll('\'', '"');
+export const replaceQuotes = (value: string | undefined) => {
+  if (!value) return value;
+  // 移除字符串两端的引号（如果存在）
+  const trimmedValue = value.trim();
+  if ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) || 
+      (trimmedValue.startsWith('\'') && trimmedValue.endsWith('\''))) {
+    return trimmedValue.substring(1, trimmedValue.length - 1);
+  }
+  // 将单引号替换为双引号（仅适用于没有被引号包裹的字符串）
+  return trimmedValue.replaceAll('\'', '"');
+};
 
 export const getEnvValue = (envName: string) => {
   // eslint-disable-next-line no-restricted-properties
