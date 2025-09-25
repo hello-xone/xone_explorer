@@ -30,7 +30,7 @@ const TopBar = () => {
               <Separator mr={ 3 } ml={{ base: 2, sm: 3 }} height={ 4 } orientation="vertical"/>
             </>
           ) }
-          <Flex gap={ 4 }>
+          <Flex gap={ 4 } fontSize={{ base: 'xs', lg: 'sm' }}>
             <Link href="https://rainlink.co" target="_blank">RainLink</Link>
             <Link href="https://swapx.exchange/en" target="_blank">SwapX</Link>
             <Settings/>

@@ -81,7 +81,7 @@ const TopBarStats = () => {
         <Flex columnGap={ 1 }>
           <Skeleton loading={ isPlaceholderData }>
             <chakra.span color="text.secondary">{ config.chain.currency.symbol } </chakra.span>
-            <span>${ Number(coinPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) }</span>
+            <span>${ Number(coinPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) }</span>
           </Skeleton>
           { priceFluctuation && (
             <Skeleton loading={ isPlaceholderData }>
@@ -96,7 +96,7 @@ const TopBarStats = () => {
         <Flex columnGap={ 1 } ml={ data?.coin_price ? 3 : 0 }>
           <Skeleton loading={ isPlaceholderData }>
             <chakra.span color="text.secondary">{ config.chain.secondaryCoin.symbol } </chakra.span>
-            <span>${ Number(data.secondary_coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) }</span>
+            <span>${ Number(data.secondary_coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) }</span>
           </Skeleton>
         </Flex>
       ) }
@@ -111,11 +111,12 @@ const TopBarStats = () => {
                   <GasPrice data={ data.gas_prices.average }/>
                 </Link>
               </GasInfoTooltip>
+              <TextSeparator/>
             </Skeleton>
             { !isPlaceholderData && <GetGasButton/> }
+
           </>
         ) }
-        <TextSeparator/>
         <Link href="https://faucet.xone.org/zh" target="_blank">Faucet</Link>
       </Flex>
     </Flex>
