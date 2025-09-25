@@ -5,7 +5,7 @@ export const replaceQuotes = (value: string | undefined) => {
   if (!value) return value;
   // 移除字符串两端的引号（如果存在）
   const trimmedValue = value.trim();
-  if ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) || 
+  if ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) ||
       (trimmedValue.startsWith('\'') && trimmedValue.endsWith('\''))) {
     return trimmedValue.substring(1, trimmedValue.length - 1);
   }
