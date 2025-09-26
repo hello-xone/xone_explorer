@@ -225,23 +225,25 @@ const Stats = () => {
         id: 'current_epoch' as const,
         icon: 'hourglass_slim' as const,
         label: 'Current epoch',
-        value: <Box display="flex" alignItems="center" gap={ 2 }>
+        value: <Box display="flex" width="100%" justifyContent="space-between" alignItems="center" gap={ 2 }>
           <Box>
             #{ currentEpoch || '-' }
           </Box>
-          <Stack gap="4" maxW="240px">
-            <Progress.Root width="100px"
-              value={ currentTimePercentage * 100 }
-              size="sm"
-              colorPalette="blue"
-              borderRadius="md" variant="subtle">
-              <Progress.Track>
-                <Progress.Range/>
-              </Progress.Track>
-            </Progress.Root>
-          </Stack>
-          <Box fontSize="xs">
-            { (currentTimePercentage * 100).toFixed(1) }%
+          <Box display="flex" alignItems="center" gap="2">
+            <Stack gap="4" maxW="240px">
+              <Progress.Root width="100px"
+                value={ currentTimePercentage * 100 }
+                size="sm"
+                colorPalette="red"
+                borderRadius="md" variant="subtle">
+                <Progress.Track>
+                  <Progress.Range/>
+                </Progress.Track>
+              </Progress.Root>
+            </Stack>
+            <Box fontSize="xs">
+              { (currentTimePercentage * 100).toFixed(1) }%
+            </Box>
           </Box>
         </Box>,
         href: { pathname: '/epochs' as const },

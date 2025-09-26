@@ -40,7 +40,7 @@ interface Props {
 const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
   const multichainContext = useMultichainContext();
   const addressHash = !tokenQuery.isPlaceholderData ?
-    tokenQuery.data?.address_hash || '' :
+    tokenQuery.data?.address || '' :
     '';
 
   const verifiedInfoQuery = useApiQuery('contractInfo:token_verified_info', {

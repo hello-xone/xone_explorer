@@ -13,7 +13,6 @@ interface Params {
 export default function getCurrencyValue({ value, accuracy, accuracyUsd, decimals, exchangeRate }: Params) {
   const valueCurr = BigNumber(value).div(BigNumber(10 ** Number(decimals || '18')));
   const valueResult = accuracy ? valueCurr.dp(accuracy).toFormat() : valueCurr.toFormat();
-
   let usdResult: string | undefined;
   let usdBn = ZERO;
 

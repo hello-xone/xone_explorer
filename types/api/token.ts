@@ -7,6 +7,7 @@ export type TokenType = 'ERC-20' | NFTTokenType;
 export interface TokenInfo<T extends TokenType = TokenType> {
   address: string;
   address_hash: string;
+  address: string;
   type: T;
   symbol: string | null;
   name: string | null;

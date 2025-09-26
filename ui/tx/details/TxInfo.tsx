@@ -84,6 +84,11 @@ const TxInfo = ({ data, tacOperations, isLoading, socketStatus }: Props) => {
 
   const isMobile = useIsMobile();
 
+  const homeStatsQuery = useApiQuery('general:stats', {
+    queryOptions: {
+      refetchOnMount: false,
+    },
+  });
   const externalTxsQuery = useApiQuery('general:tx_external_transactions', {
     pathParams: {
       hash: data?.hash,
@@ -615,7 +620,7 @@ const TxInfo = ({ data, tacOperations, isLoading, socketStatus }: Props) => {
             <CurrencyValue
               value={ data.value }
               currency={ currencyUnits.ether }
-              exchangeRate={ data.exchange_rate }
+              exchangeRate={ homeStatsQuery?.data?.coin_price }
               isLoading={ isLoading }
               flexWrap="wrap"
             />

@@ -4,7 +4,6 @@ import React from 'react';
 
 import type { ItemProps } from './types';
 
-import config from 'configs/app';
 import * as mixpanel from 'lib/mixpanel/index';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import { IconButton } from 'toolkit/chakra/icon-button';
@@ -27,7 +26,6 @@ const AccountActionsMenu = ({ isLoading, className, showUpdateMetadataItem }: Pr
   const router = useRouter();
 
   const hash = getQueryParamString(router.query.hash);
-  const isTokenPage = router.pathname === '/token/[hash]';
   const isTokenInstancePage = router.pathname === '/token/[hash]/instance/[id]';
   const isTxPage = router.pathname === '/tx/[hash]';
 
@@ -42,15 +40,15 @@ const AccountActionsMenu = ({ isLoading, className, showUpdateMetadataItem }: Pr
     },
     {
       render: (props: ItemProps) => <TokenInfoMenuItem { ...props }/>,
-      enabled: config.features.account.isEnabled && isTokenPage && config.features.addressVerification.isEnabled,
+      enabled: true,
     },
     {
       render: (props: ItemProps) => <PrivateTagMenuItem { ...props } entityType={ isTxPage ? 'tx' : 'address' }/>,
-      enabled: config.features.account.isEnabled,
+      enabled: true,
     },
     {
       render: (props: ItemProps) => <PublicTagMenuItem { ...props }/>,
-      enabled: config.features.account.isEnabled && !isTxPage && config.features.publicTagsSubmission.isEnabled,
+      enabled: true,
     },
   ].filter(({ enabled }) => enabled);
 

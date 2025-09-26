@@ -369,29 +369,43 @@ const Footer = () => {
 
         </Box>
       </VStack>
-      <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
+      <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 4 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
         <Links title="Xone" links={ [
           { text: 'Home', to: 'https://xone.org' },
-          { text: 'About', to: 'https://docs.xone.org/study/xone' },
-          { text: 'Terms of Service', to: 'https://docs.xone.org/study/service' },
-          { text: 'Privacy Policy', to: 'https://docs.xone.org/study/privacy' },
-          { text: 'Events', to: 'https://lu.ma/xone' },
+          { text: 'About Us', to: 'https://docs.xone.org/study/xone' },
+          { text: 'Bounty Hunter', to: 'https://docs.xone.org/study/bug' },
+          { text: 'White Paper', to: 'https://docs.xone.org/study/wiki' },
+          { text: 'Media Kit', to: 'https://docs.xone.org/study/media' },
+          { text: 'Roadmap', to: 'https://docs.xone.org/study/roadmap' },
+          // { text: 'Terms of Service', to: 'https://docs.xone.org/study/service' },
+          // { text: 'Privacy Policy', to: 'https://docs.xone.org/study/privacy' },
+          // { text: 'Events', to: 'https://lu.ma/xone' },
         ] }/>
 
-        <Links title="Developers" links={ [
-          { text: 'Docs', to: 'https://docs.xone.org/developers/ready' },
+        <Links title="Building" links={ [
+          { text: 'Dev Center', to: 'https://xone.org/developer' },
+          { text: 'Dev Docs', to: 'https://docs.xone.org/developers/ready' },
           { text: 'RPC Endpoints', to: 'https://docs.xone.org/developers/rpc' },
-          { text: 'Tools', to: 'https://docs.xone.org/developers/tools' },
+          { text: 'Dev Tools', to: 'https://docs.xone.org/developers/tools' },
           { text: 'Faucets', to: 'https://faucet.xone.org/' },
           { text: 'Github', to: 'https://github.com/hello-xone' },
-          { text: 'Gmail', to: 'mailto:developers@xone.org' },
+        ] }/>
+
+        <Links title="Global" links={ [
+          { text: 'Cooperation', to: 'https://xone.org/commercial' },
+          { text: 'Blog', to: 'https://docs.xone.org/blog' },
+          { text: 'Events', to: 'https://luma.com/xone' },
         ] }/>
 
         <Links title="Community" links={ [
           { text: 'Telegram', to: 'https://t.me/hello_xonechain/2' },
           { text: 'X', to: 'https://x.com/xone_chain' },
+          { text: 'Discord', to: 'https://discord.com/invite/Du9y2GHV' },
           { text: 'Youtube', to: 'https://www.youtube.com/@HelloXone' },
+          { text: 'Github', to: 'https://github.com/hello-xone/' },
+          { text: 'Reddit', to: 'https://www.reddit.com/r/XoneChain/' },
           { text: 'Medium', to: 'https://medium.com/@xone_chain' },
+          { text: 'ChatMe', to: 'https://share.chatme.global/share/group/ztgqmws2k?lang=en&mode=light' },
         ] }/>
 
       </SimpleGrid>

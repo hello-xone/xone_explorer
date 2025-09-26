@@ -19,9 +19,12 @@ interface Props {
 const NetworkExplorers = ({ className, type, pathParam }: Props) => {
   const explorersLinks = React.useMemo(() => {
     return config.UI.explorers.items
-      .filter((explorer) => typeof explorer.paths[type] === 'string')
+      .filter((explorer) => {
+        const paths = explorer.paths as Record<string, unknown>;
+        return typeof paths[type] === 'string';
+      })
       .map((explorer) => {
-        const path = explorer.paths[type] || '';
+        const path = (explorer.paths as Record<string, string>)[type] || '';
         let pathWithParam;
         if (path.includes(':id_lowercase')) {
           pathWithParam = path.replace(':id_lowercase', pathParam.toLowerCase());

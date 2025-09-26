@@ -2,11 +2,9 @@ import { Flex, Separator, Box } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
-import { Link } from 'toolkit/chakra/link';
 import { CONTENT_MAX_WIDTH } from 'ui/shared/layout/utils';
 
 import DeFiDropdown from './DeFiDropdown';
-import NetworkMenu from './NetworkMenu';
 import Settings from './settings/Settings';
 import TopBarStats from './TopBarStats';
 
@@ -24,24 +22,20 @@ const TopBar = () => {
       >
         { !config.features.opSuperchain.isEnabled ? <TopBarStats/> : <div/> }
         <Flex alignItems="center">
-          { config.features.deFiDropdown.isEnabled && (
-            <>
-              <DeFiDropdown/>
-              <Separator mr={ 3 } ml={{ base: 2, sm: 3 }} height={ 4 } orientation="vertical"/>
-            </>
-          ) }
+          <>
+            <DeFiDropdown/>
+            <Separator mr={ 3 } ml={{ base: 2, sm: 3 }} height={ 4 } orientation="vertical"/>
+          </>
           <Flex gap={ 4 } fontSize={{ base: 'xs', lg: 'sm' }}>
-            <Link href="https://rainlink.co" target="_blank">RainLink</Link>
-            <Link href="https://swapx.exchange/en" target="_blank">SwapX</Link>
             <Settings/>
           </Flex>
 
-          { Boolean(config.UI.featuredNetworks.items) && (
+          { /* { Boolean(config.UI.featuredNetworks.items) && (
             <>
               <Separator mx={ 3 } height={ 4 } orientation="vertical"/>
               <NetworkMenu/>
             </>
-          ) }
+          ) } */ }
         </Flex>
       </Flex>
     </Box>

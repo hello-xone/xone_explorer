@@ -111,13 +111,11 @@ const TopBarStats = () => {
                   <GasPrice data={ data.gas_prices.average }/>
                 </Link>
               </GasInfoTooltip>
-              <TextSeparator/>
             </Skeleton>
             { !isPlaceholderData && <GetGasButton/> }
 
           </>
         ) }
-        <Link href="https://faucet.xone.org/zh" target="_blank">Faucet</Link>
       </Flex>
     </Flex>
   );
