@@ -28,6 +28,8 @@ import { USER_OPS_API_RESOURCES } from './services/userOps';
 import type { IsPaginated } from './services/utils';
 import { VISUALIZE_API_RESOURCES } from './services/visualize';
 import type { VisualizeApiResourceName, VisualizeApiResourcePayload } from './services/visualize';
+import type { XoneApiPaginationFilters, XoneApiPaginationSorting, XoneApiResourceName, XoneApiResourcePayload } from './services/xone';
+import { XONE_API_RESOURCES } from './services/xone';
 
 export const RESOURCES = {
   admin: ADMIN_API_RESOURCES,
@@ -42,7 +44,7 @@ export const RESOURCES = {
   userOps: USER_OPS_API_RESOURCES,
   visualize: VISUALIZE_API_RESOURCES,
   xonePublic: XONEPUBLIC_API_RESOURCES,
-  xone: XONEPUBLIC_API_RESOURCES,
+  xone: XONE_API_RESOURCES,
 } satisfies Record<ApiName, Record<string, ApiResource>>;
 
 export const resourceKey = (x: ResourceName) => x;
@@ -66,6 +68,7 @@ R extends StatsApiResourceName ? StatsApiResourcePayload<R> :
 R extends TacOperationLifecycleApiResourceName ? TacOperationLifecycleApiResourcePayload<R> :
 R extends VisualizeApiResourceName ? VisualizeApiResourcePayload<R> :
 R extends XonePublicApiResourceName ? XonePublicApiResourcePayload<R> :
+R extends XoneApiResourceName ? XoneApiResourcePayload<R> :
 never;
 /* eslint-enable @stylistic/indent */
 
@@ -98,6 +101,7 @@ R extends GeneralApiResourceName ? GeneralApiPaginationFilters<R> :
 R extends ContractInfoApiResourceName ? ContractInfoApiPaginationFilters<R> :
 R extends MultichainApiResourceName ? MultichainApiPaginationFilters<R> :
 R extends TacOperationLifecycleApiResourceName ? TacOperationLifecycleApiPaginationFilters<R> :
+R extends XoneApiResourceName ? XoneApiPaginationFilters<R> :
 never;
 /* eslint-enable @stylistic/indent */
 
@@ -107,6 +111,7 @@ export const SORTING_FIELDS = [ 'sort', 'order' ];
 export type PaginationSorting<R extends ResourceName> =
 R extends BensApiResourceName ? BensApiPaginationSorting<R> :
 R extends GeneralApiResourceName ? GeneralApiPaginationSorting<R> :
+R extends XoneApiResourceName ? XoneApiPaginationSorting<R> :
 never;
 /* eslint-enable @stylistic/indent */
 

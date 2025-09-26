@@ -12,17 +12,26 @@ type Props = {
   page: number;
   isLoading?: boolean;
   top?: number;
+  sortOrder: 'asc' | 'desc';
+  onSortChange: () => void;
 };
 
-const PoolsTable = ({ items, page, isLoading, top }: Props) => {
+const PoolsTable = ({ items, page, isLoading, top, sortOrder, onSortChange }: Props) => {
   return (
     <TableRoot minWidth="900px">
       <TableHeaderSticky top={ top ?? ACTION_BAR_HEIGHT_DESKTOP }>
         <TableRow>
           <TableColumnHeader width="70%">Pool</TableColumnHeader>
           <TableColumnHeader width="30%">DEX </TableColumnHeader>
-          <TableColumnHeader width="130px" isNumeric>Liquidity</TableColumnHeader>
-          <TableColumnHeader width="75px" isNumeric>View in</TableColumnHeader>
+          <TableColumnHeader
+            width="130px"
+            isNumeric
+            cursor="pointer"
+            onClick={ onSortChange }
+          >
+            Liquidity { sortOrder === 'desc' ? '↓' : '↑' }
+          </TableColumnHeader>
+          <TableColumnHeader width="110px" isNumeric>View in</TableColumnHeader>
         </TableRow>
       </TableHeaderSticky>
       <TableBody>

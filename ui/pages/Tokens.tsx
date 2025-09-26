@@ -56,19 +56,22 @@ const Tokens = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const tokensQuery = useQueryWithPages({
-    resourceName: tab === 'bridged' ? 'general:tokens_bridged' : 'general:tokens',
+    resourceName: tab === 'bridged' ? 'general:tokens_bridged' : 'xone:tokens',
     filters: tab === 'bridged' ? { q: debouncedSearchTerm, chain_ids: bridgeChains } : { q: debouncedSearchTerm, type: tokenTypes },
     sorting: getSortParamsFromValue<TokensSortingValue, TokensSortingField, TokensSorting['order']>(sort),
     options: {
-      placeholderData: generateListStub<'general:tokens'>(
+      placeholderData: generateListStub<'xone:tokens'>(
         TOKEN_INFO_ERC_20,
         50,
         {
           next_page_params: {
-            holders_count: 81528,
+            contract_address_hash: '0x0000000000000000000000000000000000000000',
+            fiat_value: null,
+            holder_count: 81528,
+            is_name_null: false,
             items_count: 50,
-            name: '',
             market_cap: null,
+            name: '',
           },
         },
       ),

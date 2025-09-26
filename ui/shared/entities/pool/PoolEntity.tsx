@@ -55,7 +55,7 @@ const Icon = (props: IconProps) => {
         />
       </Flex>
       <Flex
-        transform="translateX(-8px)"
+        transform="translateX(-14px)"
         bgColor={ bgColor }
         borderRadius="full"
         border="1px solid"

@@ -24,6 +24,9 @@ const Pools = () => {
   const [ searchTerm, setSearchTerm ] = React.useState<string>(q ?? '');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // 添加排序状态
+  const [ sortOrder, setSortOrder ] = React.useState<'asc' | 'desc'>('desc');
+
   // 获取当前 chain_id
   const currentChainId = config.chain.id?.toString() ?? '';
 
@@ -44,13 +47,15 @@ const Pools = () => {
       return undefined;
     }
 
+    let pools: Array<Pool>;
+
     // 如果数据是新格式，转换它
     if ('data' in poolsQuery.data && 'included' in poolsQuery.data) {
       const poolsResponse = poolsQuery.data as PoolsResponse;
       const tokens = poolsResponse.included.filter((item): item is Token => item.type === 'token');
       const dexes = poolsResponse.included.filter((item): item is Dex => item.type === 'dex');
 
-      return poolsResponse.data.map((poolV2: PoolV2) => {
+      pools = poolsResponse.data.map((poolV2: PoolV2) => {
         const baseToken = tokens.find(token => token.id === poolV2.relationships.base_token.data.id);
         const quoteToken = tokens.find(token => token.id === poolV2.relationships.quote_token.data.id);
         const dex = dexes.find(dex => dex.id === poolV2.relationships.dex.data.id);
@@ -81,16 +86,29 @@ const Pools = () => {
           coin_gecko_terminal_url: '',
         };
       });
+    } else {
+      // 如果是旧格式，返回 items
+      pools = (poolsQuery.data as { items?: Array<Pool> })?.items || [];
     }
 
-    // 如果是旧格式，返回 items
-    return (poolsQuery.data as { items?: Array<Pool> })?.items || [];
-  }, [ poolsQuery.data, currentChainId ]);
+    // 根据 Liquidity 排序
+    return pools.sort((a, b) => {
+      const liquidityA = parseFloat(a.liquidity) || 0;
+      const liquidityB = parseFloat(b.liquidity) || 0;
+
+      return sortOrder === 'desc' ? liquidityB - liquidityA : liquidityA - liquidityB;
+    });
+  }, [ poolsQuery.data, currentChainId, sortOrder ]);
 
   const handleSearchTermChange = React.useCallback((value: string) => {
     poolsQuery.onFilterChange({ query: value });
     setSearchTerm(value);
   }, [ poolsQuery ]);
+
+  // 处理排序点击
+  const handleSortChange = React.useCallback(() => {
+    setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+  }, []);
 
   const content = (
     <>
@@ -109,6 +127,8 @@ const Pools = () => {
           top={ poolsQuery.pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
           isLoading={ poolsQuery.isPlaceholderData }
           page={ poolsQuery.pagination.page }
+          sortOrder={ sortOrder }
+          onSortChange={ handleSortChange }
         />
       </Box>
     </>

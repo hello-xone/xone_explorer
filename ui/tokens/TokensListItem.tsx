@@ -1,11 +1,11 @@
 import { Flex, HStack, Grid, GridItem } from '@chakra-ui/react';
-import BigNumber from 'bignumber.js';
 import React from 'react';
 
 import type { TokenInfo } from 'types/api/token';
 
 import config from 'configs/app';
 import getItemIndex from 'lib/getItemIndex';
+import { formatTokenPrice, formatTokenMarketCap, formatTokenHolders } from 'lib/token/formatters';
 import { getTokenTypeName } from 'lib/token/tokenTypes';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { Tag } from 'toolkit/chakra/tag';
@@ -83,19 +83,19 @@ const TokensTableItem = ({
         <HStack gap={ 3 }>
           <Skeleton loading={ isLoading } textStyle="sm" fontWeight={ 500 }>Price</Skeleton>
           <Skeleton loading={ isLoading } textStyle="sm" color="text.secondary">
-            <span>${ Number(exchangeRate).toLocaleString(undefined, { minimumSignificantDigits: 4 }) }</span>
+            <span>{ formatTokenPrice(exchangeRate) }</span>
           </Skeleton>
         </HStack>
       ) }
       { marketCap && (
         <HStack gap={ 3 }>
           <Skeleton loading={ isLoading } textStyle="sm" fontWeight={ 500 }>On-chain market cap</Skeleton>
-          <Skeleton loading={ isLoading } textStyle="sm" color="text.secondary"><span>{ BigNumber(marketCap).toFormat() }</span></Skeleton>
+          <Skeleton loading={ isLoading } textStyle="sm" color="text.secondary"><span>{ formatTokenMarketCap(marketCap) }</span></Skeleton>
         </HStack>
       ) }
       <HStack gap={ 3 }>
         <Skeleton loading={ isLoading } textStyle="sm" fontWeight={ 500 }>Holders</Skeleton>
-        <Skeleton loading={ isLoading } textStyle="sm" color="text.secondary"><span>{ Number(holdersCount).toLocaleString() }</span></Skeleton>
+        <Skeleton loading={ isLoading } textStyle="sm" color="text.secondary"><span>{ formatTokenHolders(holdersCount) }</span></Skeleton>
       </HStack>
     </ListItemMobile>
   );
