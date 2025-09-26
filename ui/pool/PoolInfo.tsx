@@ -84,7 +84,7 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             address_hash: data.base_token_address,
             name: data.base_token_symbol,
             symbol: data.base_token_symbol,
-            icon_url: getTokenIconPath(data.base_token_address_icon) ?? null,
+            icon_url: getTokenIconPath(data.base_token_address_icon || '') ?? null,
             isIconAddress: true,
           }}
           isLoading={ isPlaceholderData }
@@ -105,7 +105,7 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             address_hash: data.quote_token_address,
             name: data.quote_token_symbol,
             symbol: data.quote_token_symbol,
-            icon_url: getTokenIconPath(data.quote_token_address_icon) ?? null,
+            icon_url: getTokenIconPath(data.quote_token_address_icon || '') ?? null,
             isIconAddress: true,
           }}
           isLoading={ isPlaceholderData }

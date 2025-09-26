@@ -46,7 +46,7 @@ const Icon = (props: IconProps) => {
           marginRight={ 0 }
           variant={ props.variant }
           token={{
-            icon_url: getTokenIconPath(props.pool.base_token_address_icon) ?? null,
+            icon_url: getTokenIconPath(props.pool.base_token_address_icon || '') ?? null,
             symbol: props.pool.base_token_symbol,
             address_hash: props.pool.base_token_address,
             name: '',
@@ -67,7 +67,7 @@ const Icon = (props: IconProps) => {
           marginRight={ 0 }
           variant={ props.variant }
           token={{
-            icon_url: getTokenIconPath(props.pool.quote_token_address_icon) ?? null,
+            icon_url: getTokenIconPath(props.pool.quote_token_address_icon || '') ?? null,
             symbol: props.pool.quote_token_symbol,
             address_hash: props.pool.quote_token_address,
             name: '',

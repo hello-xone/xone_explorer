@@ -5,9 +5,8 @@ export type NFTTokenType = 'ERC-721' | 'ERC-1155' | 'ERC-404';
 export type TokenType = 'ERC-20' | NFTTokenType;
 
 export interface TokenInfo<T extends TokenType = TokenType> {
-  address: string;
   address_hash: string;
-  address: string;
+  address?: string;
   type: T;
   symbol: string | null;
   name: string | null;

@@ -87,10 +87,10 @@ export type Pool = {
   chain_id: string;
   base_token_address: string;
   base_token_symbol: string;
-  base_token_address_icon: string;
+  base_token_address_icon?: string;
   quote_token_address: string;
   quote_token_symbol: string;
-  quote_token_address_icon: string;
+  quote_token_address_icon?: string;
   base_token_fully_diluted_valuation_usd: string | null;
   base_token_market_cap_usd: string | null;
   quote_token_fully_diluted_valuation_usd: string | null;
@@ -101,5 +101,7 @@ export type Pool = {
     name: string;
   };
   fee?: string;
+  base_token_icon_url?: string | null;
+  quote_token_icon_url?: string | null;
   coin_gecko_terminal_url: string;
 };

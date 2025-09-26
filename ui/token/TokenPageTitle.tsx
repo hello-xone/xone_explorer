@@ -199,7 +199,7 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
             <TokenEntity.Icon
               token={{
                 ...tokenQuery.data,
-                icon_url: getTokenIconPath(tokenQuery.data.address) ?? null,
+                icon_url: getTokenIconPath(tokenQuery.data.address || '') ?? null,
                 isIconAddress: true,
               }}
               isLoading={ tokenQuery.isPlaceholderData }

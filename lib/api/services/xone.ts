@@ -35,6 +35,7 @@ export interface XoneTokensRawResponse {
 function transformXoneTokenInfo(xoneToken: XoneTokenInfo): TokenInfo {
   return {
     address_hash: xoneToken.address,
+    address: xoneToken.address,
     type: xoneToken.type,
     symbol: xoneToken.symbol,
     name: xoneToken.name,

@@ -1,6 +1,8 @@
 import { Box } from '@chakra-ui/react';
 import React from 'react';
 
+import type { TokenInfo } from 'types/api/token';
+
 import { transformXoneTokensResponse } from 'lib/api/services/xone';
 import type { XoneTokenInfo, XoneTokensRawResponse } from 'lib/api/services/xone';
 import * as tokens from 'mocks/tokens/tokenInfo';
@@ -14,8 +16,7 @@ test.beforeEach(async({ mockTextAd, mockAssetResponse }) => {
   await mockAssetResponse(tokens.tokenInfoERC20a.icon_url as string, './playwright/mocks/image_svg.svg');
 });
 
-// 转换现有的测试数据为 XONE API 格式
-function convertToXoneFormat(tokenInfo: any): XoneTokenInfo {
+function convertToXoneFormat(tokenInfo: TokenInfo): XoneTokenInfo {
   return {
     address: tokenInfo.address_hash,
     circulating_market_cap: tokenInfo.circulating_market_cap,
@@ -45,17 +46,7 @@ const allTokensRaw: XoneTokensRawResponse = {
     convertToXoneFormat(tokens.tokenInfoERC1155b),
     convertToXoneFormat(tokens.tokenInfoERC1155WithoutName),
   ],
-};
-
-// 兼容旧格式的对象（用于其他可能需要的地方）
-const allTokens = {
-  items: allTokensRaw,
-  next_page_params: {
-    holders_count: 1,
-    items_count: 1,
-    name: 'a',
-    market_cap: '0',
-  },
+  next_page_params: null,
 };
 
 // FIXME: test is flaky, screenshot in docker container is different from local
@@ -74,15 +65,12 @@ test.skip('base view +@mobile +@dark-mode', async({ render, mockApiResponse }) =
 });
 
 test('with search +@mobile +@dark-mode', async({ render, mockApiResponse }) => {
-  const filteredTokens = {
-    items: [
-      tokens.tokenInfoERC20a, tokens.tokenInfoERC20b, tokens.tokenInfoERC20c,
-    ],
-    next_page_params: null,
-  };
 
   await mockApiResponse('xone:tokens', transformXoneTokensResponse(allTokensRaw));
-  await mockApiResponse('xone:tokens', transformXoneTokensResponse({ items: [ convertToXoneFormat(tokens.tokenInfoERC20a) ] }), { queryParams: { q: 'foo' } });
+  await mockApiResponse('xone:tokens', transformXoneTokensResponse({
+    items: [ convertToXoneFormat(tokens.tokenInfoERC20a) ],
+    next_page_params: null,
+  }), { queryParams: { q: 'foo' } });
 
   const component = await render(
     <div>
@@ -126,7 +114,18 @@ test.describe('bridged tokens', () => {
 
   test('base view', async({ render, page, mockApiResponse, mockEnvs }) => {
     await mockEnvs(ENVS_MAP.bridgedTokens);
-    await mockApiResponse('general:tokens_bridged', bridgedTokens);
+    await mockApiResponse('general:tokens_bridged', {
+      ...bridgedTokens,
+      next_page_params: {
+        contract_address_hash: '',
+        fiat_value: null,
+        holder_count: bridgedTokens.next_page_params.holders_count,
+        is_name_null: false,
+        items_count: bridgedTokens.next_page_params.items_count,
+        market_cap: null,
+        name: bridgedTokens.next_page_params.name,
+      },
+    });
     await mockApiResponse('general:tokens_bridged', bridgedFilteredTokens, { queryParams: { chain_ids: '99' } });
 
     const component = await render(

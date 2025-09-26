@@ -39,7 +39,10 @@ const searchParams = {
 
 for (const column of columns) {
   test(`${ column } filter +@dark-mode`, async({ page, render, mockApiResponse }) => {
-    await mockApiResponse('xone:tokens', transformXoneTokensResponse({ items: [] }));
+    await mockApiResponse('xone:tokens', transformXoneTokensResponse({
+      items: [],
+      next_page_params: null,
+    }));
     await mockApiResponse('general:advanced_filter_methods', [], { queryParams: { q: '' } });
     await render(
       <FilterByColumn

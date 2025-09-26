@@ -2,6 +2,7 @@ import type { TokenCounters, TokenInfo } from 'types/api/token';
 
 export const tokenInfo: TokenInfo = {
   address_hash: '0x55d536e4d6c1993d8ef2e2a4ef77f02088419420',
+  address: '0x55d536e4d6c1993d8ef2e2a4ef77f02088419420',
   circulating_market_cap: '117629601.61913824',
   decimals: '18',
   exchange_rate: '2.0101',
@@ -20,6 +21,7 @@ export const tokenCounters: TokenCounters = {
 
 export const tokenInfoERC20a: TokenInfo<'ERC-20'> = {
   address_hash: '0xb2a90505dc6680a7a695f7975d0d32EeF610f456',
+  address: '0xb2a90505dc6680a7a695f7975d0d32EeF610f456',
   circulating_market_cap: '117268489.23970924',
   decimals: '18',
   exchange_rate: null,
@@ -32,6 +34,7 @@ export const tokenInfoERC20a: TokenInfo<'ERC-20'> = {
 };
 
 export const tokenInfoERC20b: TokenInfo<'ERC-20'> = {
+  address: '0xc1116c98ba622a6218433fF90a2E40DEa482d7A7',
   address_hash: '0xc1116c98ba622a6218433fF90a2E40DEa482d7A7',
   circulating_market_cap: '115060192.36105014',
   decimals: '6',
@@ -46,6 +49,7 @@ export const tokenInfoERC20b: TokenInfo<'ERC-20'> = {
 
 export const tokenInfoERC20c: TokenInfo<'ERC-20'> = {
   address_hash: '0xc1116c98ba622a6218433fF90a2E40DEa482d7A8',
+  address: '0xc1116c98ba622a6218433fF90a2E40DEa482d7A8',
   circulating_market_cap: null,
   decimals: '18',
   exchange_rate: '1328.89',
@@ -59,6 +63,7 @@ export const tokenInfoERC20c: TokenInfo<'ERC-20'> = {
 
 export const tokenInfoERC20d: TokenInfo<'ERC-20'> = {
   address_hash: '0xCc7bb2D219A0FC08033E130629C2B854b7bA9196',
+  address: '0xCc7bb2D219A0FC08033E130629C2B854b7bA9196',
   circulating_market_cap: null,
   decimals: '18',
   exchange_rate: null,

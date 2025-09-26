@@ -82,7 +82,7 @@ const Icon = (props: IconProps) => {
     <EntityBase.Icon
       { ...styles }
       className={ props.className }
-      src={ props.token.isIconAddress ? props.token.icon_url : getTokenIconPath(props.token.address_hash) }
+      src={ props.token.isIconAddress ? (props.token.icon_url || '') : (getTokenIconPath(props.token.address_hash || props.token.address || '') || '') }
       alt={ `${ props.token.name || 'token' } logo` }
       fallback={ <InitialAvatar/> }
       shield={ props.shield ?? (props.chain ? { src: getIconUrl(props.chain) } : undefined) }
@@ -159,7 +159,7 @@ const Copy = (props: CopyProps) => {
 const Container = EntityBase.Container;
 
 export interface EntityProps extends EntityBase.EntityBaseProps {
-  token: Pick<TokenInfo, 'address_hash' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress'>;
+  token: Pick<TokenInfo, 'address_hash' | 'address' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress'>;
   noSymbol?: boolean;
   jointSymbol?: boolean;
   onlySymbol?: boolean;
