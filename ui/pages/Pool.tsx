@@ -5,6 +5,7 @@ import React, { useMemo } from 'react';
 import type { Pool, Token, Dex, PoolResponse } from 'types/api/pools';
 
 import config from 'configs/app';
+import getCheckedSummedAddress from 'lib/address/getCheckedSummedAddress';
 import useApiQuery from 'lib/api/useApiQuery';
 import throwOnResourceLoadError from 'lib/errors/throwOnResourceLoadError';
 import getPoolLinks from 'lib/pools/getPoolLinks';
@@ -70,10 +71,10 @@ const PoolPage = () => {
         chain_id: currentChainId,
         base_token_address: baseToken.attributes.address,
         base_token_symbol: baseToken.attributes.symbol,
-        base_token_icon_url: baseToken.attributes.image_url,
+        base_token_address_icon: getCheckedSummedAddress(baseToken.id.replace('xone_', '')),
+        quote_token_address_icon: getCheckedSummedAddress(quoteToken.id.replace('xone_', '')),
         quote_token_address: quoteToken.attributes.address,
         quote_token_symbol: quoteToken.attributes.symbol,
-        quote_token_icon_url: quoteToken.attributes.image_url,
         base_token_fully_diluted_valuation_usd: poolData.attributes.fdv_usd,
         base_token_market_cap_usd: poolData.attributes.market_cap_usd,
         quote_token_fully_diluted_valuation_usd: null,

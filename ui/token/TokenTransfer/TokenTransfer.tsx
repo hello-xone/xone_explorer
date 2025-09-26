@@ -111,7 +111,7 @@ const TokenTransfer = ({ transfersQuery, tokenId, tokenQuery, tabsHeight = TABS_
   return (
     <DataListDisplay
       isError={ isError || isTokenError }
-      itemsNum={ data?.items.length }
+      itemsNum={ (data?.items || []).length }
       emptyText="There are no token transfers."
       actionBar={ actionBar }
     >

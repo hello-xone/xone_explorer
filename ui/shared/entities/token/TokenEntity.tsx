@@ -5,10 +5,10 @@ import type { TokenInfo } from 'types/api/token';
 
 import { route } from 'nextjs/routes';
 
-import { getEnvValue } from 'configs/app/utils';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import getChainTooltipText from 'lib/multichain/getChainTooltipText';
 import getIconUrl from 'lib/multichain/getIconUrl';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TruncatedTextTooltip } from 'toolkit/components/truncation/TruncatedTextTooltip';
 import * as EntityBase from 'ui/shared/entities/base/components';
@@ -82,8 +82,7 @@ const Icon = (props: IconProps) => {
     <EntityBase.Icon
       { ...styles }
       className={ props.className }
-      src={ getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address_hash)
-        .replace('[chain]', (window.location.origin.includes('testnet') || window.location.origin.includes('localhost')) ? 'xone_testnet' : 'xone') }
+      src={ props.token.isIconAddress ? props.token.icon_url : getTokenIconPath(props.token.address_hash) }
       alt={ `${ props.token.name || 'token' } logo` }
       fallback={ <InitialAvatar/> }
       shield={ props.shield ?? (props.chain ? { src: getIconUrl(props.chain) } : undefined) }
@@ -160,7 +159,7 @@ const Copy = (props: CopyProps) => {
 const Container = EntityBase.Container;
 
 export interface EntityProps extends EntityBase.EntityBaseProps {
-  token: Pick<TokenInfo, 'address_hash' | 'icon_url' | 'name' | 'symbol' | 'type'>;
+  token: Pick<TokenInfo, 'address_hash' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress'>;
   noSymbol?: boolean;
   jointSymbol?: boolean;
   onlySymbol?: boolean;

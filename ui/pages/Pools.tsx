@@ -5,6 +5,7 @@ import React, { useMemo } from 'react';
 import type { Pool, PoolV2, Token, Dex, PoolsResponse } from 'types/api/pools';
 
 import config from 'configs/app';
+import getCheckedSummedAddress from 'lib/address/getCheckedSummedAddress';
 import useDebounce from 'lib/hooks/useDebounce';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import { FilterInput } from 'toolkit/components/filters/FilterInput';
@@ -83,6 +84,8 @@ const Pools = () => {
             id: dex.id,
             name: dex.attributes.name,
           },
+          base_token_address_icon: getCheckedSummedAddress(baseToken.id.replace('xone_', '')),
+          quote_token_address_icon: getCheckedSummedAddress(quoteToken.id.replace('xone_', '')),
           coin_gecko_terminal_url: '',
         };
       });

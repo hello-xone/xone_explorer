@@ -3,6 +3,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 
 import type { Pool, PoolV2 } from 'types/api/pools';
 
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { Button } from 'toolkit/chakra/button';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import * as DetailedInfo from 'ui/shared/DetailedInfo/DetailedInfo';
@@ -83,7 +84,8 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             address_hash: data.base_token_address,
             name: data.base_token_symbol,
             symbol: data.base_token_symbol,
-            icon_url: data.base_token_icon_url,
+            icon_url: getTokenIconPath(data.base_token_address_icon) ?? null,
+            isIconAddress: true,
           }}
           isLoading={ isPlaceholderData }
           query={{ from_pool: 'true', pool_id: data.pool_id }}
@@ -103,7 +105,8 @@ const PoolInfo = ({ data, isPlaceholderData, poolV2Data }: Props) => {
             address_hash: data.quote_token_address,
             name: data.quote_token_symbol,
             symbol: data.quote_token_symbol,
-            icon_url: data.quote_token_icon_url,
+            icon_url: getTokenIconPath(data.quote_token_address_icon) ?? null,
+            isIconAddress: true,
           }}
           isLoading={ isPlaceholderData }
           query={{ from_pool: 'true', pool_id: data.pool_id }}

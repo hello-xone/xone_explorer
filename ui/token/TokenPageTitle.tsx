@@ -11,6 +11,7 @@ import useAddressMetadataInfoQuery from 'lib/address/useAddressMetadataInfoQuery
 import type { ResourceError } from 'lib/api/resources';
 import useApiQuery from 'lib/api/useApiQuery';
 import { useMultichainContext } from 'lib/contexts/multichain';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { getTokenTypeName } from 'lib/token/tokenTypes';
 import { Tooltip } from 'toolkit/chakra/tooltip';
 import AddressMetadataAlert from 'ui/address/details/AddressMetadataAlert';
@@ -196,7 +197,11 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
         beforeTitle={
           tokenQuery.data ? (
             <TokenEntity.Icon
-              token={ tokenQuery.data }
+              token={{
+                ...tokenQuery.data,
+                icon_url: getTokenIconPath(tokenQuery.data.address) ?? null,
+                isIconAddress: true,
+              }}
               isLoading={ tokenQuery.isPlaceholderData }
               variant="heading"
               chain={ multichainContext?.chain }
