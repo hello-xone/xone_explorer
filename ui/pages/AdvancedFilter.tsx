@@ -97,7 +97,7 @@ const AdvancedFilter = () => {
   });
 
   // maybe don't need to prefetch, but on dev sepolia those requests take several seconds.
-  useApiQuery('general:tokens', { queryParams: { limit: '7', q: '' }, queryOptions: { refetchOnMount: false } });
+  useApiQuery('xone:tokens', { queryParams: { limit: '7', q: '' }, queryOptions: { refetchOnMount: false } });
   useApiQuery('general:advanced_filter_methods', { queryParams: { q: '' }, queryOptions: { refetchOnMount: false } });
 
   const handleFilterChange = React.useCallback(<T extends keyof AdvancedFilterParams>(field: T, val: AdvancedFilterParams[T]) => {

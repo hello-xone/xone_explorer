@@ -24,7 +24,6 @@ type Props = {
 
 const NavLink = ({ item, onClick, isCollapsed, isDisabled }: Props) => {
   const isMobile = useIsMobile();
-
   const isInternalLink = isInternalItem(item);
 
   const isExpanded = isCollapsed === false;
@@ -33,13 +32,13 @@ const NavLink = ({ item, onClick, isCollapsed, isDisabled }: Props) => {
   const isXLScreen = useBreakpointValue({ base: false, xl: true });
 
   const isHighlighted = checkRouteHighlight(item);
-
   return (
     <Box as="li" listStyleType="none" w="100%">
       <Link
         href={ isInternalLink ? route(item.nextRoute) : item.url }
         external={ !isInternalLink }
         { ...styleProps.itemProps }
+        noIcon={ item.text === 'BVI' }
         w={{ base: '100%', lg: isExpanded ? '100%' : '60px', xl: isCollapsed ? '60px' : '100%' }}
         display="flex"
         position="relative"
@@ -73,7 +72,7 @@ const NavLink = ({ item, onClick, isCollapsed, isDisabled }: Props) => {
             >
               <span>{ item.text }</span>
             </chakra.span>
-            { isHighlighted && (
+            { isHighlighted && item.text !== 'BVI' && (
               <LightningLabel
                 iconColor={ isInternalLink && item.isActive ? 'link.navigation.bg.selected' : 'link.navigation.bg.group' }
                 isCollapsed={ isCollapsed }

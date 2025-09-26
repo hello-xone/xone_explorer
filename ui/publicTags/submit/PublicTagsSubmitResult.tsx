@@ -77,7 +77,7 @@ const PublicTagsSubmitResult = ({ data }: Props) => {
             </Button>
           </Link>
         ) }
-        <Link href={ route({ pathname: '/public-tags/submit' }) } asChild>
+        <Link href={ route({ pathname: '/public-tags/submit', query: startOverButtonQuery }) } asChild>
           <Button w={{ base: '100%', lg: 'auto' }}>Add new tag</Button>
         </Link>
       </Flex>

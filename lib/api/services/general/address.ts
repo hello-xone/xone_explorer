@@ -28,7 +28,7 @@ import type { TransactionsSorting } from 'types/api/transaction';
 export const GENERAL_API_ADDRESS_RESOURCES = {
   // ADDRESSES
   addresses: {
-    path: '/api/v2/addresses/',
+    path: '/api/v2/addresses',
     filterFields: [ ],
     paginated: true,
   },

@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-no-bind */
 import React from 'react';
 
+import { transformXoneTokensResponse } from 'lib/api/services/xone';
 import { test, expect } from 'playwright/lib';
 import type { ColumnsIds } from 'ui/advancedFilter/constants';
 
@@ -38,10 +39,10 @@ const searchParams = {
 
 for (const column of columns) {
   test(`${ column } filter +@dark-mode`, async({ page, render, mockApiResponse }) => {
-    await mockApiResponse('general:tokens', {
+    await mockApiResponse('xone:tokens', transformXoneTokensResponse({
       items: [],
       next_page_params: null,
-    });
+    }));
     await mockApiResponse('general:advanced_filter_methods', [], { queryParams: { q: '' } });
     await render(
       <FilterByColumn

@@ -10,7 +10,6 @@ import * as mixpanel from 'lib/mixpanel/index';
 import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
 import { PopoverBody, PopoverContent, PopoverRoot, PopoverTrigger } from 'toolkit/chakra/popover';
-import { space } from 'toolkit/utils/htmlEntities';
 import IconSvg from 'ui/shared/IconSvg';
 
 import DeFiDropdownItem from './DeFiDropdownItem';
@@ -39,9 +38,8 @@ const DeFiDropdown = () => {
       <PopoverTrigger>
         <Button size="2xs" gap={ 0 }>
           <chakra.span display={{ base: 'none', lg: 'inline' }} whiteSpace="pre-wrap">
-            Blockscout{ space }
+            Bridge & Swap
           </chakra.span>
-          DeFi
           <IconSvg name="arrows/east-mini" boxSize={ 4 } ml={ 1 } transform="rotate(-90deg)"/>
         </Button>
       </PopoverTrigger>
@@ -66,7 +64,6 @@ const DeFiDropdown = () => {
       asChild
     >
       <Button onClick={ items[0].onClick } size="2xs">
-        <IconSvg name={ items[0].icon } boxSize={ 3 } mr={{ base: 0, sm: 1 }}/>
         <Box display={{ base: 'none', sm: 'inline' }}>
           { items[0].text }
         </Box>

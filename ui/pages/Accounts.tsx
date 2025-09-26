@@ -72,7 +72,7 @@ const Accounts = () => {
 
   return (
     <>
-      <PageTitle title="Top accounts1" withTextAd/>
+      <PageTitle title="Top accounts" withTextAd/>
       <DataListDisplay
         isError={ isError }
         itemsNum={ data?.items.length }

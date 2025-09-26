@@ -5,7 +5,7 @@ import React from 'react';
 
 import config from 'configs/app';
 import RewardsButton from 'ui/rewards/RewardsButton';
-import AdBanner from 'ui/shared/ad/AdBanner';
+import AdSwiperCarousel from 'ui/shared/ad/AdSwiperCarousel';
 import SearchBar from 'ui/snippets/searchBar/SearchBar';
 import UserProfileDesktop from 'ui/snippets/user/profile/UserProfileDesktop';
 import UserWalletDesktop from 'ui/snippets/user/wallet/UserWalletDesktop';
@@ -49,6 +49,19 @@ const HeroBanner = () => {
       config.UI.homepage.heroBanner?.border?.[1] || config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
   };
 
+  const ads = [
+    {
+      id: '1',
+      imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more7.png',
+      linkUrl: 'https://xone.org/',
+    },
+    {
+      id: '2',
+      imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more8.png',
+      linkUrl: 'https://xone.org/',
+    },
+  ];
+
   return (
     <Flex
       w="100%"
@@ -56,7 +69,7 @@ const HeroBanner = () => {
       border={ border }
       borderRadius="md"
       p={{ base: 4, lg: 8 }}
-      columnGap={ 8 }
+      columnGap={ 6 }
       alignItems="center"
     >
       <Box flexGrow={ 1 }>
@@ -86,7 +99,19 @@ const HeroBanner = () => {
         </Flex>
         <SearchBar isHomepage/>
       </Box>
-      <AdBanner platform="mobile" w="fit-content" flexShrink={ 0 } borderRadius="md" overflow="hidden" display={{ base: 'none', lg: 'block ' }}/>
+      { /* <AdBanner platform="mobile" w="fit-content" flexShrink={ 0 } borderRadius="md" overflow="hidden" display={{ base: 'none', lg: 'block ' }}/> */ }
+      {
+        ads.length > 0 && (
+          <Box
+            w="300px"
+            borderRadius="md"
+            overflow="hidden"
+            display={{ base: 'none', lg: 'block ' }}
+          >
+            <AdSwiperCarousel ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
+          </Box>
+        )
+      }
     </Flex>
   );
 };

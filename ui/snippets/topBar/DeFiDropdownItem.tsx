@@ -5,8 +5,8 @@ import type { DeFiDropdownItem as TDeFiDropdownItem } from 'types/client/deFiDro
 
 import { route } from 'nextjs-routes';
 
+import { Image } from 'toolkit/chakra/image';
 import { Link } from 'toolkit/chakra/link';
-import IconSvg from 'ui/shared/IconSvg';
 
 type Props = {
   item: TDeFiDropdownItem & { onClick: () => void };
@@ -22,7 +22,7 @@ const DeFiDropdownItem = ({ item }: Props) => {
       variant="menu"
       onClick={ item.onClick }
     >
-      <IconSvg name={ item.icon } boxSize={ 5 } mr={ 2 }/>
+      <Image src={ item.icon } alt="" boxSize={ 5 } objectFit="contain" mr={ 2 }></Image>
       <Text as="span" fontSize="sm">{ item.text }</Text>
     </Link>
   );

@@ -56,8 +56,8 @@ const DEFAULT_THEME_COLORS = {
   },
   button: {
     primary: {
-      _light: { value: '{colors.blue.600}' },
-      _dark: { value: '{colors.blue.600}' },
+      _light: { value: '#FF0420' },
+      _dark: { value: '#FF0420' },
     },
   },
   link: {
@@ -68,17 +68,17 @@ const DEFAULT_THEME_COLORS = {
   },
   graph: {
     line: {
-      _light: { value: '{colors.blue.500}' },
-      _dark: { value: '{colors.blue.200}' },
+      _light: { value: '#FF0420' },
+      _dark: { value: '#FF0420' },
     },
     gradient: {
       start: {
-        _light: { value: 'rgba(144, 205, 244, 0.3)' }, // blue.200 with opacity 0.3
-        _dark: { value: 'rgba(144, 205, 244, 0.3)' }, // blue.200 with opacity 0.3
+        _light: { value: 'rgba(255, 128, 130, 0.3)' }, // blue.200 with opacity 0.3
+        _dark: { value: 'rgba(255, 128, 130, 0.3)' }, // blue.200 with opacity 0.3
       },
       stop: {
-        _light: { value: 'rgba(144, 205, 244, 0)' }, // blue.200 with opacity 0
-        _dark: { value: 'rgba(144, 205, 244, 0)' }, // blue.200 with opacity 0
+        _light: { value: 'rgba(255, 128, 130, 0)' }, // blue.200 with opacity 0
+        _dark: { value: 'rgba(255, 128, 130, 0)' }, // blue.200 with opacity 0
       },
     },
   },

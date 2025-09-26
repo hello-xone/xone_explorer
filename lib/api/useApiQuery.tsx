@@ -6,6 +6,8 @@ import { useMultichainContext } from 'lib/contexts/multichain';
 import type { Params as FetchParams } from 'lib/hooks/useFetch';
 
 import type { ResourceError, ResourceName, ResourcePathParams, ResourcePayload } from './resources';
+import type { XoneTokensRawResponse } from './services/xone';
+import { transformXoneTokensResponse } from './services/xone';
 import useApiFetch from './useApiFetch';
 
 // 为general:stats添加的特殊处理函数类型
@@ -82,6 +84,12 @@ export default function useApiQuery<R extends ResourceName, E = unknown, D = Res
         // 使用提供的拦截器或默认拦截器
         const interceptor = (responseInterceptor as StatsResponseInterceptor) || defaultStatsResponseInterceptor;
         return interceptor(response as ResourcePayload<'general:stats'>, apiFetch) as Promise<ResourcePayload<R>>;
+      }
+
+      // 对于xone:tokens资源，转换数组格式为分页格式
+      if (resource === 'xone:tokens') {
+        const rawResponse = response as XoneTokensRawResponse;
+        return transformXoneTokensResponse(rawResponse) as ResourcePayload<R>;
       }
 
       return response as Promise<ResourcePayload<R>>;

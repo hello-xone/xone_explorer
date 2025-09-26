@@ -1,11 +1,11 @@
 import { Flex } from '@chakra-ui/react';
-import BigNumber from 'bignumber.js';
 import React from 'react';
 
 import type { TokenInfo } from 'types/api/token';
 
 import config from 'configs/app';
 import getItemIndex from 'lib/getItemIndex';
+import { formatTokenPrice, formatTokenMarketCap, formatTokenHolders } from 'lib/token/formatters';
 import { getTokenTypeName } from 'lib/token/tokenTypes';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TableCell, TableRow } from 'toolkit/chakra/table';
@@ -106,14 +106,14 @@ const TokensTableItem = ({
       </TableCell>
       <TableCell isNumeric>
         <TruncatedValue
-          value={ exchangeRate ? `$${ Number(exchangeRate).toLocaleString(undefined, { minimumSignificantDigits: 4 }) }` : '' }
+          value={ formatTokenPrice(exchangeRate) }
           isLoading={ isLoading }
           maxW="100%"
         />
       </TableCell>
       <TableCell isNumeric maxWidth="300px" width="300px">
         <TruncatedValue
-          value={ marketCap ? `$${ BigNumber(marketCap).toFormat() }` : '' }
+          value={ formatTokenMarketCap(marketCap) }
           isLoading={ isLoading }
           maxW="100%"
         />
@@ -125,7 +125,7 @@ const TokensTableItem = ({
           fontWeight={ 500 }
           display="inline-block"
         >
-          { holdersCount && Number(holdersCount).toLocaleString() }
+          { formatTokenHolders(holdersCount) }
         </Skeleton>
       </TableCell>
     </TableRow>

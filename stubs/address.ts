@@ -61,6 +61,7 @@ export const ADDRESS_TABS_COUNTERS: AddressTabsCounters = {
 export const TOP_ADDRESS: AddressesItem = {
   coin_balance: '11886682377162664596540805',
   transactions_count: '1835',
+  transaction_count: '1835',
   hash: '0x4f7A67464B5976d7547c860109e4432d50AfB38e',
   implementations: null,
   is_contract: false,

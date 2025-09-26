@@ -1,18 +1,17 @@
-import { chakra } from '@chakra-ui/react';
+import { Box, chakra } from '@chakra-ui/react';
 import React from 'react';
 
 import type { TokenInfo } from 'types/api/token';
 
 import { route } from 'nextjs/routes';
 
-import { getEnvValue } from 'configs/app/utils';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import getChainTooltipText from 'lib/multichain/getChainTooltipText';
 import getIconUrl from 'lib/multichain/getIconUrl';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TruncatedTextTooltip } from 'toolkit/components/truncation/TruncatedTextTooltip';
 import * as EntityBase from 'ui/shared/entities/base/components';
-import TokenLogoPlaceholder from 'ui/shared/TokenLogoPlaceholder';
 
 import { distributeEntityProps, getIconProps } from '../base/utils';
 
@@ -45,14 +44,47 @@ const Icon = (props: IconProps) => {
     borderRadius: props.token.type === 'ERC-20' ? 'full' : 'base',
   };
 
+  // 创建首字母头像作为 fallback
+  const getInitial = () => {
+    const text = props.token.name || props.token.symbol || '';
+    if (!text) return '?';
+    const firstChar = text.trim().charAt(0).toUpperCase();
+    return firstChar || '';
+  };
+
+  // 使用与 EntityBase.Icon 相同的尺寸
+  const iconSize = styles.boxSize;
+
+  const InitialAvatar = () => (
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      fontWeight={ 600 }
+      fontSize="sm"
+      bgColor={{ _light: 'gray.200', _dark: 'gray.600' }}
+      color={{ _light: 'gray.600', _dark: 'gray.200' }}
+      borderRadius={ props.token.type === 'ERC-20' ? 'full' : 'base' }
+      transitionProperty="background-color,color"
+      transitionDuration="normal"
+      transitionTimingFunction="ease"
+      w={ iconSize }
+      h={ iconSize }
+      minW={ iconSize }
+      minH={ iconSize }
+      mr={ 2 }
+    >
+      { getInitial() }
+    </Box>
+  );
+
   return (
     <EntityBase.Icon
       { ...styles }
       className={ props.className }
-      src={ getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address_hash)
-        .replace('[chain]', (window.location.origin.includes('testnet') || window.location.origin.includes('localhost')) ? 'xone_testnet' : 'xone') }
+      src={ props.token.isIconAddress ? (props.token.icon_url || '') : (getTokenIconPath(props.token.address_hash || props.token.address || '') || '') }
       alt={ `${ props.token.name || 'token' } logo` }
-      fallback={ <TokenLogoPlaceholder/> }
+      fallback={ <InitialAvatar/> }
       shield={ props.shield ?? (props.chain ? { src: getIconUrl(props.chain) } : undefined) }
       hint={ props.chain ? getChainTooltipText(props.chain, 'Token on ') : undefined }
       { ...props }
@@ -127,7 +159,7 @@ const Copy = (props: CopyProps) => {
 const Container = EntityBase.Container;
 
 export interface EntityProps extends EntityBase.EntityBaseProps {
-  token: Pick<TokenInfo, 'address_hash' | 'icon_url' | 'name' | 'symbol' | 'type'>;
+  token: Pick<TokenInfo, 'address_hash' | 'address' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress'>;
   noSymbol?: boolean;
   jointSymbol?: boolean;
   onlySymbol?: boolean;

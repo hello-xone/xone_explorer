@@ -6,6 +6,7 @@ import type { Pool } from 'types/api/pools';
 import { route } from 'nextjs-routes';
 
 import { getPoolTitle } from 'lib/pools/getPoolTitle';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TruncatedTextTooltip } from 'toolkit/components/truncation/TruncatedTextTooltip';
 import * as EntityBase from 'ui/shared/entities/base/components';
@@ -45,17 +46,18 @@ const Icon = (props: IconProps) => {
           marginRight={ 0 }
           variant={ props.variant }
           token={{
-            icon_url: props.pool.base_token_icon_url,
+            icon_url: getTokenIconPath(props.pool.base_token_address_icon || '') ?? null,
             symbol: props.pool.base_token_symbol,
             address_hash: props.pool.base_token_address,
             name: '',
             type: 'ERC-20',
+            isIconAddress: true,
           }}
           isLoading={ props.isLoading }
         />
       </Flex>
       <Flex
-        transform="translateX(-8px)"
+        transform="translateX(-14px)"
         bgColor={ bgColor }
         borderRadius="full"
         border="1px solid"
@@ -65,11 +67,12 @@ const Icon = (props: IconProps) => {
           marginRight={ 0 }
           variant={ props.variant }
           token={{
-            icon_url: props.pool.quote_token_icon_url,
+            icon_url: getTokenIconPath(props.pool.quote_token_address_icon || '') ?? null,
             symbol: props.pool.quote_token_symbol,
             address_hash: props.pool.quote_token_address,
             name: '',
             type: 'ERC-20',
+            isIconAddress: true,
           }}
           isLoading={ props.isLoading }
         />

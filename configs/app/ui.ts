@@ -1,7 +1,14 @@
 import type { ContractCodeIde } from 'types/client/contract';
-import { type NavItemExternal, type NavigationLayout, type NavigationPromoBannerConfig } from 'types/client/navigation';
-import { HOME_STATS_WIDGET_IDS, type HeroBannerConfig, type HomeStatsWidgetId } from 'types/homepage';
-import type { NetworkExplorer } from 'types/networks';
+import {
+  type NavItemExternal,
+  type NavigationLayout,
+  type NavigationPromoBannerConfig,
+} from 'types/client/navigation';
+import {
+  HOME_STATS_WIDGET_IDS,
+  type HeroBannerConfig,
+  type HomeStatsWidgetId,
+} from 'types/homepage';
 import type { ColorThemeId } from 'types/settings';
 import type { FontFamily } from 'types/ui';
 
@@ -12,33 +19,60 @@ import * as views from './ui/views';
 import { getEnvValue, getExternalAssetFilePath, parseEnvJson } from './utils';
 
 const homePageStats: Array<HomeStatsWidgetId> = (() => {
-  const parsedValue = parseEnvJson<Array<HomeStatsWidgetId>>(getEnvValue('NEXT_PUBLIC_HOMEPAGE_STATS'));
+  const parsedValue = parseEnvJson<Array<HomeStatsWidgetId>>(
+    getEnvValue('NEXT_PUBLIC_HOMEPAGE_STATS'),
+  );
 
   if (!Array.isArray(parsedValue)) {
     const rollupFeature = features.rollup;
 
-    if (rollupFeature.isEnabled && [ 'zkEvm', 'zkSync', 'arbitrum' ].includes(rollupFeature.type)) {
-      return [ 'latest_batch', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker', 'current_epoch' ];
+    if (
+      rollupFeature.isEnabled &&
+      [ 'zkEvm', 'zkSync', 'arbitrum' ].includes(rollupFeature.type)
+    ) {
+      return [
+        'latest_batch',
+        'average_block_time',
+        'total_txs',
+        'wallet_addresses',
+        'gas_tracker',
+        'current_epoch',
+      ];
     }
 
-    return [ 'total_blocks', 'average_block_time', 'total_txs', 'wallet_addresses', 'gas_tracker', 'current_epoch' ];
+    return [
+      'total_blocks',
+      'average_block_time',
+      'total_txs',
+      'wallet_addresses',
+      'gas_tracker',
+      'current_epoch',
+    ];
   }
 
   return parsedValue.filter((item) => HOME_STATS_WIDGET_IDS.includes(item));
 })();
 
 const highlightedRoutes = (() => {
-  const parsedValue = parseEnvJson<Array<string>>(getEnvValue('NEXT_PUBLIC_NAVIGATION_HIGHLIGHTED_ROUTES'));
+  const parsedValue = parseEnvJson<Array<string>>(
+    getEnvValue('NEXT_PUBLIC_NAVIGATION_HIGHLIGHTED_ROUTES'),
+  );
   return Array.isArray(parsedValue) ? parsedValue : [];
 })();
 
 const defaultColorTheme = (() => {
-  const envValue = getEnvValue('NEXT_PUBLIC_COLOR_THEME_DEFAULT') as ColorThemeId | undefined;
-  return COLOR_THEMES.find((theme) => theme.id === envValue) as ColorTheme | undefined;
+  const envValue = getEnvValue('NEXT_PUBLIC_COLOR_THEME_DEFAULT') as
+    | ColorThemeId
+    | undefined;
+  return COLOR_THEMES.find((theme) => theme.id === envValue) as
+    | ColorTheme
+    | undefined;
 })();
 
 const navigationPromoBanner = (() => {
-  const envValue = parseEnvJson<NavigationPromoBannerConfig>(getEnvValue('NEXT_PUBLIC_NAVIGATION_PROMO_BANNER_CONFIG'));
+  const envValue = parseEnvJson<NavigationPromoBannerConfig>(
+    getEnvValue('NEXT_PUBLIC_NAVIGATION_PROMO_BANNER_CONFIG'),
+  );
   return envValue || undefined;
 })();
 const UI = Object.freeze({
@@ -52,8 +86,12 @@ const UI = Object.freeze({
       dark: '/assets/favicon/android-chrome-192x192.png',
     },
     highlightedRoutes,
-    otherLinks: parseEnvJson<Array<NavItemExternal>>(getEnvValue('NEXT_PUBLIC_OTHER_LINKS')) || [],
-    layout: (getEnvValue('NEXT_PUBLIC_NAVIGATION_LAYOUT') || 'vertical') as NavigationLayout,
+    otherLinks:
+      parseEnvJson<Array<NavItemExternal>>(
+        getEnvValue('NEXT_PUBLIC_OTHER_LINKS'),
+      ) || [],
+    layout: (getEnvValue('NEXT_PUBLIC_NAVIGATION_LAYOUT') ||
+      'vertical') as NavigationLayout,
     featuredNetworks: getExternalAssetFilePath('NEXT_PUBLIC_FEATURED_NETWORKS'),
     promoBanner: navigationPromoBanner,
   },
@@ -69,7 +107,9 @@ const UI = Object.freeze({
   homepage: {
     charts: [ 'daily_txs', 'coin_price', 'market_cap' ],
     stats: homePageStats,
-    heroBanner: parseEnvJson<HeroBannerConfig>(getEnvValue('NEXT_PUBLIC_HOMEPAGE_HERO_BANNER_CONFIG')),
+    heroBanner: parseEnvJson<HeroBannerConfig>(
+      getEnvValue('NEXT_PUBLIC_HOMEPAGE_HERO_BANNER_CONFIG'),
+    ),
     // !!! DEPRECATED !!!
     plate: {
       background: getEnvValue('NEXT_PUBLIC_HOMEPAGE_PLATE_BACKGROUND'),
@@ -79,31 +119,59 @@ const UI = Object.freeze({
   views,
   indexingAlert: {
     blocks: {
-      isHidden: getEnvValue('NEXT_PUBLIC_HIDE_INDEXING_ALERT_BLOCKS') === 'true' ? true : false,
+      isHidden:
+        getEnvValue('NEXT_PUBLIC_HIDE_INDEXING_ALERT_BLOCKS') === 'true' ?
+          true :
+          false,
     },
     intTxs: {
-      isHidden: getEnvValue('NEXT_PUBLIC_HIDE_INDEXING_ALERT_INT_TXS') === 'true' ? true : false,
+      isHidden:
+        getEnvValue('NEXT_PUBLIC_HIDE_INDEXING_ALERT_INT_TXS') === 'true' ?
+          true :
+          false,
     },
   },
   maintenanceAlert: {
     message: getEnvValue('NEXT_PUBLIC_MAINTENANCE_ALERT_MESSAGE'),
   },
+
   explorers: {
-    items: parseEnvJson<Array<NetworkExplorer>>(getEnvValue('NEXT_PUBLIC_NETWORK_EXPLORERS')) || [],
+    items: [
+      {
+        title: 'GeckoTerminal',
+        logo: 'https://raw.githubusercontent.com/blockscout/frontend-configs/main/configs/explorer-logos/geckoterminal.png',
+        baseUrl: 'https://www.geckoterminal.com/',
+        paths: { token: '/xone/pools/:id_lowercase' },
+      },
+    ],
   },
   ides: {
-    items: parseEnvJson<Array<ContractCodeIde>>(getEnvValue('NEXT_PUBLIC_CONTRACT_CODE_IDES')) || [],
+    items:
+      parseEnvJson<Array<ContractCodeIde>>(
+        getEnvValue('NEXT_PUBLIC_CONTRACT_CODE_IDES'),
+      ) || [],
   },
-  hasContractAuditReports: getEnvValue('NEXT_PUBLIC_HAS_CONTRACT_AUDIT_REPORTS') === 'true' ? true : false,
+  hasContractAuditReports:
+    getEnvValue('NEXT_PUBLIC_HAS_CONTRACT_AUDIT_REPORTS') === 'true' ?
+      true :
+      false,
   colorTheme: {
     'default': defaultColorTheme,
-    overrides: parseEnvJson<Record<string, unknown>>(getEnvValue('NEXT_PUBLIC_COLOR_THEME_OVERRIDES')) || {},
+    overrides:
+      parseEnvJson<Record<string, unknown>>(
+        getEnvValue('NEXT_PUBLIC_COLOR_THEME_OVERRIDES'),
+      ) || {},
   },
   fonts: {
-    heading: parseEnvJson<FontFamily>(getEnvValue('NEXT_PUBLIC_FONT_FAMILY_HEADING')),
+    heading: parseEnvJson<FontFamily>(
+      getEnvValue('NEXT_PUBLIC_FONT_FAMILY_HEADING'),
+    ),
     body: parseEnvJson<FontFamily>(getEnvValue('NEXT_PUBLIC_FONT_FAMILY_BODY')),
   },
-  maxContentWidth: getEnvValue('NEXT_PUBLIC_MAX_CONTENT_WIDTH_ENABLED') === 'false' ? false : true,
+  maxContentWidth:
+    getEnvValue('NEXT_PUBLIC_MAX_CONTENT_WIDTH_ENABLED') === 'false' ?
+      false :
+      true,
 });
 
 export default UI;
