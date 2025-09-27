@@ -25,8 +25,8 @@ const Pools = () => {
   const [ searchTerm, setSearchTerm ] = React.useState<string>(q ?? '');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // 添加排序状态
-  const [ sortOrder ] = React.useState<'asc' | 'desc'>('desc');
+  // 前端分页状态
+  const [ currentPage, setCurrentPage ] = React.useState<number>(1);
 
   // 获取当前 chain_id
   const currentChainId = config.chain.id?.toString() ?? '';
@@ -39,6 +39,7 @@ const Pools = () => {
       query: debouncedSearchTerm,
       order: 'h24_volume_usd_desc',
       include: 'base_token,quote_token,dex',
+      page: router.query.page || 1,
     },
   });
 
@@ -94,19 +95,82 @@ const Pools = () => {
       pools = (poolsQuery.data as { items?: Array<Pool> })?.items || [];
     }
 
-    // 根据 Liquidity 排序
+    // 默认按 Liquidity 倒序排序
     return pools.sort((a, b) => {
       const liquidityA = parseFloat(a.liquidity) || 0;
       const liquidityB = parseFloat(b.liquidity) || 0;
 
-      return sortOrder === 'desc' ? liquidityB - liquidityA : liquidityA - liquidityB;
+      return liquidityB - liquidityA; // 倒序
     });
-  }, [ poolsQuery.data, currentChainId, sortOrder ]);
+  }, [ poolsQuery.data, currentChainId ]);
 
   const handleSearchTermChange = React.useCallback((value: string) => {
     poolsQuery.onFilterChange({ query: value });
     setSearchTerm(value);
-  }, [ poolsQuery ]);
+    // 搜索时重置到第一页
+    setCurrentPage(1);
+    router.push({ pathname: router.pathname, query: { ...router.query, page: undefined } }, undefined, { shallow: true });
+  }, [ poolsQuery, router ]);
+
+  // 自定义分页处理函数
+  const handleNextPage = React.useCallback(() => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    // 更新 URL 参数，触发新的 API 请求
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, page: nextPage.toString() },
+    }, undefined, { shallow: true });
+  }, [ currentPage, router ]);
+
+  const handlePrevPage = React.useCallback(() => {
+    const prevPage = Math.max(1, currentPage - 1);
+    setCurrentPage(prevPage);
+    // 更新 URL 参数，触发新的 API 请求
+    if (prevPage === 1) {
+      router.push({
+        pathname: router.pathname,
+        query: { ...router.query, page: undefined },
+      }, undefined, { shallow: true });
+    } else {
+      router.push({
+        pathname: router.pathname,
+        query: { ...router.query, page: prevPage.toString() },
+      }, undefined, { shallow: true });
+    }
+  }, [ currentPage, router ]);
+
+  const handleResetPage = React.useCallback(() => {
+    setCurrentPage(1);
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, page: undefined },
+    }, undefined, { shallow: true });
+  }, [ router ]);
+
+  // 同步 URL 中的页码到本地状态
+  React.useEffect(() => {
+    const pageFromUrl = router.query.page ? Number(router.query.page) : 1;
+    setCurrentPage(pageFromUrl);
+  }, [ router.query.page ]);
+
+  // 自定义分页逻辑：当数据等于20条时显示下一页
+  const customPagination = React.useMemo(() => {
+    const currentPageItemCount = transformedData?.length || 0;
+    // 当前页有20条数据时，假设可能有下一页
+    const hasNextPage = currentPageItemCount === 20;
+    return {
+      page: currentPage,
+      onNextPageClick: handleNextPage,
+      onPrevPageClick: handlePrevPage,
+      resetPage: handleResetPage,
+      hasPages: currentPage > 1,
+      hasNextPage,
+      canGoBackwards: currentPage > 1,
+      isLoading: poolsQuery.isPlaceholderData,
+      isVisible: true, // 总是显示分页组件
+    };
+  }, [ currentPage, transformedData?.length, handleNextPage, handlePrevPage, handleResetPage, poolsQuery.isPlaceholderData ]);
 
   const content = (
     <>
@@ -122,9 +186,9 @@ const Pools = () => {
       <Box hideBelow="lg">
         <PoolsTable
           items={ transformedData ?? [] }
-          top={ poolsQuery.pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+          top={ customPagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
           isLoading={ poolsQuery.isPlaceholderData }
-          page={ poolsQuery.pagination.page }
+          page={ customPagination.page }
         />
       </Box>
     </>
@@ -147,12 +211,12 @@ const Pools = () => {
       </Flex>
       <ActionBar
         mt={ -6 }
-        display={{ base: poolsQuery.pagination.isVisible ? 'flex' : 'none', lg: 'flex' }}
+        display={{ base: customPagination.isVisible ? 'flex' : 'none', lg: 'flex' }}
       >
         <Box hideBelow="lg">
           { filter }
         </Box>
-        <Pagination { ...poolsQuery.pagination } ml="auto"/>
+        <Pagination { ...customPagination } ml="auto"/>
       </ActionBar>
     </>
   );
@@ -165,7 +229,7 @@ const Pools = () => {
       />
       <DataListDisplay
         isError={ poolsQuery.isError }
-        itemsNum={ transformedData?.length }
+        itemsNum={ Math.max(1, transformedData?.length || 0) }
         emptyText="There are no pools."
         actionBar={ actionBar }
         filterProps={{
