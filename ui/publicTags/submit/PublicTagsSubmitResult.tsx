@@ -18,7 +18,7 @@ import { groupSubmitResult } from './utils';
 
 interface Props {
   data: FormSubmitResult | undefined;
-  resetScreen: () => void;
+  resetScreen?: () => void;
 }
 
 const PublicTagsSubmitResult = ({ data, resetScreen }: Props) => {
