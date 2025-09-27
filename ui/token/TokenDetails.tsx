@@ -97,7 +97,6 @@ const TokenDetails = ({ tokenQuery }: Props) => {
       smooth: true,
     });
   }, [ hash, router ]);
-
   const countersItem = useCallback((item: 'token_holders_count' | 'transfers_count') => {
     const itemValue = tokenCountersQuery.data?.[item];
     if (!itemValue) {

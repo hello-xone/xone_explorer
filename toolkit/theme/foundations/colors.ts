@@ -23,8 +23,8 @@ const DEFAULT_THEME_COLORS = {
     },
   },
   hover: {
-    _light: { value: '{colors.blue.400}' },
-    _dark: { value: '{colors.blue.400}' },
+    _light: { value: '#D90021' },
+    _dark: { value: '#D90021' },
   },
   selected: {
     control: {

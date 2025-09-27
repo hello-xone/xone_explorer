@@ -333,13 +333,11 @@ const Footer = () => {
   }, [ email ]);
 
   return (
-    <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
+    <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="border.divider">
       <VStack alignItems="start" minH="140px" >
-        <Button variant="outline" borderColor="priRed.500" onClick={ onAddChain } _hover={{
-          borderColor: 'priRed.700',
-        }} size="sm">
+        <Button onClick={ onAddChain } bgColor={{ _light: 'theme.topbar.bg._light', _dark: 'theme.topbar.bg._dark' }} size="sm">
           <IconSvg name={ WALLETS_INFO['metamask'].icon } boxSize={ 6 } mr="2"/>
-          <Text color={ buttonColor }>Add { chain.name }</Text>
+          <Text color={ buttonColor }>Add { chain.name } { chain.isTestnet ? '' : 'Mainnet' }</Text>
         </Button>
         <Box marginTop={ 6 }>
           <Box w={{ base: '100%', md: '386px' }} position="relative" marginBottom={ 4 }>
@@ -388,10 +386,12 @@ const Footer = () => {
           { text: 'RPC Endpoints', to: 'https://docs.xone.org/developers/rpc' },
           { text: 'Dev Tools', to: 'https://docs.xone.org/developers/tools' },
           { text: 'Faucets', to: 'https://faucet.xone.org/' },
+          { text: 'Status', to: 'https://status.xone.org/' },
           { text: 'Github', to: 'https://github.com/hello-xone' },
         ] }/>
 
         <Links title="Global" links={ [
+          { text: 'Forum', to: 'https://forum.xone.org/' },
           { text: 'Cooperation', to: 'https://xone.org/commercial' },
           { text: 'Blog', to: 'https://docs.xone.org/blog' },
           { text: 'Events', to: 'https://luma.com/xone' },

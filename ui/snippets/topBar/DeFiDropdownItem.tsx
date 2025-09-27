@@ -3,8 +3,6 @@ import React from 'react';
 
 import type { DeFiDropdownItem as TDeFiDropdownItem } from 'types/client/deFiDropdown';
 
-import { route } from 'nextjs-routes';
-
 import { Image } from 'toolkit/chakra/image';
 import { Link } from 'toolkit/chakra/link';
 
@@ -15,14 +13,15 @@ type Props = {
 const DeFiDropdownItem = ({ item }: Props) => {
   return (
     <Link
-      href={ item.dappId ? route({ pathname: '/apps/[id]', query: { id: item.dappId, action: 'connect' } }) : item.url }
-      external={ !item.dappId }
+      href={ item.url }
+      external
       w="100%"
+      target="_blank"
       h="34px"
       variant="menu"
       onClick={ item.onClick }
     >
-      <Image src={ item.icon } alt="" boxSize={ 5 } objectFit="contain" mr={ 2 }></Image>
+      <Image src={ item.icon } alt="" boxSize={ 5 } objectFit="contain" borderRadius="full" mr={ 2 }></Image>
       <Text as="span" fontSize="sm">{ item.text }</Text>
     </Link>
   );

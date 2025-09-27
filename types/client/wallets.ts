@@ -6,6 +6,7 @@ export const SUPPORTED_WALLETS = [
   'metamask',
   'coinbase',
   'token_pocket',
+  'tokenup',
 ] as const;
 
 export type WalletType = ArrayElement<typeof SUPPORTED_WALLETS>;
