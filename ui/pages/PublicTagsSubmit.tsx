@@ -14,21 +14,25 @@ type Screen = 'form' | 'result' | 'initializing' | 'error';
 
 const PublicTagsSubmit = () => {
 
-  const [ screen, setScreen ] = React.useState<Screen>('initializing');
+  const [ screen, setScreen ] = React.useState<Screen>('result');
   const [ submitResult, setSubmitResult ] = React.useState<FormSubmitResult>();
 
   const profileQuery = useProfileQuery();
   const configQuery = useApiQuery('metadata:public_tag_types', { queryOptions: { enabled: !profileQuery.isLoading } });
 
-  React.useEffect(() => {
-    if (!configQuery.isPending) {
-      setScreen(configQuery.isError ? 'error' : 'form');
-    }
-  }, [ configQuery.isError, configQuery.isPending ]);
+  // React.useEffect(() => {
+  //   if (!configQuery.isPending) {
+  //     setScreen(configQuery.isError ? 'error' : 'form');
+  //   }
+  // }, [ configQuery.isError, configQuery.isPending ]);
 
   const handleFormSubmitResult = React.useCallback((result: FormSubmitResult) => {
     setSubmitResult(result);
     setScreen('result');
+  }, []);
+
+  const resetScreen = React.useCallback(() => {
+    setScreen('form');
   }, []);
 
   const content = (() => {
@@ -40,7 +44,7 @@ const PublicTagsSubmit = () => {
       case 'form':
         return <PublicTagsSubmitForm config={ configQuery.data } onSubmitResult={ handleFormSubmitResult } userInfo={ profileQuery.data }/>;
       case 'result':
-        return <PublicTagsSubmitResult data={ submitResult }/>;
+        return <PublicTagsSubmitResult data={ submitResult } resetScreen={ resetScreen }/>;
       default:
         return null;
     }
