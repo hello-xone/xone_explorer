@@ -24,7 +24,6 @@ const PoolsTable = ({ items, page, isLoading, top }: Props) => {
           <TableColumnHeader
             width="120px"
             isNumeric
-            cursor="pointer"
           >
             Liquidity
           </TableColumnHeader>
