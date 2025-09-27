@@ -39,7 +39,7 @@ const Pools = () => {
       query: debouncedSearchTerm,
       order: 'h24_volume_usd_desc',
       include: 'base_token,quote_token,dex',
-      page: router.query.page || 1,
+      page: router.query.page?.toString() || '1',
     },
   });
 

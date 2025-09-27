@@ -42,6 +42,6 @@ never;
 
 /* eslint-disable @stylistic/indent */
 export type ContractInfoApiPaginationFilters<R extends ContractInfoApiResourceName> =
-R extends 'contractInfo:pools' ? { query?: string; order?: string; include?: string } :
+R extends 'contractInfo:pools' ? { query?: string; order?: string; include?: string; page?: string | null } :
 never;
 /* eslint-enable @stylistic/indent */
