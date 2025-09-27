@@ -74,6 +74,7 @@
     "@slise/embed-react": "^2.2.0",
     "@tanstack/react-query": "5.55.4",
     "@tanstack/react-query-devtools": "5.55.4",
+    "@tokenup/web3kit": "^1.1.3",
     "@types/papaparse": "^5.3.5",
     "@types/react-scroll": "^1.8.4",
     "@uidotdev/usehooks": "2.4.1",

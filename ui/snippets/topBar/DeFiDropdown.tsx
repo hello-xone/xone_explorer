@@ -21,6 +21,9 @@ const DeFiDropdown = () => {
   const source = getPageType(router.pathname);
 
   const handleClick = React.useCallback((content: string) => {
+    if (content) {
+      window.open(content);
+    }
     mixpanel.logEvent(mixpanel.EventTypes.BUTTON_CLICK, { Content: `DeFi button: ${ content }`, Source: source });
   }, [ source ]);
 
@@ -30,7 +33,7 @@ const DeFiDropdown = () => {
 
   const items = feature.items.map((item) => ({
     ...item,
-    onClick: () => handleClick(item.text),
+    onClick: () => handleClick(item.url || ''),
   }));
 
   return items.length > 1 ? (

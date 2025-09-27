@@ -65,7 +65,8 @@ export default function useProvider() {
           // for now it's the only way to distinguish them
           (wallet === 'metamask' && provider.isMetaMask && Boolean(provider._events)) ||
           (wallet === 'coinbase' && provider.isCoinbaseWallet) ||
-          (wallet === 'token_pocket' && provider.isTokenPocket)
+          (wallet === 'token_pocket' && provider.isTokenPocket) ||
+          (wallet === 'tokenup' && (typeof window !== 'undefined'))
         );
       });
 

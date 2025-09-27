@@ -3,10 +3,131 @@ import { http } from 'viem';
 import type { CreateConfigParameters, Transport } from 'wagmi';
 import { createConfig, fallback } from 'wagmi';
 
+// 移除 TokenUPConnector 类实现，将在其他地方正确实现
+
 import appConfig from 'configs/app';
 import multichainConfig from 'configs/multichain';
 import { currentChain, parentChain } from 'lib/web3/chains';
+
+import { connectTokenUP, isTokenUPInstalled, getTokenUPAccount } from './tokenup';
+
 const feature = appConfig.features.blockchainInteraction;
+
+// TokenUP钱包连接器函数 - 符合wagmi的CreateConnectorFn类型
+function createTokenUpConnector() {
+  return () => ({
+    id: 'tokenup',
+    name: 'TokenUP',
+    type: 'injected' as const,
+    // iconUrl: () => `/static/tokenup.png`,
+    icon: `/static/tokenup.png`,
+    iconUrl: `/static/tokenup.png`,
+    iconBackground: '#FFFFFF',
+
+    // 检查钱包是否已安装
+    detect: async() => {
+      if (typeof window === 'undefined') return false;
+      return isTokenUPInstalled();
+    },
+
+    // 检查钱包是否已连接
+    isAuthorized: async() => {
+      try {
+        const account = await getTokenUPAccount();
+        return Boolean(account);
+      } catch {
+        return false;
+      }
+    },
+
+    // 连接钱包
+    connect: async() => {
+      if (typeof window === 'undefined') {
+        throw new Error('Window is not available');
+      }
+
+      if (!isTokenUPInstalled()) {
+        throw new Error('TokenUP wallet is not installed');
+      }
+      const accounts = await connectTokenUP(appConfig.chain.id || '3721');
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from TokenUP');
+      }
+
+      // 确保返回的类型符合wagmi要求
+      return {
+        accounts: accounts as ReadonlyArray<`0x${ string }`>,
+        chainId: parseInt(appConfig.chain.id || '3721', 10),
+      };
+    },
+
+    // 断开连接
+    disconnect: async() => {
+      return;
+    },
+
+    // 获取当前账户
+    getAccount: async() => {
+      const account = await getTokenUPAccount();
+      if (!account) {
+        throw new Error('Not connected to TokenUP');
+      }
+      return account;
+    },
+
+    // 获取账户列表
+    getAccounts: async() => {
+      const account = await getTokenUPAccount();
+      return (account ? [ account ] : []) as ReadonlyArray<`0x${ string }`>;
+    },
+
+    // 获取当前链ID
+    getChainId: async() => {
+      return parseInt(appConfig.chain.id || '1', 10);
+    },
+
+    // 获取提供者
+    getProvider: async() => {
+      if (!isTokenUPInstalled()) {
+        throw new Error('TokenUP wallet is not installed');
+      }
+      return null; // 暂时返回null
+    },
+
+    // 账户变化监听
+    onAccountsChanged: () => {},
+
+    // 链变化监听
+    onChainChanged: () => {},
+
+    // 断开连接监听
+    onDisconnect: () => {},
+
+    // 消息监听
+    onMessage: () => {},
+
+    // 发送交易
+    sendTransaction: async() => {
+      throw new Error('sendTransaction not implemented');
+    },
+
+    // 签名消息
+    signMessage: async() => {
+      throw new Error('signMessage not implemented');
+    },
+
+    // 签名个人消息
+    signPersonalMessage: async() => {
+      throw new Error('signPersonalMessage not implemented');
+    },
+
+    // 签名类型化数据
+    signTypedData: async() => {
+      throw new Error('signTypedData not implemented');
+    },
+  });
+}
 
 const getChainTransportFromConfig = (config: typeof appConfig, readOnly?: boolean): Record<string, Transport> => {
   if (!config.chain.id) {
@@ -45,7 +166,6 @@ const wagmiConfig = (() => {
     return null;
   }
   const chains: CreateConfigParameters['chains'] = [ currentChain ];
-
   if (!feature.isEnabled) {
     const wagmiConfig = createConfig({
       chains: [ currentChain ],
@@ -67,6 +187,9 @@ const wagmiConfig = (() => {
     transports: {
       [currentChain.id]: http(),
     },
+    connectors: [
+      createTokenUpConnector(),
+    ],
     projectId: feature.walletConnect.projectId,
     metadata: {
       name: `${ appConfig.chain.name } explorer`,
