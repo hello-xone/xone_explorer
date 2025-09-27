@@ -1,3 +1,4 @@
+import config from 'configs/app';
 import { getEnvValue } from 'configs/app/utils';
 
 /**
@@ -5,9 +6,7 @@ import { getEnvValue } from 'configs/app/utils';
  * @returns 链名称字符串，用于构建 token icon 路径
  */
 function getChainName(): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const isTestnetOrLocal = origin.includes('testnet') || origin.includes('localhost');
-  return isTestnetOrLocal ? 'xone_testnet' : 'xone';
+  return config.chain.isTestnet ? 'xone_testnet' : 'xone';
 }
 
 /**
