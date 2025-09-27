@@ -73,8 +73,7 @@ const PoolsTableItem = ({
                   <Tooltip content={ link.title } key={ link.url }>
                     <Box display="inline-block">
                       <Link external noIcon href={ link.url } display="inline-flex">
-                        <Image src={ link.image } alt={ link.title } boxSize={ 5 } mr={ 2 }/>
-                        { link.title }
+                        <Image src={ link.image } alt={ link.title } boxSize={ 5 } mr={ 3 }/>
                       </Link>
                     </Box>
                   </Tooltip>

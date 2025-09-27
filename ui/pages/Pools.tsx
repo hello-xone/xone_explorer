@@ -26,7 +26,7 @@ const Pools = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // 添加排序状态
-  const [ sortOrder, setSortOrder ] = React.useState<'asc' | 'desc'>('desc');
+  const [ sortOrder ] = React.useState<'asc' | 'desc'>('desc');
 
   // 获取当前 chain_id
   const currentChainId = config.chain.id?.toString() ?? '';
@@ -108,11 +108,6 @@ const Pools = () => {
     setSearchTerm(value);
   }, [ poolsQuery ]);
 
-  // 处理排序点击
-  const handleSortChange = React.useCallback(() => {
-    setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
-  }, []);
-
   const content = (
     <>
       <Box hideFrom="lg">
@@ -130,8 +125,6 @@ const Pools = () => {
           top={ poolsQuery.pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
           isLoading={ poolsQuery.isPlaceholderData }
           page={ poolsQuery.pagination.page }
-          sortOrder={ sortOrder }
-          onSortChange={ handleSortChange }
         />
       </Box>
     </>
