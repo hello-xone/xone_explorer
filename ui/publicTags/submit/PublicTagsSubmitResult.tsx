@@ -18,9 +18,10 @@ import { groupSubmitResult } from './utils';
 
 interface Props {
   data: FormSubmitResult | undefined;
+  resetScreen: () => void;
 }
 
-const PublicTagsSubmitResult = ({ data }: Props) => {
+const PublicTagsSubmitResult = ({ data, resetScreen }: Props) => {
   const groupedData = React.useMemo(() => groupSubmitResult(data), [ data ]);
 
   if (!groupedData) {
@@ -77,7 +78,7 @@ const PublicTagsSubmitResult = ({ data }: Props) => {
             </Button>
           </Link>
         ) }
-        <Link href={ route({ pathname: '/public-tags/submit', query: startOverButtonQuery }) } asChild>
+        <Link onClick={ resetScreen } asChild>
           <Button w={{ base: '100%', lg: 'auto' }}>Add new tag</Button>
         </Link>
       </Flex>

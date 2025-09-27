@@ -36,8 +36,8 @@ export const base: stats.LineCharts = {
         {
           id: 'averageTxnFee',
           title: 'Average transaction fee',
-          description: 'The average amount in ETH spent per transaction',
-          units: 'ETH',
+          description: 'The average amount in XOC spent per transaction',
+          units: 'XOC',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -51,7 +51,7 @@ export const base: stats.LineCharts = {
           id: 'txnsFee',
           title: 'Transactions fees',
           description: 'Amount of tokens paid as fees',
-          units: 'ETH',
+          units: 'XOC',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -78,7 +78,7 @@ export const base: stats.LineCharts = {
           id: 'averageBlockRewards',
           title: 'Average block rewards',
           description: 'Average amount of distributed reward in tokens per day',
-          units: 'ETH',
+          units: 'XOC',
           resolutions: [ 'DAY', 'MONTH' ],
         },
         {
@@ -103,7 +103,7 @@ export const base: stats.LineCharts = {
       charts: [
         {
           id: 'newNativeCoinTransfers',
-          title: 'New ETH transfers',
+          title: 'New XOC transfers',
           description: 'New token transfers number for the period',
           units: undefined,
           resolutions: [ 'DAY', 'MONTH' ],
