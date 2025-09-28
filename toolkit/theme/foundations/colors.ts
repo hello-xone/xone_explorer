@@ -39,8 +39,8 @@ const DEFAULT_THEME_COLORS = {
     },
     option: {
       bg: {
-        _light: { value: '{colors.blue.500}' },
-        _dark: { value: '{colors.blue.500}' },
+        _light: { value: '#FF0420' },
+        _dark: { value: '#FF0420' },
       },
     },
   },
@@ -85,14 +85,14 @@ const DEFAULT_THEME_COLORS = {
   navigation: {
     bg: {
       selected: {
-        _light: { value: '{colors.blue.50}' },
-        _dark: { value: '{colors.gray.800}' },
+        _light: { value: '#FFE7E6' },
+        _dark: { value: '#FFE7E6' },
       },
     },
     text: {
       selected: {
-        _light: { value: '{colors.blue.700}' },
-        _dark: { value: '{colors.gray.50}' },
+        _light: { value: '#FF0420' },
+        _dark: { value: '#FF0420' },
       },
     },
   },

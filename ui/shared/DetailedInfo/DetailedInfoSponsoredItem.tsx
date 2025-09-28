@@ -1,9 +1,11 @@
+import { Box } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
+import { ads } from 'configs/app/features/ads';
 import * as cookies from 'lib/cookies';
-import AdBanner from 'ui/shared/ad/AdBanner';
 
+import AdSwiperCarousel from '../ad/AdSwiperCarousel';
 import * as DetailedInfo from './DetailedInfo';
 
 const feature = config.features.adsBanner;
@@ -28,7 +30,13 @@ const DetailedInfoSponsoredItem = ({ isLoading }: Props) => {
         Sponsored
       </DetailedInfo.ItemLabel>
       <DetailedInfo.ItemValue mt={{ base: 0, lg: 1 }}>
-        <AdBanner isLoading={ isLoading }/>
+        <Box
+          w="100%"
+          borderRadius="md"
+          overflow="hidden"
+        >
+          <AdSwiperCarousel showArrows={ false } ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
+        </Box>
       </DetailedInfo.ItemValue>
     </>
   );

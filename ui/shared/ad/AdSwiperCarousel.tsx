@@ -69,9 +69,12 @@ const SimpleAdCarousel = ({
   }, [ currentIndex, ads.length ]);
 
   // 创建点击处理函数
-  const createDotClickHandler = useCallback((index: number) => {
-    return () => goToSlide(index);
-  }, [ goToSlide ]);
+  const createDotClickHandler = useCallback(
+    (index: number) => {
+      return () => goToSlide(index);
+    },
+    [ goToSlide ],
+  );
 
   if (!ads || ads.length === 0) {
     return null;
@@ -94,6 +97,22 @@ const SimpleAdCarousel = ({
       bg="gray.100"
       boxShadow="md"
     >
+      <Box
+        fontSize="12px"
+        w="36px"
+        h="16px"
+        textAlign="center"
+        top={ 0 }
+        right={ 0 }
+        zIndex={ 1 }
+        position="absolute"
+        lineHeight="16px"
+        borderRadius="0 8px 0 8px"
+        background="#F2F3F4"
+        color="#070808"
+      >
+        Ad
+      </Box>
       { /* 轮播滑动容器 */ }
       <Box
         display="flex"
@@ -195,7 +214,8 @@ const SimpleAdCarousel = ({
         <Flex
           position="absolute"
           bottom={ 2 }
-          right={ 3 }
+          justifyContent="center"
+          width="100%"
           gap={ 1 }
           zIndex={ 2 }
         >
@@ -205,16 +225,16 @@ const SimpleAdCarousel = ({
               width={ 2.5 }
               height={ 2.5 }
               borderRadius="full"
-              bg={ index === currentIndex ? 'blue.500' : 'whiteAlpha.600' }
+              bg={ index === currentIndex ? '#FF0420' : 'whiteAlpha.600' }
               cursor="pointer"
               onClick={ createDotClickHandler(index) }
               transition="all 0.3s ease"
               _hover={{
-                bg: index === currentIndex ? 'blue.600' : 'whiteAlpha.800',
+                bg: index === currentIndex ? '#FF0420' : 'whiteAlpha.800',
                 transform: 'scale(1.2)',
               }}
               border={ index === currentIndex ? '1px solid' : 'none' }
-              borderColor={ index === currentIndex ? 'blue.300' : 'transparent' }
+              borderColor={ index === currentIndex ? '#FF0420' : 'transparent' }
             />
           )) }
         </Flex>

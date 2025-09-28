@@ -4,6 +4,7 @@ import { Box, Flex, Heading } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
+import { ads } from 'configs/app/features/ads';
 import RewardsButton from 'ui/rewards/RewardsButton';
 import AdSwiperCarousel from 'ui/shared/ad/AdSwiperCarousel';
 import SearchBar from 'ui/snippets/searchBar/SearchBar';
@@ -16,17 +17,6 @@ const TEXT_COLOR_DEFAULT = 'white';
 const BORDER_DEFAULT = 'none';
 
 const HeroBanner = () => {
-  const background = {
-    _light:
-      config.UI.homepage.heroBanner?.background?.[0] ||
-      config.UI.homepage.plate.background ||
-      BACKGROUND_DEFAULT,
-    _dark:
-      config.UI.homepage.heroBanner?.background?.[1] ||
-      config.UI.homepage.heroBanner?.background?.[0] ||
-      config.UI.homepage.plate.background ||
-      BACKGROUND_DEFAULT,
-  };
 
   const textColor = {
     _light:
@@ -49,23 +39,12 @@ const HeroBanner = () => {
       config.UI.homepage.heroBanner?.border?.[1] || config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
   };
 
-  const ads = [
-    {
-      id: '1',
-      imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more7.png',
-      linkUrl: 'https://xone.org/',
-    },
-    {
-      id: '2',
-      imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more8.png',
-      linkUrl: 'https://xone.org/',
-    },
-  ];
-
   return (
     <Flex
       w="100%"
-      background={ background }
+      backgroundImage="url(/static/banner-bg.png)"
+      backgroundRepeat="no-repeat"
+      backgroundSize="cover"
       border={ border }
       borderRadius="md"
       p={{ base: 4, lg: 8 }}
@@ -108,7 +87,7 @@ const HeroBanner = () => {
             overflow="hidden"
             display={{ base: 'none', lg: 'block ' }}
           >
-            <AdSwiperCarousel ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
+            <AdSwiperCarousel showArrows={ false } ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
           </Box>
         )
       }
