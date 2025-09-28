@@ -54,7 +54,7 @@ const Stats = () => {
       limit: 1,
       page: 0,
     });
-    setCurrentEpoch(res.epochInfoss[0].id);
+    setCurrentEpoch(res.epochInfoss[0]?.id);
   }, [ fetchEpochs ]);
 
   React.useEffect(() => {
