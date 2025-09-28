@@ -225,7 +225,8 @@ const Stats = () => {
         id: 'current_epoch' as const,
         icon: 'hourglass_slim' as const,
         label: 'Current epoch',
-        value: <Box display="flex" width="100%" justifyContent="space-between" alignItems="center" gap={ 2 }>
+        value: <Box display="flex" width="100%" flexDirection={{ base: 'column', lg: 'row' }}
+          justifyContent="space-between" alignItems={{ base: 'start', lg: 'center' }} gap={{ base: 0, lg: 2 }}>
           <Box>
             #{ currentEpoch || '-' }
           </Box>

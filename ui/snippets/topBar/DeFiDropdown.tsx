@@ -40,7 +40,7 @@ const DeFiDropdown = () => {
     <PopoverRoot>
       <PopoverTrigger>
         <Button size="2xs" gap={ 0 }>
-          <chakra.span display={{ base: 'none', lg: 'inline' }} whiteSpace="pre-wrap">
+          <chakra.span whiteSpace="pre-wrap">
             Bridge & Swap
           </chakra.span>
           <IconSvg name="arrows/east-mini" boxSize={ 4 } ml={ 1 } transform="rotate(-90deg)"/>

@@ -56,6 +56,8 @@ const UserWalletButton = ({ size, variant, isPending, isAutoConnectDisabled, add
           loading={ isPending }
           loadingText={ isMobile ? undefined : 'Connecting' }
           { ...rest }
+          background="#ffffff"
+          color="#FF0420"
         >
           { content }
         </Button>
