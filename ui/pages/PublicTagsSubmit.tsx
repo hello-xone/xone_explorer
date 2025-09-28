@@ -14,17 +14,17 @@ type Screen = 'form' | 'result' | 'initializing' | 'error';
 
 const PublicTagsSubmit = () => {
 
-  const [ screen, setScreen ] = React.useState<Screen>('result');
+  const [ screen, setScreen ] = React.useState<Screen>('initializing');
   const [ submitResult, setSubmitResult ] = React.useState<FormSubmitResult>();
 
   const profileQuery = useProfileQuery();
   const configQuery = useApiQuery('metadata:public_tag_types', { queryOptions: { enabled: !profileQuery.isLoading } });
 
-  // React.useEffect(() => {
-  //   if (!configQuery.isPending) {
-  //     setScreen(configQuery.isError ? 'error' : 'form');
-  //   }
-  // }, [ configQuery.isError, configQuery.isPending ]);
+  React.useEffect(() => {
+    if (!configQuery.isPending) {
+      setScreen(configQuery.isError ? 'error' : 'form');
+    }
+  }, [ configQuery.isError, configQuery.isPending ]);
 
   const handleFormSubmitResult = React.useCallback((result: FormSubmitResult) => {
     setSubmitResult(result);
