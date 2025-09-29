@@ -33,7 +33,6 @@ const PrivateTagMenuItem = ({ hash, entityType = 'address', type }: Props) => {
     await queryClient.refetchQueries({ queryKey });
     modal.onClose();
   }, [ queryClient, queryKey, modal ]);
-
   if (
     queryData &&
     (
@@ -77,7 +76,6 @@ const PrivateTagMenuItem = ({ hash, entityType = 'address', type }: Props) => {
       }
     }
   })();
-
   return (
     <>
       { element }

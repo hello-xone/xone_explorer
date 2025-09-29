@@ -1,5 +1,6 @@
 import React from 'react';
 
+import useWeb3Wallet from 'lib/web3/useWallet';
 import { useDisclosure } from 'toolkit/hooks/useDisclosure';
 
 import AuthModal from './AuthModal';
@@ -18,35 +19,32 @@ interface Props {
 const AuthGuard = ({ children, onAuthSuccess, ensureEmail }: Props) => {
   const authModal = useDisclosure();
   const profileQuery = useProfileQuery();
+  const web3Wallet = useWeb3Wallet({ source: 'Header' });
 
   const handleClick = React.useCallback(() => {
-    if (profileQuery.data) {
-      if (ensureEmail && !profileQuery.data.email) {
-        authModal.onOpen();
-      } else {
-        onAuthSuccess();
-      }
+    if (web3Wallet.isConnected && web3Wallet.address) {
+      onAuthSuccess();
     } else {
-      authModal.onOpen();
+      web3Wallet.openModal();
     }
-  }, [ authModal, ensureEmail, profileQuery.data, onAuthSuccess ]);
+  }, [ web3Wallet, onAuthSuccess ]);
 
   const handleModalClose = React.useCallback((isSuccess?: boolean) => {
     if (isSuccess) {
-      if (ensureEmail && !profileQuery.data?.email) {
+      if (web3Wallet.isConnected && web3Wallet.address) {
         // If the user has logged in and has not added an email
         // we need to close the modal and open it again
         // so the initial screen will be correct
         authModal.onClose();
         window.setTimeout(() => {
-          authModal.onOpen();
+          web3Wallet.openModal();
         }, 500);
         return;
       }
       onAuthSuccess();
     }
     authModal.onClose();
-  }, [ authModal, ensureEmail, profileQuery.data, onAuthSuccess ]);
+  }, [ authModal, web3Wallet, onAuthSuccess ]);
 
   return (
     <>

@@ -62,6 +62,7 @@ export const PAGE_TYPE_DICT: Record<Route['pathname'], string> = {
   '/interop-messages': 'Interop messages',
   '/operations': 'Operations',
   '/operation/[id]': 'Operation details',
+  '/add-token-info': 'Add token info',
 
   // multichain routes
   '/chain/[chain-slug]/accounts/label/[slug]': 'Chain addresses search by label',

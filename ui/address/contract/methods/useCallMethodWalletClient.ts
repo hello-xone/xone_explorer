@@ -19,21 +19,19 @@ interface Params {
 export default function useCallMethodWalletClient(): (params: Params) => Promise<FormSubmitResult> {
   const multichainContext = useMultichainContext();
   const chainConfig = (multichainContext?.chain.config ?? config).chain;
-
   const { data: walletClient } = useWalletClient({ chainId: Number(chainConfig.id) });
   const { isConnected, chainId, address: account } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const { trackTransaction, trackTransactionConfirm } = useRewardsActivity();
 
   return React.useCallback(async({ args, item, addressHash }) => {
+
     if (!isConnected) {
       throw new Error('Wallet is not connected');
     }
-
     if (!walletClient) {
       throw new Error('Wallet Client is not defined');
     }
-
     if (chainId && String(chainId) !== chainConfig.id) {
       await switchChainAsync({ chainId: Number(chainConfig.id) });
     }
@@ -55,18 +53,22 @@ export default function useCallMethodWalletClient(): (params: Params) => Promise
         value,
         ...(data ? { data } : {}),
       });
-
-      if (activityResponse?.token) {
+      if (hash && activityResponse?.token) {
         await trackTransactionConfirm(hash, activityResponse.token);
       }
 
-      return { source: 'wallet_client', data: { hash } };
+      return { source: 'wallet_client', data: hash ? { hash: hash as `0x${ string }` } : new Error('Transaction failed') };
     }
 
     const methodName = item.name;
 
     if (!methodName) {
       throw new Error('Method name is not defined');
+    }
+
+    // 确保walletClient存在
+    if (!walletClient) {
+      throw new Error('Wallet Client is not available');
     }
 
     const hash = await walletClient.writeContract({

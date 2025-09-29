@@ -2,7 +2,7 @@ import { Box, Flex } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
-import { ads } from 'configs/app/features/ads';
+import { homeAds } from 'configs/app/features/ads';
 import HeroBanner from 'ui/home/HeroBanner';
 import ChainIndicators from 'ui/home/indicators/ChainIndicators';
 import LatestArbitrumL2Batches from 'ui/home/latestBatches/LatestArbitrumL2Batches';
@@ -37,14 +37,14 @@ const Home = () => {
         <ChainIndicators/>
       </Flex>
       {
-        ads.length > 0 && (
+        homeAds.length > 0 && (
           <Box
             w="100%"
             mt={ 2 }
             overflow="hidden"
             display={{ base: 'flex', lg: 'none' }}
           >
-            <AdSwiperCarousel showArrows={ false } ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
+            <AdSwiperCarousel showArrows={ false } ads={ homeAds } autoPlayInterval={ 5000 } showDots={ true }/>
           </Box>
         )
       }

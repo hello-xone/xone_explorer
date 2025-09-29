@@ -1,12 +1,15 @@
-export const ads = [
+export const homeAds = [
   {
     id: '1',
-    imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more7.png',
-    linkUrl: 'https://xone.org/',
+    imageUrl: 'https://xonescan-ad-assets.s3.ap-southeast-1.amazonaws.com/300-90/did_300.png',
+    linkUrl: 'https://xid.world/en',
   },
+];
+
+export const detailAds = [
   {
-    id: '2',
-    imageUrl: 'https://raw.githubusercontent.com/hello-xone/xone_website/main/src/assets/imgs/home/more8.png',
-    linkUrl: 'https://xone.org/',
+    id: '1',
+    imageUrl: 'https://xonescan-ad-assets.s3.ap-southeast-1.amazonaws.com/728-90/did_728.png',
+    linkUrl: 'https://xid.world/en',
   },
 ];

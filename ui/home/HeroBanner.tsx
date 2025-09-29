@@ -4,7 +4,7 @@ import { Box, Flex, Heading } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
-import { ads } from 'configs/app/features/ads';
+import { homeAds } from 'configs/app/features/ads';
 import RewardsButton from 'ui/rewards/RewardsButton';
 import AdSwiperCarousel from 'ui/shared/ad/AdSwiperCarousel';
 import SearchBar from 'ui/snippets/searchBar/SearchBar';
@@ -83,14 +83,14 @@ const HeroBanner = () => {
       </Box>
       { /* <AdBanner platform="mobile" w="fit-content" flexShrink={ 0 } borderRadius="md" overflow="hidden" display={{ base: 'none', lg: 'block ' }}/> */ }
       {
-        ads.length > 0 && (
+        homeAds.length > 0 && (
           <Box
             w="300px"
             borderRadius="md"
             overflow="hidden"
             display={{ base: 'none', lg: 'block ' }}
           >
-            <AdSwiperCarousel showArrows={ false } ads={ ads } autoPlayInterval={ 5000 } showDots={ true }/>
+            <AdSwiperCarousel showArrows={ false } ads={ homeAds } autoPlayInterval={ 5000 } showDots={ true }/>
           </Box>
         )
       }
