@@ -2,8 +2,8 @@ import type { Feature } from './types';
 import type { DeFiDropdownItem } from 'types/client/deFiDropdown';
 
 const items = [
-  { text: 'RainLink', icon: 'static/rainlink.svg', link: 'https://rainlink.co', dappId: 'rainlink' },
-  { text: 'SwapX', icon: 'static/Swap.svg', link: 'https://swapx.exchange/en', dappId: 'swapx' },
+  { text: 'RainLink', icon: 'static/rainlink.svg', url: 'https://rainlink.co' },
+  { text: 'SwapX', icon: 'static/Swap.svg', url: 'https://swapx.exchange/en' },
 ];
 
 const title = 'Bridge & Swap';
