@@ -42,7 +42,10 @@ const HeroBanner = () => {
   return (
     <Flex
       w="100%"
-      backgroundImage="url(/static/banner-bg.png)"
+      backgroundImage={{
+        base: 'url(/static/banner-bg-h5.png)',
+        lg: 'url(/static/banner-bg.png)',
+      }}
       backgroundRepeat="no-repeat"
       backgroundSize="cover"
       border={ border }

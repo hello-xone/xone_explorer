@@ -55,14 +55,14 @@ const AddressesListItem = ({
         <HStack gap={ 3 }>
           <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>Percentage</Skeleton>
           <Skeleton loading={ isLoading } fontSize="sm" color="text.secondary">
-            <span>{ addressBalance.div(BigNumber(totalSupply)).multipliedBy(100).dp(8).toFormat() + '%' }</span>
+            <span>{ addressBalance.div(BigNumber(totalSupply)).multipliedBy(100).dp(6).toFormat() + '%' }</span>
           </Skeleton>
         </HStack>
       ) }
       <HStack gap={ 3 }>
         <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>Txn count</Skeleton>
         <Skeleton loading={ isLoading } fontSize="sm" color="text.secondary">
-          <span>{ Number(item.transactions_count).toLocaleString() }</span>
+          <span>{ Number(item.transactions_count || item.transaction_count).toLocaleString() }</span>
         </Skeleton>
       </HStack>
     </ListItemMobile>

@@ -57,7 +57,7 @@ const AddressesTableItem = ({
       </TableCell>
       { hasPercentage && (
         <TableCell isNumeric>
-          <Text lineHeight="24px">{ addressBalance.div(totalSupply).multipliedBy(100).dp(8).toFormat() + '%' }</Text>
+          <Text lineHeight="24px">{ addressBalance.div(totalSupply).multipliedBy(100).dp(6).toFormat() + '%' }</Text>
         </TableCell>
       ) }
       <TableCell isNumeric>

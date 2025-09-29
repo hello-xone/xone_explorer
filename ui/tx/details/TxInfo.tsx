@@ -638,7 +638,10 @@ const TxInfo = ({ data, tacOperations, isLoading, socketStatus }: Props) => {
           </DetailedInfo.ItemLabel>
           <DetailedInfo.ItemValue multiRow>
             <TxFee
-              tx={ data }
+              tx={{
+                ...data,
+                exchange_rate: data.exchange_rate || homeStatsQuery?.data?.coin_price,
+              }}
               isLoading={ isLoading }
               withUsd
               rowGap={ 0 }
