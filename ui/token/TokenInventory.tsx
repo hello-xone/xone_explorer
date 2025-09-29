@@ -36,7 +36,7 @@ const TokenInventory = ({ inventoryQuery, tokenQuery, ownerFilter, shouldRender 
     return null;
   }
 
-  const isActionBarHidden = !ownerFilter && !inventoryQuery.data?.items.length;
+  const isActionBarHidden = !ownerFilter && !inventoryQuery.data?.items?.length;
 
   const ownerFilterComponent = ownerFilter && (
     <Flex
