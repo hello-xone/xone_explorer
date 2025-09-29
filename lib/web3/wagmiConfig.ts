@@ -1,3 +1,4 @@
+import { Web3Kit, ChainType } from '@tokenup/web3kit';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 import { http } from 'viem';
 import type { CreateConfigParameters, Transport } from 'wagmi';
@@ -92,7 +93,49 @@ function createTokenUpConnector() {
       if (!isTokenUPInstalled()) {
         throw new Error('TokenUP wallet is not installed');
       }
-      return null; // 暂时返回null
+
+      // 创建符合EIP-1193标准的provider对象，包装Web3Kit功能
+      const web3Kit = new Web3Kit();
+
+      // 创建一个标准的EIP-1193 provider对象
+      const provider = {
+        // 实现request方法，这是EIP-1193的核心方法
+        request: async(args: { method: string; params?: Array<unknown> }) => {
+          // 处理eth_sendTransaction特殊情况，确保正确传递参数
+          if (args.method === 'eth_sendTransaction' && args.params) {
+            const txHash = await web3Kit.request({
+              chainType: ChainType.EVM,
+              methodName: args.method,
+              params: args.params,
+            });
+            return txHash;
+          }
+
+          // 处理其他方法
+          return await web3Kit.request({
+            chainType: ChainType.EVM,
+            methodName: args.method,
+            params: args.params || [],
+          });
+        },
+
+        // 实现发送方法别名（一些库可能会使用）
+        send: async(method: string, params?: Array<unknown>) => {
+          return await provider.request({ method, params });
+        },
+
+        // 实现标准的事件监听方法
+        on: () => {},
+        removeListener: () => {},
+
+        // 添加isMetaMask标志，一些库会检查这个标志
+        isMetaMask: false,
+
+        // 添加isTokenUP标志，便于识别
+        isTokenUP: true,
+      };
+
+      return provider;
     },
 
     // 账户变化监听
@@ -108,18 +151,67 @@ function createTokenUpConnector() {
     onMessage: () => {},
 
     // 发送交易
-    sendTransaction: async() => {
-      throw new Error('sendTransaction not implemented');
+    sendTransaction: async(args: {
+      from: `0x${ string }`;
+      to?: `0x${ string }`;
+      data?: `0x${ string }`;
+      value?: bigint;
+      gas?: bigint;
+      gasPrice?: bigint;
+    }) => {
+      if (typeof window === 'undefined') {
+        throw new Error('Window is not available');
+      }
+      if (!isTokenUPInstalled()) {
+        throw new Error('TokenUP wallet is not installed');
+      }
+
+      const web3Kit = new Web3Kit();
+      // 发送交易并返回交易哈希
+      const txHash = await web3Kit.request({
+        chainType: ChainType.EVM,
+        methodName: 'eth_sendTransaction',
+        params: [ args ],
+      });
+      return txHash as string;
     },
 
     // 签名消息
-    signMessage: async() => {
-      throw new Error('signMessage not implemented');
+    signMessage: async({ message }: { message: string }) => {
+      if (typeof window === 'undefined') {
+        throw new Error('Window is not available');
+      }
+      if (!isTokenUPInstalled()) {
+        throw new Error('TokenUP wallet is not installed');
+      }
+
+      const web3Kit = new Web3Kit();
+      // 签名消息并返回签名
+      const signature = await web3Kit.request({
+        chainType: ChainType.EVM,
+        methodName: 'eth_sign',
+        params: [ (await getTokenUPAccount()) || '', message ],
+      });
+      return signature as `0x${ string }`;
     },
 
     // 签名个人消息
-    signPersonalMessage: async() => {
-      throw new Error('signPersonalMessage not implemented');
+    signPersonalMessage: async({ message }: { message: string }) => {
+      if (typeof window === 'undefined') {
+        throw new Error('Window is not available');
+      }
+      if (!isTokenUPInstalled()) {
+        throw new Error('TokenUP wallet is not installed');
+      }
+
+      const web3Kit = new Web3Kit();
+      // 签名个人消息并返回签名
+      const signature = await web3Kit.request({
+        chainType: ChainType.EVM,
+        methodName: 'personal_sign',
+        params: [ message, (await getTokenUPAccount()) || '' ],
+      });
+      return signature as `0x${ string }`;
     },
 
     // 签名类型化数据

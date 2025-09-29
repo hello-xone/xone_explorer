@@ -15,6 +15,7 @@ declare module "nextjs-routes" {
     | StaticRoute<"/account/watchlist">
     | StaticRoute<"/accounts">
     | DynamicRoute<"/accounts/label/[slug]", { "slug": string }>
+    | StaticRoute<"/add-token-info">
     | DynamicRoute<"/address/[hash]/contract-verification", { "hash": string }>
     | DynamicRoute<"/address/[hash]", { "hash": string }>
     | StaticRoute<"/advanced-filter">
