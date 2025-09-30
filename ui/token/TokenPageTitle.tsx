@@ -14,6 +14,7 @@ import useApiQuery from 'lib/api/useApiQuery';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { getTokenTypeName } from 'lib/token/tokenTypes';
+import useAccount from 'lib/web3/useAccount';
 import { Tooltip } from 'toolkit/chakra/tooltip';
 import AddressMetadataAlert from 'ui/address/details/AddressMetadataAlert';
 import AddressQrCode from 'ui/address/details/AddressQrCode';
@@ -41,6 +42,7 @@ interface Props {
 
 const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) => {
   const multichainContext = useMultichainContext();
+  const { address } = useAccount();
   const addressHash = !tokenQuery.isPlaceholderData ?
     tokenQuery.data?.address || '' :
     '';
@@ -57,9 +59,12 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) =>
 
   const privateTagQuery = useApiQuery('xone:private_tags_address', {
     pathParams: { id: addressHash },
+    queryParams: {
+      account: address,
+    },
     queryOptions: {
       enabled:
-        Boolean(addressHash),
+        Boolean(addressHash) && Boolean(address),
     },
   });
 
