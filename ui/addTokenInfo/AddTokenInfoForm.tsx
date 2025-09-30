@@ -43,6 +43,7 @@ const collection = createListCollection({
 const AddTokenInfoForm = () => {
   const router = useRouter();
   const [ showMore, setShowMore ] = React.useState<boolean>(false);
+  const [ formInitialized, setFormInitialized ] = React.useState<boolean>(false);
   const isMobile = useIsMobile();
   const apiFetch = useApiFetch();
   const turnstile = useCloudflareTurnstile();
@@ -50,15 +51,13 @@ const AddTokenInfoForm = () => {
   const tokenInfoQuery = useApiQuery('contractInfo:token_verified_info', {
     pathParams: { hash: hash, chainId: appConfig.chain.id },
     queryOptions: {
-      enabled:
-        Boolean(hash) && Boolean(appConfig.chain.id),
+      enabled: Boolean(hash) && Boolean(appConfig.chain.id),
     },
   });
   const tokenQuery = useApiQuery('general:token', {
     pathParams: { hash: hash },
     queryOptions: {
-      enabled:
-        Boolean(hash) && Boolean(appConfig.chain.id),
+      enabled: Boolean(hash) && Boolean(appConfig.chain.id),
     },
   });
   const formApi = useForm<FormFields>({
@@ -99,24 +98,42 @@ const AddTokenInfoForm = () => {
   });
 
   useEffect(() => {
-    if (formApi && tokenInfoQuery && tokenInfoQuery.data?.data) {
+    // Only initialize the form once to prevent infinite re-renders
+    if (formInitialized) return;
+    if (formApi && tokenInfoQuery?.data?.data) {
       formApi.reset({
-        ...tokenInfoQuery.data?.data,
-        type: tokenInfoQuery.data?.data.type ? [ tokenInfoQuery.data?.data.type ] : [],
-        decimals: tokenInfoQuery.data?.data.decimals ? Number(tokenInfoQuery.data?.data.decimals) : 18,
+        ...tokenInfoQuery.data.data,
+        type: tokenInfoQuery.data.data.type ?
+          [ tokenInfoQuery.data.data.type ] :
+          [],
+        decimals: tokenInfoQuery.data.data.decimals ?
+          Number(tokenInfoQuery.data.data.decimals) :
+          18,
       });
-    } else if (tokenQuery && tokenQuery.data && formApi) {
-      const network = networks.find(el => el.chainId === appConfig.chain.id);
+      setFormInitialized(true);
+    } else if (tokenQuery?.data && formApi) {
+      const network = networks.find((el) => el.chainId === appConfig.chain.id);
       formApi.reset({
         id: tokenQuery.data.address,
         decimals: Number(tokenQuery.data.decimals || 18),
         name: tokenQuery.data.name || '',
         symbol: tokenQuery.data.symbol || '',
         type: [ tokenQuery.data.type.toLocaleLowerCase() ],
-        explorer: window.location.host.includes('xonescan') ? network?.url : network?.xscUrl,
+        explorer: window.location.host.includes('xonescan') ?
+          network?.url :
+          network?.xscUrl,
       });
+      if (!tokenQuery.isLoading) {
+        setFormInitialized(true);
+      }
     }
-  }, [ formApi, tokenInfoQuery, tokenQuery ]);
+  }, [
+    formApi,
+    tokenInfoQuery.data,
+    tokenQuery.data,
+    formInitialized,
+    tokenQuery.isLoading,
+  ]);
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(
     async(data) => {
       const requestsBody = convertFormDataToRequestsBody(data);
@@ -135,7 +152,9 @@ const AddTokenInfoForm = () => {
           title: 'Success',
           description: result.message,
         });
-        formApi.reset();
+        router.push({ pathname: '/token/[hash]', query: { hash } }, undefined, {
+          shallow: true,
+        });
       } else {
         toaster.error({
           title: 'Error',
@@ -146,16 +165,15 @@ const AddTokenInfoForm = () => {
         });
       }
     },
-    [ apiFetch, formApi ],
+    [ apiFetch, hash, router ],
   );
 
   const handleShowMore = useCallback(() => {
-    setShowMore(_showMore => !_showMore);
+    setShowMore((_showMore) => !_showMore);
   }, []);
   if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;
   }
-
   return (
     <FormProvider { ...formApi }>
       <chakra.form noValidate onSubmit={ formApi.handleSubmit(onFormSubmit) }>
@@ -254,43 +272,52 @@ const AddTokenInfoForm = () => {
           { !isMobile && <div/> }
           <FormFieldSocial<FormFields> name="github" placeholder="Github"/>
           <FormFieldSocial<FormFields> name="discord" placeholder="Discord"/>
-          {
-            showMore && (
-              <> { !isMobile && <div/> }
-
-                <FormFieldSocial<FormFields> name="slack" placeholder="Slack"/>
-                <FormFieldSocial<FormFields>
-                  name="instagram"
-                  placeholder="instagram"
-                />
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="wechat" placeholder="Wechat"/>
-                <FormFieldSocial<FormFields> name="facebook" placeholder="Facebook"/>
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="medium" placeholder="Medium"/>
-                <FormFieldSocial<FormFields> name="reddit" placeholder="Reddit"/>
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="blog" placeholder="Blog"/>
-                <FormFieldSocial<FormFields>
-                  name="bitcointalk"
-                  placeholder="Bitcointalk"
-                />
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="youtube" placeholder="Youtube"/>
-                <FormFieldSocial<FormFields> name="tiktok" placeholder="Tiktok"/>
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="forum" placeholder="Forum"/>
-                <FormFieldSocial<FormFields> name="linkedin" placeholder="Linkedin"/>
-                { !isMobile && <div/> }
-                <FormFieldSocial<FormFields> name="opensea" placeholder="Opensea"/>
-                { !isMobile && <div/> }</>
-            )
-          }
+          { showMore && (
+            <>
+              { ' ' }
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields> name="slack" placeholder="Slack"/>
+              <FormFieldSocial<FormFields>
+                name="instagram"
+                placeholder="instagram"
+              />
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields> name="wechat" placeholder="Wechat"/>
+              <FormFieldSocial<FormFields>
+                name="facebook"
+                placeholder="Facebook"
+              />
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields> name="medium" placeholder="Medium"/>
+              <FormFieldSocial<FormFields> name="reddit" placeholder="Reddit"/>
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields> name="blog" placeholder="Blog"/>
+              <FormFieldSocial<FormFields>
+                name="bitcointalk"
+                placeholder="Bitcointalk"
+              />
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields>
+                name="youtube"
+                placeholder="Youtube"
+              />
+              <FormFieldSocial<FormFields> name="tiktok" placeholder="Tiktok"/>
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields> name="forum" placeholder="Forum"/>
+              <FormFieldSocial<FormFields>
+                name="linkedin"
+                placeholder="Linkedin"
+              />
+              { !isMobile && <div/> }
+              <FormFieldSocial<FormFields>
+                name="opensea"
+                placeholder="Opensea"
+              />
+              { !isMobile && <div/> }
+            </>
+          ) }
           <GridItem colSpan={{ base: 1 }} marginTop={ 3 }>
-            <Button
-              variant="outline"
-              onClick={ handleShowMore }
-            >
+            <Button variant="outline" onClick={ handleShowMore }>
               { showMore ? 'Show less' : 'Show more' }
             </Button>
           </GridItem>

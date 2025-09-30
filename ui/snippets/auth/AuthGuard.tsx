@@ -17,6 +17,7 @@ interface Props {
 }
 
 const AuthGuard = ({ children, onAuthSuccess, ensureEmail }: Props) => {
+  const [ isConnectFlag, setIsConnectFlag ] = React.useState(false);
   const authModal = useDisclosure();
   const profileQuery = useProfileQuery();
   const web3Wallet = useWeb3Wallet({ source: 'Header' });
@@ -25,9 +26,17 @@ const AuthGuard = ({ children, onAuthSuccess, ensureEmail }: Props) => {
     if (web3Wallet.isConnected && web3Wallet.address) {
       onAuthSuccess();
     } else {
+      setIsConnectFlag(true);
       web3Wallet.openModal();
     }
   }, [ web3Wallet, onAuthSuccess ]);
+
+  React.useEffect(() => {
+    if (isConnectFlag && web3Wallet.isConnected && web3Wallet.address) {
+      setIsConnectFlag(false);
+      onAuthSuccess();
+    }
+  }, [ isConnectFlag, web3Wallet, onAuthSuccess ]);
 
   const handleModalClose = React.useCallback((isSuccess?: boolean) => {
     if (isSuccess) {

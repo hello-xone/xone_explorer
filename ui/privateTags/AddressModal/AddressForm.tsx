@@ -8,6 +8,7 @@ import type { AddressTag, AddressTagErrors } from 'types/api/account';
 import type { ResourceErrorAccount } from 'lib/api/resources';
 import useApiFetch from 'lib/api/useApiFetch';
 import getErrorMessage from 'lib/getErrorMessage';
+import useAccount from 'lib/web3/useAccount';
 import { Button } from 'toolkit/chakra/button';
 import { FormFieldAddress } from 'toolkit/components/forms/fields/FormFieldAddress';
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
@@ -28,6 +29,7 @@ type Inputs = {
 
 const AddressForm: React.FC<Props> = ({ data, onOpenChange, onSuccess, setAlertVisible }) => {
   const apiFetch = useApiFetch();
+  const { address } = useAccount();
   const [ pending, setPending ] = useState(false);
   const formApi = useForm<Inputs>({
     mode: 'onTouched',
@@ -41,6 +43,7 @@ const AddressForm: React.FC<Props> = ({ data, onOpenChange, onSuccess, setAlertV
     mutationFn: (formData: Inputs) => {
       const body = {
         name: formData?.tag,
+        account: address,
         address_hash: formData?.address,
       };
       const isEdit = data?.id;
