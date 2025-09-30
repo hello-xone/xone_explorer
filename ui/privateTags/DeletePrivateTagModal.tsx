@@ -23,7 +23,7 @@ const DeletePrivateTagModal: React.FC<Props> = ({ open, onOpenChange, data, type
   const apiFetch = useApiFetch();
 
   const mutationFn = useCallback(() => {
-    const resourceName = type === 'address' ? 'general:private_tags_address' : 'general:private_tags_tx';
+    const resourceName = type === 'address' ? 'xone:private_tags_address' : 'general:private_tags_tx';
     return apiFetch(resourceName, {
       pathParams: { id: String(data.id) },
       fetchParams: { method: 'DELETE' },
@@ -32,7 +32,7 @@ const DeletePrivateTagModal: React.FC<Props> = ({ open, onOpenChange, data, type
 
   const onSuccess = useCallback(async() => {
     if (type === 'address') {
-      queryClient.setQueryData(getResourceKey('general:private_tags_address'), (prevData: AddressTagsResponse | undefined) => {
+      queryClient.setQueryData(getResourceKey('xone:private_tags_address'), (prevData: AddressTagsResponse | undefined) => {
         const newItems = prevData?.items.filter((item: AddressTag) => item.id !== id);
         return { ...prevData, items: newItems };
 

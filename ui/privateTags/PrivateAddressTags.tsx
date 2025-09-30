@@ -21,10 +21,10 @@ import DeletePrivateTagModal from './DeletePrivateTagModal';
 
 const PrivateAddressTags = () => {
   const { data: addressTagsData, isError, isPlaceholderData, refetch, pagination } = useQueryWithPages({
-    resourceName: 'general:private_tags_address',
+    resourceName: 'xone:private_tags_address',
     options: {
       refetchOnMount: false,
-      placeholderData: { items: Array(5).fill(PRIVATE_TAG_ADDRESS), next_page_params: null },
+      placeholderData: Array(5).fill(PRIVATE_TAG_ADDRESS),
     },
   });
 
@@ -72,12 +72,12 @@ const PrivateAddressTags = () => {
       </AccountPageDescription>
       <DataListDisplay
         isError={ isError }
-        itemsNum={ addressTagsData?.items.length }
+        itemsNum={ addressTagsData?.length }
         emptyText=""
         actionBar={ actionBar }
       >
         <Box display={{ base: 'block', lg: 'none' }}>
-          { addressTagsData?.items.map((item: AddressTag, index: number) => (
+          { addressTagsData?.map((item: AddressTag, index: number) => (
             <AddressTagListItem
               item={ item }
               key={ item.id + (isPlaceholderData ? String(index) : '') }
@@ -90,7 +90,7 @@ const PrivateAddressTags = () => {
         <Box display={{ base: 'none', lg: 'block' }}>
           <AddressTagTable
             isLoading={ isPlaceholderData }
-            data={ addressTagsData?.items }
+            data={ addressTagsData }
             onDeleteClick={ onDeleteClick }
             onEditClick={ onEditClick }
             top={ pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }

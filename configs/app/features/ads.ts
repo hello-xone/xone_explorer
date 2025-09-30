@@ -1,7 +1,8 @@
 export const homeAds = [
   {
     id: '1',
-    imageUrl: 'https://xonescan-ad-assets.s3.ap-southeast-1.amazonaws.com/300-90/did_300.png',
+    // eslint-disable-next-line max-len
+    imageUrl: 'https://pinata.xonescan.com/ipfs/bafkreidlyixga4ifqvno2wxbzosu3qtynraw2juca7zzonl777bb4zks7q',
     linkUrl: 'https://xid.world/en',
   },
 ];
@@ -9,7 +10,8 @@ export const homeAds = [
 export const detailAds = [
   {
     id: '1',
-    imageUrl: 'https://xonescan-ad-assets.s3.ap-southeast-1.amazonaws.com/728-90/did_728.png',
+    // eslint-disable-next-line max-len
+    imageUrl: 'https://pinata.xonescan.com/ipfs/bafkreiexe2kmlvckakfldxxn5ysxcbmi5b4zicv6nthlbj23lirhh26oc4',
     linkUrl: 'https://xid.world/en',
   },
 ];

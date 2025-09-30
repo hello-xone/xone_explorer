@@ -1,7 +1,7 @@
 import type { ApiResource } from '../types';
 import type { VerifiedAddressResponse } from 'types/api/account';
 import type { PoolsResponse, PoolResponse } from 'types/api/pools';
-import type { TokenVerifiedInfo } from 'types/api/token';
+import type { V2TokenVerifiedInfo } from 'types/api/token';
 
 export const CONTRACT_INFO_API_RESOURCES = {
   address_verification: {
@@ -15,6 +15,10 @@ export const CONTRACT_INFO_API_RESOURCES = {
   token_verified_info: {
     path: '/api/v1/chains/:chainId/token-infos/:hash',
     pathParams: [ 'chainId' as const, 'hash' as const ],
+  },
+  update_token_verified_info: {
+    path: '/api/v1/chains/:chainId/token-infos',
+    pathParams: [ 'chainId' as const ],
   },
   pools: {
     path: '/api/v1/chains/:chainId/pools',
@@ -34,7 +38,8 @@ export type ContractInfoApiResourceName = `contractInfo:${ keyof typeof CONTRACT
 /* eslint-disable @stylistic/indent */
 export type ContractInfoApiResourcePayload<R extends ContractInfoApiResourceName> =
 R extends 'contractInfo:verified_addresses' ? VerifiedAddressResponse :
-R extends 'contractInfo:token_verified_info' ? TokenVerifiedInfo :
+R extends 'contractInfo:token_verified_info' ? V2TokenVerifiedInfo :
+R extends 'contractInfo:update_token_verified_info' ? Boolean :
 R extends 'contractInfo:pools' ? PoolsResponse :
 R extends 'contractInfo:pool' ? PoolResponse :
 never;

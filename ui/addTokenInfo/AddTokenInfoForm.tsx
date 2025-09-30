@@ -1,6 +1,6 @@
 import { chakra, createListCollection, Grid, GridItem } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -9,9 +9,11 @@ import type { FormFields } from './types';
 import appConfig from 'configs/app';
 import useApiFetch from 'lib/api/useApiFetch';
 import useIsMobile from 'lib/hooks/useIsMobile';
+import getQueryParamString from 'lib/router/getQueryParamString';
 import { TOKEN_TYPE_IDS } from 'lib/token/tokenTypes';
 import { Button } from 'toolkit/chakra/button';
 import { Heading } from 'toolkit/chakra/heading';
+import { toaster } from 'toolkit/chakra/toaster';
 import { FormFieldAddress } from 'toolkit/components/forms/fields/FormFieldAddress';
 import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
 import { FormFieldSelect } from 'toolkit/components/forms/fields/FormFieldSelect';
@@ -22,6 +24,13 @@ import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareT
 
 import { convertFormDataToRequestsBody } from './utils';
 
+interface AddTokenInfoResponse {
+  success: Boolean;
+  message: string;
+  error?: {
+    message: string;
+  };
+}
 const collection = createListCollection({
   items: TOKEN_TYPE_IDS.map((typeId) => ({
     label: typeId.toUpperCase(),
@@ -30,49 +39,89 @@ const collection = createListCollection({
 });
 
 const AddTokenInfoForm = () => {
-  const isMobile = useIsMobile();
   const router = useRouter();
+  const [ showMore, setShowMore ] = React.useState<boolean>(false);
+  const isMobile = useIsMobile();
   const apiFetch = useApiFetch();
   const turnstile = useCloudflareTurnstile();
-
+  const hash = getQueryParamString(router.query.hash);
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
+    defaultValues: {
+      type: [],
+      name: '',
+      website: '',
+      description: '',
+      whitepaper: '',
+      explorer: '',
+      symbol: '',
+      decimals: 18,
+      status: '',
+      email: '',
+      id: hash,
+      twitter: '',
+      telegram: '',
+      reddit: '',
+      discord: '',
+      slack: '',
+      instagram: '',
+      wechat: '',
+      facebook: '',
+      medium: '',
+      github: '',
+      blog: '',
+      bitcointalk: '',
+      youtube: '',
+      tiktok: '',
+      forum: '',
+      linkedin: '',
+      opensea: '',
+      coinMarketCap: '',
+      coinGecko: '',
+      ave: '',
+    },
   });
 
-  React.useEffect(() => {
-    if (
-      router.query.addresses ||
-      router.query.requesterName ||
-      router.query.requesterEmail ||
-      router.query.companyName ||
-      router.query.companyWebsite
-    ) {
-      router.replace({ pathname: '/public-tags/submit' }, undefined, {
-        shallow: true,
-      });
+  useEffect(() => {
+    if (hash) {
+      formApi.setValue('id', hash);
     }
-  }, [ router ]);
-
+  }, [ formApi, hash ]);
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(
     async(data) => {
       const requestsBody = convertFormDataToRequestsBody(data);
-
-      apiFetch<'metadata:public_tag_application', unknown, { message: string }>(
-        'metadata:public_tag_application',
+      const result = (await apiFetch(
+        'contractInfo:update_token_verified_info',
         {
           pathParams: { chainId: appConfig.chain.id },
           fetchParams: {
             method: 'POST',
-            body: { submission: requestsBody },
+            body: requestsBody,
           },
         },
-      );
-      // debugger
-      // onSubmitResult(result as FormSubmitResult);
+      )) as AddTokenInfoResponse;
+      if (result && result?.success) {
+        toaster.success({
+          title: 'Success',
+          description: result.message,
+        });
+        formApi.reset();
+      } else {
+        toaster.error({
+          title: 'Error',
+          description:
+            result.error?.message ||
+            result.message ||
+            'An unknown error occurred',
+        });
+      }
     },
-    [ apiFetch ],
+    [ apiFetch, formApi ],
   );
 
+  const handleShowMore = useCallback(() => {
+    setShowMore(_showMore => !_showMore);
+  }, []);
   if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;
   }
@@ -117,7 +166,7 @@ const AddTokenInfoForm = () => {
             required
             placeholder="Token decimals"
           />
-          <FormFieldSelect<FormFields, `type`>
+          <FormFieldSelect<FormFields, 'type'>
             name="type"
             placeholder="Token type"
             collection={ collection }
@@ -167,36 +216,49 @@ const AddTokenInfoForm = () => {
           <FormFieldSocial<FormFields> name="twitter" placeholder="Twitter"/>
           <FormFieldSocial<FormFields> name="telegram" placeholder="Telegram"/>
           { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="reddit" placeholder="Reddit"/>
-          <FormFieldSocial<FormFields> name="discord" placeholder="Discord"/>
-          { !isMobile && <div/> }
-
-          <FormFieldSocial<FormFields> name="slack" placeholder="Slack"/>
-          <FormFieldSocial<FormFields>
-            name="instagram"
-            placeholder="instagram"
-          />
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="wechat" placeholder="Wechat"/>
-          <FormFieldSocial<FormFields> name="facebook" placeholder="Facebook"/>
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="medium" placeholder="Medium"/>
           <FormFieldSocial<FormFields> name="github" placeholder="Github"/>
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="blog" placeholder="Blog"/>
-          <FormFieldSocial<FormFields>
-            name="bitcointalk"
-            placeholder="Bitcointalk"
-          />
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="youtube" placeholder="Youtube"/>
-          <FormFieldSocial<FormFields> name="tiktok" placeholder="Tiktok"/>
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="forum" placeholder="Forum"/>
-          <FormFieldSocial<FormFields> name="linkedin" placeholder="Linkedin"/>
-          { !isMobile && <div/> }
-          <FormFieldSocial<FormFields> name="opensea" placeholder="Opensea"/>
-          { !isMobile && <div/> }
+          <FormFieldSocial<FormFields> name="discord" placeholder="Discord"/>
+          {
+            showMore && (
+              <> { !isMobile && <div/> }
+
+                <FormFieldSocial<FormFields> name="slack" placeholder="Slack"/>
+                <FormFieldSocial<FormFields>
+                  name="instagram"
+                  placeholder="instagram"
+                />
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="wechat" placeholder="Wechat"/>
+                <FormFieldSocial<FormFields> name="facebook" placeholder="Facebook"/>
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="medium" placeholder="Medium"/>
+                <FormFieldSocial<FormFields> name="reddit" placeholder="Reddit"/>
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="blog" placeholder="Blog"/>
+                <FormFieldSocial<FormFields>
+                  name="bitcointalk"
+                  placeholder="Bitcointalk"
+                />
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="youtube" placeholder="Youtube"/>
+                <FormFieldSocial<FormFields> name="tiktok" placeholder="Tiktok"/>
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="forum" placeholder="Forum"/>
+                <FormFieldSocial<FormFields> name="linkedin" placeholder="Linkedin"/>
+                { !isMobile && <div/> }
+                <FormFieldSocial<FormFields> name="opensea" placeholder="Opensea"/>
+                { !isMobile && <div/> }</>
+            )
+          }
+          <GridItem colSpan={{ base: 1 }} marginTop={ 3 }>
+            <Button
+              variant="outline"
+              onClick={ handleShowMore }
+            >
+              { showMore ? 'Show less' : 'Show more' }
+            </Button>
+          </GridItem>
+
           <GridItem colSpan={{ base: 1, lg: 2 }} marginTop={ 3 }>
             <Heading level="2" display="flex" alignItems="center" columnGap={ 1 }>
               Price Data
@@ -207,23 +269,25 @@ const AddTokenInfoForm = () => {
             name="coinMarketCap"
             placeholder="CoinMarketCap"
           />
-          <FormFieldSocial<FormFields> name="coinGecko" placeholder="CoinGecko"/>
+          <FormFieldSocial<FormFields>
+            name="coinGecko"
+            placeholder="CoinGecko"
+          />
           { !isMobile && <div/> }
           <FormFieldSocial<FormFields> name="ave" placeholder="Ave"/>
           { !isMobile && <div/> }
-
-          <Button
-            variant="solid"
-            type="submit"
-            mt={ 3 }
-            loading={ formApi.formState.isSubmitting }
-            loadingText="Send request"
-            w="min-content"
-            disabled={ turnstile.isInitError }
-          >
-            Send request
-          </Button>
         </Grid>
+        <Button
+          variant="solid"
+          type="submit"
+          mt={ 3 }
+          loading={ formApi.formState.isSubmitting }
+          loadingText="Send request"
+          w="min-content"
+          disabled={ turnstile.isInitError }
+        >
+          Send request
+        </Button>
       </chakra.form>
     </FormProvider>
   );

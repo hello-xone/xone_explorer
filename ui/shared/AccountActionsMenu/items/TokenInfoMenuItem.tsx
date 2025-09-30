@@ -21,12 +21,15 @@ const TokenInfoMenuItem = ({ hash, type }: ItemProps) => {
   const modal = useDisclosure();
   const isAuth = useIsAuth();
 
-  const verifiedAddressesQuery = useApiQuery('contractInfo:verified_addresses', {
-    pathParams: { chainId: config.chain.id },
-    queryOptions: {
-      enabled: isAuth,
+  const verifiedAddressesQuery = useApiQuery(
+    'contractInfo:verified_addresses',
+    {
+      pathParams: { chainId: config.chain.id },
+      queryOptions: {
+        enabled: isAuth,
+      },
     },
-  });
+  );
   const applicationsQuery = useApiQuery('admin:token_info_applications', {
     pathParams: { chainId: config.chain.id, id: undefined },
     queryOptions: {
@@ -41,7 +44,14 @@ const TokenInfoMenuItem = ({ hash, type }: ItemProps) => {
   });
 
   const handleAddApplicationClick = React.useCallback(async() => {
-    router.push({ pathname: '/account/verified-addresses', query: { address: hash } });
+    router.push({
+      pathname: '/account/verified-addresses',
+      query: { address: hash },
+    });
+  }, [ hash, router ]);
+
+  const handleAddTokenInfoClick = React.useCallback(async() => {
+    router.push({ pathname: '/add-token-info', query: { hash } });
   }, [ hash, router ]);
 
   const handleVerifiedAddressSubmit = React.useCallback(async() => {
@@ -53,19 +63,30 @@ const TokenInfoMenuItem = ({ hash, type }: ItemProps) => {
   }, [ router ]);
 
   const element = (() => {
-    const isVerifiedAddress = verifiedAddressesQuery.data?.verifiedAddresses
-      .find(({ contractAddress }) => contractAddress.toLowerCase() === hash.toLowerCase());
-    const hasApplication = applicationsQuery.data?.submissions.some(({ tokenAddress }) => tokenAddress.toLowerCase() === hash.toLowerCase());
+    const isVerifiedAddress =
+      verifiedAddressesQuery.data?.verifiedAddresses.find(
+        ({ contractAddress }) =>
+          contractAddress.toLowerCase() === hash.toLowerCase(),
+      );
+    const hasApplication = applicationsQuery.data?.submissions.some(
+      ({ tokenAddress }) => tokenAddress.toLowerCase() === hash.toLowerCase(),
+    );
 
     const label = (() => {
       if (!isVerifiedAddress) {
-        return tokenInfoQuery.data?.tokenAddress ? 'Update token info' : 'Add token info';
+        return tokenInfoQuery.data?.data?.name ?
+          'Update token info' :
+          'Add token info';
       }
 
-      return hasApplication || tokenInfoQuery.data?.tokenAddress ? 'Update token info' : 'Add token info';
+      return hasApplication || tokenInfoQuery.data?.data?.name ?
+        'Update token info' :
+        'Add token info';
     })();
 
-    const onAuthSuccess = isVerifiedAddress ? handleAddApplicationClick : modal.onOpen;
+    const onAuthSuccess = isVerifiedAddress ?
+      handleAddApplicationClick :
+      handleAddTokenInfoClick;
 
     switch (type) {
       case 'button': {

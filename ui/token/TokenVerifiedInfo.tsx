@@ -1,9 +1,8 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 
-import type { TokenVerifiedInfo as TTokenVerifiedInfo } from 'types/api/token';
+import type { V2TokenVerifiedInfo } from 'types/api/token';
 
-import config from 'configs/app';
 import type { ResourceError } from 'lib/api/resources';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
@@ -11,7 +10,7 @@ import { Skeleton } from 'toolkit/chakra/skeleton';
 import TokenProjectInfo from './TokenProjectInfo';
 
 interface Props {
-  verifiedInfoQuery: UseQueryResult<TTokenVerifiedInfo, ResourceError<unknown>>;
+  verifiedInfoQuery: UseQueryResult<V2TokenVerifiedInfo, ResourceError<unknown>>;
 }
 
 const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
@@ -19,9 +18,6 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
   const { data, isPending, isError } = verifiedInfoQuery;
 
   const content = (() => {
-    if (!config.features.verifiedTokens.isEnabled) {
-      return null;
-    }
 
     if (isPending) {
       return (
@@ -39,9 +35,9 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
 
     const websiteLink = (() => {
       try {
-        const url = new URL(data.projectWebsite);
+        const url = new URL(data.data.website);
         return (
-          <Link external href={ data.projectWebsite } variant="underlaid" flexShrink={ 0 } textStyle="sm">
+          <Link external href={ data.data.website } variant="underlaid" flexShrink={ 0 } textStyle="sm">
             { url.host }
           </Link>
         );
@@ -53,7 +49,7 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
     return (
       <>
         { websiteLink }
-        <TokenProjectInfo data={ data }/>
+        <TokenProjectInfo data={ data.data }/>
       </>
     );
   })();

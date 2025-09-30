@@ -24,7 +24,6 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const isPending =
     (web3Wallet.isConnected && web3AccountWithDomain.isLoading) ||
     (!web3Wallet.isConnected && web3Wallet.isOpen);
-
   const handleOpenWalletClick = React.useCallback(() => {
     web3Wallet.openModal();
     walletMenu.onClose();

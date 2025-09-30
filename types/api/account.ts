@@ -189,12 +189,39 @@ export interface TokenInfoApplication {
   requesterEmail: string;
   requesterName: string;
   slack?: string;
-  status: 'STATUS_UNKNOWN' | 'IN_PROCESS' | 'APPROVED' | 'REJECTED' | 'UPDATE_REQUIRED';
+  status:
+    | 'STATUS_UNKNOWN'
+    | 'IN_PROCESS'
+    | 'APPROVED'
+    | 'REJECTED'
+    | 'UPDATE_REQUIRED';
   support?: string;
   telegram?: string;
   tokenAddress: string;
   twitter?: string;
   updatedAt: string;
+  ave: string;
+  bitcointalk: string;
+  blog: string;
+  coinGecko: string;
+  coinMarketCap: string;
+  created_at: string;
+  decimals: string;
+  description: string;
+  email: string;
+  explorer: string;
+  forum: string;
+  instagram: string;
+  name: string;
+  opensea: string;
+  symbol: string;
+  tiktok: string;
+  type: string;
+  updated_at: string;
+  website: string;
+  wechat: string;
+  whitepaper: string;
+  youtube: string;
 }
 
 export interface TokenInfoApplications {

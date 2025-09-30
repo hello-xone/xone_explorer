@@ -87,6 +87,11 @@ export type TokenInventoryPagination = {
   unique_token: number;
 };
 
+export type V2TokenVerifiedInfo = {
+  data: TokenVerifiedInfo;
+  success: boolean;
+};
+
 export type TokenVerifiedInfo = Omit<TokenInfoApplication, 'id' | 'status'>;
 
 export type TokenInventoryFilters = {

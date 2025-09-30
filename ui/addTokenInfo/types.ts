@@ -6,7 +6,7 @@ export interface FormFields {
   description: string;
   whitepaper: string;
   explorer: string;
-  type: string;
+  type: Array<string>;
   symbol: string;
   decimals: number;
   status: string;
