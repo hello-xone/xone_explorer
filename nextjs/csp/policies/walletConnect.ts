@@ -21,7 +21,9 @@ export function walletConnect(): CspDev.DirectiveDescriptor {
     ],
     'frame-ancestors': [
       '*.walletconnect.org',
+      'secure.walletconnect.org',
       '*.walletconnect.com',
+      'secure.walletconnect.com',
     ],
     'img-src': [
       KEY_WORDS.BLOB,
