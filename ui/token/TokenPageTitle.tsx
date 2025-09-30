@@ -127,20 +127,24 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) =>
       .sort(sortEntityTags);
   }, [ addressMetadataQuery.data?.addresses, addressQuery.data, bridgedTokenTagBgColor, bridgedTokenTagTextColor,
     privateTagQuery.data, tokenQuery.data ]);
+
   const contentAfter = (
     <>
-      { addressQuery?.data?.is_verified && verifiedInfoQuery.data?.data?.name && (
-        <Tooltip
-          content={ `Information on this token has been verified by ${ config.chain.name }` }
-        >
-          <IconSvg
-            name="certified"
-            color="green.500"
-            boxSize={ 6 }
-            cursor="pointer"
-          />
-        </Tooltip>
-      ) }
+      { !addressQuery.isPlaceholderData &&
+        !verifiedInfoQuery.isPending &&
+        addressQuery?.data?.is_verified &&
+        verifiedInfoQuery.data?.data?.name ? (
+          <Tooltip
+            content={ `Information on this token has been verified by ${ config.chain.name }` }
+          >
+            <IconSvg
+              name="certified"
+              color="green.500"
+              boxSize={ 6 }
+              cursor="pointer"
+            />
+          </Tooltip>
+        ) : null }
       <EntityTags
         isLoading={
           isLoading ||
