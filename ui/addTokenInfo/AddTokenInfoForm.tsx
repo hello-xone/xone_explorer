@@ -15,6 +15,7 @@ import { Heading } from 'toolkit/chakra/heading';
 import { FormFieldAddress } from 'toolkit/components/forms/fields/FormFieldAddress';
 import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
 import { FormFieldSelect } from 'toolkit/components/forms/fields/FormFieldSelect';
+import { FormFieldSocial } from 'toolkit/components/forms/fields/FormFieldSocial';
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
 import { FormFieldUrl } from 'toolkit/components/forms/fields/FormFieldUrl';
 import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
@@ -56,17 +57,16 @@ const AddTokenInfoForm = () => {
     async(data) => {
       const requestsBody = convertFormDataToRequestsBody(data);
 
-      apiFetch<
+      apiFetch<'metadata:public_tag_application', unknown, { message: string }>(
         'metadata:public_tag_application',
-        unknown,
-        { message: string }
-      >('metadata:public_tag_application', {
-        pathParams: { chainId: appConfig.chain.id },
-        fetchParams: {
-          method: 'POST',
-          body: { submission: requestsBody },
+        {
+          pathParams: { chainId: appConfig.chain.id },
+          fetchParams: {
+            method: 'POST',
+            body: { submission: requestsBody },
+          },
         },
-      });
+      );
       // debugger
       // onSubmitResult(result as FormSubmitResult);
     },
@@ -112,7 +112,11 @@ const AddTokenInfoForm = () => {
           />
           { !isMobile && <div/> }
 
-          <FormFieldText<FormFields> name="decimals" required placeholder="Token decimals"/>
+          <FormFieldText<FormFields>
+            name="decimals"
+            required
+            placeholder="Token decimals"
+          />
           <FormFieldSelect<FormFields, `type`>
             name="type"
             placeholder="Token type"
@@ -120,14 +124,27 @@ const AddTokenInfoForm = () => {
             required
           />
           { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="explorer" placeholder="Explorer"/>
-          <FormFieldUrl<FormFields> name="website" placeholder="Website"/>
+          <FormFieldUrl<FormFields>
+            name="explorer"
+            required
+            placeholder="Explorer"
+          />
+          <FormFieldUrl<FormFields>
+            name="website"
+            required
+            placeholder="Website"
+          />
           { !isMobile && <div/> }
 
-          <FormFieldEmail<FormFields> name="email" placeholder="email"/>
+          <FormFieldEmail<FormFields>
+            name="email"
+            required
+            placeholder="Email"
+          />
           <FormFieldUrl<FormFields>
             name="whitepaper"
-            placeholder="whitepaper"
+            required
+            placeholder="Whitepaper"
           />
           { !isMobile && <div/> }
           <GridItem colSpan={{ base: 1, lg: 2 }}>
@@ -147,55 +164,52 @@ const AddTokenInfoForm = () => {
             </Heading>
           </GridItem>
 
-          <FormFieldUrl<FormFields> name="twitter" placeholder="twitter"/>
-          <FormFieldUrl<FormFields> name="telegram" placeholder="telegram"/>
+          <FormFieldSocial<FormFields> name="twitter" placeholder="Twitter"/>
+          <FormFieldSocial<FormFields> name="telegram" placeholder="Telegram"/>
           { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="reddit" placeholder="reddit"/>
-          <FormFieldUrl<FormFields> name="discord" placeholder="discord"/>
+          <FormFieldSocial<FormFields> name="reddit" placeholder="Reddit"/>
+          <FormFieldSocial<FormFields> name="discord" placeholder="Discord"/>
           { !isMobile && <div/> }
 
-          <FormFieldUrl<FormFields> name="slack" placeholder="slack"/>
-          <FormFieldUrl<FormFields> name="instagram" placeholder="instagram"/>
-          { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="wechat" placeholder="wechat"/>
-          <FormFieldUrl<FormFields> name="facebook" placeholder="facebook"/>
-          { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="medium" placeholder="medium"/>
-          <FormFieldUrl<FormFields> name="github" placeholder="github"/>
-          { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="blog" placeholder="blog"/>
-          <FormFieldUrl<FormFields>
-            name="bitcointalk"
-            placeholder="bitcointalk"
+          <FormFieldSocial<FormFields> name="slack" placeholder="Slack"/>
+          <FormFieldSocial<FormFields>
+            name="instagram"
+            placeholder="instagram"
           />
           { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="youtube" placeholder="youtube"/>
-          <FormFieldUrl<FormFields> name="tiktok" placeholder="tiktok"/>
+          <FormFieldSocial<FormFields> name="wechat" placeholder="Wechat"/>
+          <FormFieldSocial<FormFields> name="facebook" placeholder="Facebook"/>
           { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="forum" placeholder="forum"/>
-          <FormFieldUrl<FormFields> name="linkedin" placeholder="linkedin"/>
+          <FormFieldSocial<FormFields> name="medium" placeholder="Medium"/>
+          <FormFieldSocial<FormFields> name="github" placeholder="Github"/>
           { !isMobile && <div/> }
-          <FormFieldUrl<FormFields> name="opensea" placeholder="opensea"/>
+          <FormFieldSocial<FormFields> name="blog" placeholder="Blog"/>
+          <FormFieldSocial<FormFields>
+            name="bitcointalk"
+            placeholder="Bitcointalk"
+          />
           { !isMobile && <div/> }
-          <GridItem colSpan={{ base: 1, lg: 2 }}>
+          <FormFieldSocial<FormFields> name="youtube" placeholder="Youtube"/>
+          <FormFieldSocial<FormFields> name="tiktok" placeholder="Tiktok"/>
+          { !isMobile && <div/> }
+          <FormFieldSocial<FormFields> name="forum" placeholder="Forum"/>
+          <FormFieldSocial<FormFields> name="linkedin" placeholder="Linkedin"/>
+          { !isMobile && <div/> }
+          <FormFieldSocial<FormFields> name="opensea" placeholder="Opensea"/>
+          { !isMobile && <div/> }
+          <GridItem colSpan={{ base: 1, lg: 2 }} marginTop={ 3 }>
             <Heading level="2" display="flex" alignItems="center" columnGap={ 1 }>
               Price Data
             </Heading>
           </GridItem>
-
-          <GridItem colSpan={{ base: 1, lg: 2 }}>
-            <FormFieldUrl<FormFields>
-              name="coinMarketCap"
-              placeholder="coinMarketCap"
-            />
-            <FormFieldUrl<FormFields>
-              name="coinGecko"
-              placeholder="coinGecko"
-            />
-            { !isMobile && <div/> }
-            <FormFieldUrl<FormFields> name="ave" placeholder="ave"/>
-          </GridItem>
-
+          { !isMobile && <div/> }
+          <FormFieldSocial<FormFields>
+            name="coinMarketCap"
+            placeholder="CoinMarketCap"
+          />
+          <FormFieldSocial<FormFields> name="coinGecko" placeholder="CoinGecko"/>
+          { !isMobile && <div/> }
+          <FormFieldSocial<FormFields> name="ave" placeholder="Ave"/>
           { !isMobile && <div/> }
 
           <Button
