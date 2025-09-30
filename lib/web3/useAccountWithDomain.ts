@@ -7,8 +7,6 @@ import useAccount from './useAccount';
 
 export default function useAccountWithDomain(isEnabled: boolean) {
   const { address, isConnecting } = useAccount();
-  console.log(isConnecting, 'isConnecting');
-  console.log(address, 'address');
   const isQueryEnabled = config.features.nameService.isEnabled && Boolean(address) && Boolean(isEnabled);
 
   const domainQuery = useApiQuery('bens:address_domain', {
