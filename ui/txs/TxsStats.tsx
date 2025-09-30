@@ -140,7 +140,6 @@ const TxsStats = (props: Props) => {
           href={ chainConfig.features.stats.isEnabled ? { pathname: '/stats/[id]', query: { id: 'txnsFee' } } : undefined }
         />
       ) }
-      1
       { txFeeAvg && (
         <StatsWidget
           label={ txsStatsQuery.data?.average_transactions_fee_24h?.title ?
