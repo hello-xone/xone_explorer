@@ -9,7 +9,43 @@ import type { Route } from 'nextjs-routes';
 import getQueryParamString from 'lib/router/getQueryParamString';
 
 export function convertFormDataToRequestsBody(data: FormFields) {
-  return data;
+  return {
+
+    id: data.id,
+    name: data.name,
+    symbol: data.symbol,
+    decimals: data.decimals,
+    status: data.status,
+    type: data.type.toString(),
+    website: data.website,
+    description: data.description,
+    whitepaper: data.whitepaper,
+    explorer: data.explorer,
+    email: data.email,
+
+    twitter: data.twitter,
+    telegram: data.telegram,
+    reddit: data.reddit,
+    discord: data.discord,
+    slack: data.slack,
+    instagram: data.instagram,
+    wechat: data.wechat,
+    facebook: data.facebook,
+    medium: data.medium,
+    github: data.github,
+    blog: data.blog,
+    bitcointalk: data.bitcointalk,
+    youtube: data.youtube,
+    tiktok: data.tiktok,
+    forum: data.forum,
+    linkedin: data.linkedin,
+    opensea: data.opensea,
+
+    coinMarketCap: data.coinMarketCap,
+    coinGecko: data.coinGecko,
+    ave: data.ave,
+
+  };
   // const result: Array<SubmitRequestBody> = [];
 
   // for (const address of data.addresses) {

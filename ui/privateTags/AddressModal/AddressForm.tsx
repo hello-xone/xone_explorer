@@ -43,16 +43,15 @@ const AddressForm: React.FC<Props> = ({ data, onOpenChange, onSuccess, setAlertV
         name: formData?.tag,
         address_hash: formData?.address,
       };
-
       const isEdit = data?.id;
       if (isEdit) {
-        return apiFetch('general:private_tags_address', {
+        return apiFetch('xone:private_tags_address', {
           pathParams: { id: String(data.id) },
           fetchParams: { method: 'PUT', body },
         });
       }
 
-      return apiFetch('general:private_tags_address', { fetchParams: { method: 'POST', body } });
+      return apiFetch('xone:private_tags_address', { fetchParams: { method: 'POST', body } });
     },
     onError: (error: ResourceErrorAccount<AddressTagErrors>) => {
       setPending(false);

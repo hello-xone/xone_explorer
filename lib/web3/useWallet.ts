@@ -48,7 +48,6 @@ export default function useWeb3Wallet({ source }: Params) {
   const account = useAccount();
   const address = account.address;
   const isConnected = isClientLoaded && !account.isDisconnected && account.address !== undefined;
-
   return React.useMemo(() => ({
     connect: handleConnect,
     disconnect: handleDisconnect,

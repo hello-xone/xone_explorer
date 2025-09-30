@@ -13,22 +13,29 @@ interface Props {
 }
 
 const SOCIAL_LINKS: Array<Omit<ServiceLinkProps, 'href'>> = [
-  { field: 'github', icon: 'social/github_filled', title: 'Github' },
-  { field: 'twitter', icon: 'social/twitter_filled', title: 'X (ex-Twitter)' },
-  { field: 'telegram', icon: 'social/telegram_filled', title: 'Telegram' },
-  { field: 'openSea', icon: 'social/opensea_filled', title: 'OpenSea' },
-  { field: 'linkedin', icon: 'social/linkedin_filled', title: 'LinkedIn' },
-  { field: 'facebook', icon: 'social/facebook_filled', title: 'Facebook' },
-  { field: 'discord', icon: 'social/discord_filled', title: 'Discord' },
-  { field: 'medium', icon: 'social/medium_filled', title: 'Medium' },
-  { field: 'slack', icon: 'social/slack_filled', title: 'Slack' },
-  { field: 'reddit', icon: 'social/reddit_filled', title: 'Reddit' },
+  { field: 'github', icon: '/static/social/github.svg', title: 'Github' },
+  { field: 'twitter', icon: '/static/social/twitter.svg', title: 'X (ex-Twitter)' },
+  { field: 'telegram', icon: '/static/social/telegram.svg', title: 'Telegram' },
+  { field: 'discord', icon: '/static/social/discord.svg', title: 'Discord' },
+  { field: 'medium', icon: '/static/social/medium.svg', title: 'Medium' },
+  { field: 'reddit', icon: '/static/social/reddit.svg', title: 'Reddit' },
+  { field: 'slack', icon: '/static/social/slack.svg', title: 'Slack' },
+  { field: 'instagram', icon: '/static/social/instagram.svg', title: 'Instagram' },
+  { field: 'wechat', icon: '/static/social/wechat.svg', title: 'Wechat' },
+  { field: 'facebook', icon: '/static/social/facebook.svg', title: 'Facebook' },
+  { field: 'blog', icon: '/static/social/blog.svg', title: 'Blog' },
+  { field: 'bitcointalk', icon: '/static/social/bitcointalk.svg', title: 'BitcoinTalk' },
+  { field: 'youtube', icon: '/static/social/youtube.svg', title: 'YouTube' },
+  { field: 'tiktok', icon: '/static/social/tiktok.svg', title: 'TikTok' },
+  { field: 'forum', icon: '/static/social/forum.svg', title: 'Forum' },
+  { field: 'linkedin', icon: '/static/social/linkedin.svg', title: 'LinkedIn' },
+  { field: 'opensea', icon: '/static/social/opensea.svg', title: 'OpenSea' },
 ];
 
 const PRICE_TICKERS: Array<Omit<ServiceLinkProps, 'href'>> = [
-  { field: 'coinGeckoTicker', icon: 'social/coingecko', title: 'CoinGecko' },
-  { field: 'coinMarketCapTicker', icon: 'social/coinmarketcap', title: 'CoinMarketCap' },
-  { field: 'defiLlamaTicker', icon: 'social/defi_llama', title: 'DefiLlama' },
+  { field: 'coinGecko', icon: '/static/social/coinGecko.svg', title: 'CoinGecko' },
+  { field: 'coinMarketCap', icon: '/static/social/coinMarketCap.svg', title: 'CoinMarketCap' },
+  { field: 'ave', icon: '/static/social/ave.svg', title: 'DefiLlama' },
 ];
 
 export function hasContent(data: TokenVerifiedInfo): boolean {
@@ -50,7 +57,6 @@ const Content = ({ data }: Props) => {
   const socialLinks = SOCIAL_LINKS
     .map((link) => ({ ...link, href: data[link.field] }))
     .filter(({ href }) => href);
-
   const priceTickersLinks = PRICE_TICKERS
     .map((link) => ({ ...link, href: data[link.field] }))
     .filter(({ href }) => href);

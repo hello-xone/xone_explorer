@@ -14,9 +14,12 @@ interface Props {
 }
 
 const ConnectWalletAlert = ({ isLoading }: Props) => {
-  const web3Wallet = useWeb3Wallet({ source: 'Smart contracts' });
+  const web3Wallet = useWeb3Wallet({ source: 'Header' });
   const isMobile = useIsMobile();
 
+  const handleOpenChange = React.useCallback(() => {
+    web3Wallet.openModal();
+  }, [ web3Wallet ]);
   const content = (() => {
     if (!web3Wallet.isConnected) {
       return (
@@ -24,7 +27,7 @@ const ConnectWalletAlert = ({ isLoading }: Props) => {
           <span>Disconnected</span>
           <Button
             ml={ 3 }
-            onClick={ web3Wallet.connect }
+            onClick={ handleOpenChange }
             size="sm"
             variant="outline"
             loading={ web3Wallet.isOpen }

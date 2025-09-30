@@ -53,6 +53,14 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
     },
   });
 
+  const privateTagQuery = useApiQuery('xone:private_tags_address', {
+    pathParams: { id: addressHash },
+    queryOptions: {
+      enabled:
+        Boolean(addressHash),
+    },
+  });
+
   const addressesForMetadataQuery = React.useMemo(
     () => [ hash ].filter(Boolean),
     [ hash ],
@@ -96,31 +104,25 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
         } :
         undefined,
       ...formatUserTags(addressQuery.data),
-      verifiedInfoQuery.data?.projectSector ?
-        {
-          slug: verifiedInfoQuery.data.projectSector,
-          name: verifiedInfoQuery.data.projectSector,
+      ...privateTagQuery?.data?.map(el => {
+        return {
+          slug: el.name,
+          name: el.name,
           tagType: 'custom' as const,
           ordinal: -30,
-        } :
-        undefined,
+        };
+      }) || [],
       ...(addressMetadataQuery.data?.addresses[0]?.tags.filter(
         (tag) => tag.tagType !== 'note',
       ) || []),
     ]
       .filter(Boolean)
       .sort(sortEntityTags);
-  }, [
-    addressMetadataQuery.data?.addresses,
-    addressQuery.data,
-    bridgedTokenTagBgColor,
-    bridgedTokenTagTextColor,
-    tokenQuery.data,
-    verifiedInfoQuery?.data?.projectSector,
-  ]);
+  }, [ addressMetadataQuery.data?.addresses, addressQuery.data, bridgedTokenTagBgColor, bridgedTokenTagTextColor,
+    privateTagQuery.data, tokenQuery.data ]);
   const contentAfter = (
     <>
-      { verifiedInfoQuery.data?.tokenAddress && (
+      { verifiedInfoQuery.data?.data?.name && (
         <Tooltip
           content={ `Information on this token has been verified by ${ config.chain.name }` }
         >

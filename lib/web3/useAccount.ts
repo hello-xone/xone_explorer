@@ -29,18 +29,16 @@ function useCustomAccount(): UseAccountReturnType {
   const { connect, connectors } = useConnect();
   const [ isInitialLoad, setIsInitialLoad ] = useState(true);
   const [ showDisconnected, setShowDisconnected ] = useState(false);
-
   // 处理页面初始加载逻辑
   useEffect(() => {
     // 页面首次加载时
-    if (isInitialLoad && wagmiAccount.address && wagmiAccount.connector) {
+    if (isInitialLoad && wagmiAccount.address && wagmiAccount.connector && wagmiAccount.isConnecting) {
       const connectorId = wagmiAccount.connector.id;
 
       setShowDisconnected(true);
 
       disconnect();
       const connector = connectors.find((c) => c.id === connectorId);
-
       if (connector) {
         connect({ connector });
         setIsInitialLoad(false);
@@ -49,14 +47,7 @@ function useCustomAccount(): UseAccountReturnType {
       setIsInitialLoad(false);
       setShowDisconnected(false);
     }
-  }, [
-    isInitialLoad,
-    wagmiAccount.address,
-    wagmiAccount.connector,
-    disconnect,
-    connect,
-    connectors,
-  ]);
+  }, [ isInitialLoad, wagmiAccount.address, wagmiAccount.connector, disconnect, connect, connectors, wagmiAccount.isConnecting ]);
 
   // 在初始加载期间且设置了显示disconnected状态时，返回disconnected状态
   if (isInitialLoad && showDisconnected) {

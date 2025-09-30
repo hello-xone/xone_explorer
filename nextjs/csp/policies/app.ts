@@ -54,7 +54,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'https://mail.xone.plus',
       'https://*.xone.works',
       'https://rpc.xone.org',
-      'https://xonescan-ad-assets.s3.ap-southeast-1.amazonaws.com',
+      'https://rose-petite-porcupine-710.mypinata.cloud',
       'https://api.web3modal.org',
       'https://www.smartwallet.dev',
       'https://pulse.walletconnect.org',

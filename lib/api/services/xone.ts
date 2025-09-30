@@ -1,4 +1,5 @@
 import type { ApiResource } from '../types';
+import type { AddressTag } from 'types/api/account';
 import type { TokenInfo, TokenType } from 'types/api/token';
 import type { TokensResponse, TokensFilters, TokensSorting } from 'types/api/tokens';
 
@@ -69,6 +70,12 @@ export const XONE_API_RESOURCES = {
     filterFields: [ 'q' as const, 'type' as const ],
     paginated: true,
   },
+  private_tags_address: {
+    path: '/api/account/v2/user/tags/address{/:id}',
+    pathParams: [ 'id' as const ],
+    filterFields: [ ],
+    paginated: true,
+  },
 } satisfies Record<string, ApiResource>;
 
 export type XoneApiResourceName = `xone:${ keyof typeof XONE_API_RESOURCES }`;
@@ -76,6 +83,7 @@ export type XoneApiResourceName = `xone:${ keyof typeof XONE_API_RESOURCES }`;
 /* eslint-disable @stylistic/indent */
 export type XoneApiResourcePayload<R extends XoneApiResourceName> =
   R extends 'xone:tokens' ? TokensResponse :
+  R extends 'xone:private_tags_address' ? Array<AddressTag> :
   never;
 /* eslint-enable @stylistic/indent */
 
