@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react';
 import React from 'react';
 
 import type { TokenVerifiedInfo } from 'types/api/token';
@@ -17,6 +18,7 @@ const TokenProjectInfo = ({ data }: Props) => {
 
   return (
     <InfoButton>
+      <Box fontSize="sm" color="gray.500" mb={ 2 }>{ data.description }</Box>
       <Content data={ data }/>
     </InfoButton>
   );

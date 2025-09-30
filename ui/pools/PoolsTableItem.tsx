@@ -29,7 +29,6 @@ const PoolsTableItem = ({
   isLoading,
 }: Props) => {
   const externalLinks = getPoolLinks(item);
-
   return (
     <TableRow>
       <TableCell>
@@ -73,7 +72,7 @@ const PoolsTableItem = ({
                   <Tooltip content={ link.title } key={ link.url }>
                     <Box display="inline-block">
                       <Link external noIcon href={ link.url } display="inline-flex">
-                        <Image src={ link.image } alt={ link.title } boxSize={ 5 } mr={ 3 }/>
+                        <Image src={ link.image } alt={ link.title } boxSize={ 5 }/>
                       </Link>
                     </Box>
                   </Tooltip>

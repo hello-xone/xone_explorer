@@ -8,6 +8,7 @@ import config from 'configs/app';
 import useIsMobile from 'lib/hooks/useIsMobile';
 import useRewardsActivity from 'lib/hooks/useRewardsActivity';
 import * as mixpanel from 'lib/mixpanel/index';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import useProvider from 'lib/web3/useProvider';
 import useSwitchOrAddChain from 'lib/web3/useSwitchOrAddChain';
 import { WALLETS_INFO } from 'lib/web3/wallets';
@@ -25,10 +26,10 @@ function getRequestParams(token: TokenInfo, tokenId?: string): WatchAssetParams 
       return {
         type: 'ERC20',
         options: {
-          address: token.address_hash,
+          address: token.address_hash || token.address || '',
           symbol: token.symbol || '',
           decimals: Number(token.decimals ?? '18'),
-          image: token.icon_url || '',
+          image: token.icon_url || getTokenIconPath(token.address_hash || token.address || '') || undefined,
         },
       };
     case 'ERC-721':
@@ -40,7 +41,7 @@ function getRequestParams(token: TokenInfo, tokenId?: string): WatchAssetParams 
       return {
         type: token.type === 'ERC-721' ? 'ERC721' : 'ERC1155',
         options: {
-          address: token.address_hash,
+          address: token.address_hash || token.address || '',
           tokenId: tokenId,
         },
       } as never; // There is no official EIP, and therefore no typings for these token types.
@@ -64,7 +65,6 @@ const AddressAddToWallet = ({ className, token, tokenId, isLoading, variant = 'i
   const switchOrAddChain = useSwitchOrAddChain();
   const isMobile = useIsMobile();
   const { trackUsage } = useRewardsActivity();
-
   const handleClick = React.useCallback(async() => {
     if (!wallet) {
       return;
@@ -79,7 +79,6 @@ const AddressAddToWallet = ({ className, token, tokenId, isLoading, variant = 'i
 
       // switch to the correct network otherwise the token will be added to the wrong one
       await switchOrAddChain();
-
       const wasAdded = await provider?.request?.({
         method: 'wallet_watchAsset',
         params,

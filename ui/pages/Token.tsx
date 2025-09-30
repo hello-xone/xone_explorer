@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import type { SocketMessage } from 'lib/socket/types';
 import type { TabItemRegular } from 'toolkit/components/AdaptiveTabs/types';
@@ -52,6 +52,7 @@ const TokenPageContent = () => {
   const [ totalSupplySocket, setTotalSupplySocket ] = React.useState<number>();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const currentChainId = config.chain.id?.toString() ?? '';
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -63,6 +64,10 @@ const TokenPageContent = () => {
 
   useEtherscanRedirects();
   const queryClient = useQueryClient();
+  const isFromPoolPage = useMemo(() => {
+    const fromPool = router.query.from_pool;
+    return fromPool === 'true';
+  }, [ router.query.from_pool ]);
 
   const tokenQuery = useTokenQuery(hashString);
   const addressQuery = useApiQuery('general:address', {
@@ -72,6 +77,16 @@ const TokenPageContent = () => {
       placeholderData: addressStubs.ADDRESS_INFO,
     },
   });
+
+  const poolQuery = useApiQuery('contractInfo:pool', {
+    pathParams: { hash: router.query.pool_id as string, chainId: currentChainId },
+    queryParams: { include: 'base_token,quote_token,dex' },
+    queryOptions: {
+      enabled: isFromPoolPage && Boolean(router.query.pool_id),
+      refetchOnMount: false,
+    },
+  });
+
   React.useEffect(() => {
     if (tokenQuery.data && totalSupplySocket) {
       queryClient.setQueryData(getResourceKey('general:token', { pathParams: { hash: hashString } }), (prevData: TokenInfo | undefined) => {
@@ -266,9 +281,9 @@ const TokenPageContent = () => {
     <>
       <TextAd mb={ 6 }/>
 
-      <TokenPageTitle tokenQuery={ tokenQuery } addressQuery={ addressQuery } hash={ hashString }/>
+      <TokenPageTitle tokenQuery={ tokenQuery } poolQuery={ poolQuery } addressQuery={ addressQuery } hash={ hashString }/>
 
-      <TokenDetails tokenQuery={ tokenQuery }/>
+      <TokenDetails tokenQuery={ tokenQuery } poolQuery={ poolQuery }/>
 
       <Box ref={ scrollRef }></Box>
 

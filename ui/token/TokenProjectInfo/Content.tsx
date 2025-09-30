@@ -14,7 +14,7 @@ interface Props {
 
 const SOCIAL_LINKS: Array<Omit<ServiceLinkProps, 'href'>> = [
   { field: 'github', icon: '/static/social/github.svg', title: 'Github' },
-  { field: 'twitter', icon: '/static/social/twitter.svg', title: 'X (ex-Twitter)' },
+  { field: 'twitter', icon: '/static/social/twitter.svg', title: 'Twitter (X)' },
   { field: 'telegram', icon: '/static/social/telegram.svg', title: 'Telegram' },
   { field: 'discord', icon: '/static/social/discord.svg', title: 'Discord' },
   { field: 'medium', icon: '/static/social/medium.svg', title: 'Medium' },
@@ -33,9 +33,9 @@ const SOCIAL_LINKS: Array<Omit<ServiceLinkProps, 'href'>> = [
 ];
 
 const PRICE_TICKERS: Array<Omit<ServiceLinkProps, 'href'>> = [
-  { field: 'coinGecko', icon: '/static/social/coinGecko.svg', title: 'CoinGecko' },
-  { field: 'coinMarketCap', icon: '/static/social/coinMarketCap.svg', title: 'CoinMarketCap' },
-  { field: 'ave', icon: '/static/social/ave.svg', title: 'DefiLlama' },
+  { field: 'coinGecko', icon: '/static/social/coingecko.svg', title: 'CoinGecko' },
+  { field: 'coinMarketCap', icon: '/static/social/coinmarketcap.svg', title: 'CoinMarketCap' },
+  { field: 'ave', icon: '/static/social/ave.svg', title: 'Ave' },
 ];
 
 export function hasContent(data: TokenVerifiedInfo): boolean {

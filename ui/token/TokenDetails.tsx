@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useMemo } from 'react';
 import { scroller } from 'react-scroll';
 
+import type { PoolResponse } from 'types/api/pools';
 import type { TokenInfo } from 'types/api/token';
 
 import config from 'configs/app';
@@ -27,12 +28,12 @@ import TokenNftMarketplaces from './TokenNftMarketplaces';
 
 interface Props {
   tokenQuery: UseQueryResult<TokenInfo, ResourceError<unknown>>;
+  poolQuery: UseQueryResult<PoolResponse, ResourceError<unknown>>;
 }
 
-const TokenDetails = ({ tokenQuery }: Props) => {
+const TokenDetails = ({ tokenQuery, poolQuery }: Props) => {
   const router = useRouter();
   const isMounted = useIsMounted();
-
   const hash = router.query.hash?.toString();
 
   // 格式化数字的辅助函数
@@ -46,19 +47,6 @@ const TokenDetails = ({ tokenQuery }: Props) => {
     const fromPool = router.query.from_pool;
     return fromPool === 'true';
   }, [ router.query.from_pool ]);
-
-  // 获取当前 chain_id
-  const currentChainId = config.chain.id?.toString() ?? '';
-
-  // 如果从 pool 页面导航过来，获取 pool 数据
-  const poolQuery = useApiQuery('contractInfo:pool', {
-    pathParams: { hash: router.query.pool_id as string, chainId: currentChainId },
-    queryParams: { include: 'base_token,quote_token,dex' },
-    queryOptions: {
-      enabled: isFromPoolPage && Boolean(router.query.pool_id),
-      refetchOnMount: false,
-    },
-  });
 
   // 从 pool 数据中提取 base_token_price_usd 和 market_cap_usd
   const poolPriceData = useMemo(() => {
