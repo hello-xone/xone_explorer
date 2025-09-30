@@ -23,6 +23,8 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const { isAutoConnectDisabled } = useMarketplaceContext();
   console.log(web3Wallet, "web3Wallet");
   console.log(web3Wallet.isReconnecting, "isReconnecting");
+  console.log(web3AccountWithDomain, "web3AccountWithDomain");
+  console.log(walletMenu, "walletMenu");
   const isPending =
     (web3Wallet.isConnected && web3AccountWithDomain.isLoading) ||
     (!web3Wallet.isConnected && web3Wallet.isOpen);
