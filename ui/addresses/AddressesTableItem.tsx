@@ -7,7 +7,7 @@ import type { AddressesItem } from 'types/api/addresses';
 import config from 'configs/app';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TableCell, TableRow } from 'toolkit/chakra/table';
-import { Tag } from 'toolkit/chakra/tag';
+// import { Tag } from 'toolkit/chakra/tag';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 
 type Props = {
@@ -44,9 +44,9 @@ const AddressesTableItem = ({
             fontWeight={ 700 }
             my="2px"
           />
-          { item.public_tags && item.public_tags.length ? item.public_tags.map(tag => (
-            <Tag key={ tag.label } loading={ isLoading } truncated>{ tag.display_name }</Tag>
-          )) : null }
+          { /* { item.public_tags && item.public_tags.length ? item.public_tags.map(tag => (
+            <Tag key={ tag.label } loading={ isLoading } truncated>{ tag.name || tag.display_name }</Tag>
+          )) : null } */ }
         </Flex>
       </TableCell>
       <TableCell isNumeric>

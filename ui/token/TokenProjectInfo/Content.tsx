@@ -7,6 +7,7 @@ import DocsLink from './DocsLink';
 import type { Props as ServiceLinkProps } from './ServiceLink';
 import ServiceLink from './ServiceLink';
 import SupportLink from './SupportLink';
+import WhitepaperLink from './WhitepaperLink';
 
 interface Props {
   data: TokenVerifiedInfo;
@@ -52,7 +53,8 @@ export function hasContent(data: TokenVerifiedInfo): boolean {
 const Content = ({ data }: Props) => {
   const docs = data.docs ? <DocsLink href={ data.docs }/> : null;
   const support = data.support ? <SupportLink url={ data.support }/> : null;
-  const description = data.projectDescription ? <Text fontSize="sm" mt={ 3 }>{ data.projectDescription }</Text> : null;
+  const whitepaper = data.whitepaper ? <WhitepaperLink url={ data.whitepaper }/> : null;
+  const description = data.description ? <Text fontSize="sm" mt={ 3 }>{ data.description }</Text> : null;
 
   const socialLinks = SOCIAL_LINKS
     .map((link) => ({ ...link, href: data[link.field] }))
@@ -63,14 +65,15 @@ const Content = ({ data }: Props) => {
 
   return (
     <Flex fontSize="sm" flexDir="column" rowGap={ 5 }>
-      { (description || docs || support) && (
+      { (description || docs || support || whitepaper) && (
         <div>
           <Text color="text.secondary" fontSize="xs">Description and support info</Text>
           { description }
-          { (docs || support) && (
+          { (docs || support || whitepaper) && (
             <Flex alignItems="center" flexWrap="wrap" columnGap={ 6 } mt={ 3 }>
               { support }
               { docs }
+              { whitepaper }
             </Flex>
           ) }
         </div>
