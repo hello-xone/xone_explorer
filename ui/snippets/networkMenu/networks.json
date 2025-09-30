@@ -4,6 +4,7 @@
 	"xscUrl": "https://xscscan.com/",
 	"url": "https://xonescan.com/",
 	"group": "Mainnets",
+	"chainId": "3721",
 	"icon": "/assets/favicon/android-chrome-192x192.png"
 	},
 	{
@@ -11,6 +12,7 @@
 	"xscUrl": "https://testnet.xscscan.com/",
 	"url": "https://testnet.xonescan.com/",
 	"group": "Testnets",
+	"chainId": "33772211",
 	"icon": "/assets/favicon/android-chrome-192x192.png"
 	}
 ]

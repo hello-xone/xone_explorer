@@ -24,7 +24,7 @@ interface Props {
 
 const AccountActionsMenu = ({ isLoading, className, showUpdateMetadataItem }: Props) => {
   const router = useRouter();
-
+  const isTokenPage = router.pathname === '/token/[hash]';
   const hash = getQueryParamString(router.query.hash);
   const isTokenInstancePage = router.pathname === '/token/[hash]/instance/[id]';
   const isTxPage = router.pathname === '/tx/[hash]';
@@ -40,7 +40,7 @@ const AccountActionsMenu = ({ isLoading, className, showUpdateMetadataItem }: Pr
     },
     {
       render: (props: ItemProps) => <TokenInfoMenuItem { ...props }/>,
-      enabled: true,
+      enabled: isTokenPage,
     },
     {
       render: (props: ItemProps) => <PrivateTagMenuItem { ...props } entityType={ isTxPage ? 'tx' : 'address' }/>,
@@ -48,7 +48,8 @@ const AccountActionsMenu = ({ isLoading, className, showUpdateMetadataItem }: Pr
     },
     {
       render: (props: ItemProps) => <PublicTagMenuItem { ...props }/>,
-      enabled: true,
+      enabled: !isTxPage,
+
     },
   ].filter(({ enabled }) => enabled);
 

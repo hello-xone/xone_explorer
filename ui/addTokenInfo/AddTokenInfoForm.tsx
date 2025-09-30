@@ -8,6 +8,7 @@ import type { FormFields } from './types';
 
 import appConfig from 'configs/app';
 import useApiFetch from 'lib/api/useApiFetch';
+import useApiQuery from 'lib/api/useApiQuery';
 import useIsMobile from 'lib/hooks/useIsMobile';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import { TOKEN_TYPE_IDS } from 'lib/token/tokenTypes';
@@ -21,6 +22,7 @@ import { FormFieldSocial } from 'toolkit/components/forms/fields/FormFieldSocial
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
 import { FormFieldUrl } from 'toolkit/components/forms/fields/FormFieldUrl';
 import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
+import networks from 'ui/snippets/networkMenu/networks.json';
 
 import { convertFormDataToRequestsBody } from './utils';
 
@@ -45,6 +47,20 @@ const AddTokenInfoForm = () => {
   const apiFetch = useApiFetch();
   const turnstile = useCloudflareTurnstile();
   const hash = getQueryParamString(router.query.hash);
+  const tokenInfoQuery = useApiQuery('contractInfo:token_verified_info', {
+    pathParams: { hash: hash, chainId: appConfig.chain.id },
+    queryOptions: {
+      enabled:
+        Boolean(hash) && Boolean(appConfig.chain.id),
+    },
+  });
+  const tokenQuery = useApiQuery('general:token', {
+    pathParams: { hash: hash },
+    queryOptions: {
+      enabled:
+        Boolean(hash) && Boolean(appConfig.chain.id),
+    },
+  });
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
     defaultValues: {
@@ -83,10 +99,24 @@ const AddTokenInfoForm = () => {
   });
 
   useEffect(() => {
-    if (hash) {
-      formApi.setValue('id', hash);
+    if (formApi && tokenInfoQuery && tokenInfoQuery.data?.data) {
+      formApi.reset({
+        ...tokenInfoQuery.data?.data,
+        type: tokenInfoQuery.data?.data.type ? [ tokenInfoQuery.data?.data.type ] : [],
+        decimals: tokenInfoQuery.data?.data.decimals ? Number(tokenInfoQuery.data?.data.decimals) : 18,
+      });
+    } else if (tokenQuery && tokenQuery.data && formApi) {
+      const network = networks.find(el => el.chainId === appConfig.chain.id);
+      formApi.reset({
+        id: tokenQuery.data.address,
+        decimals: Number(tokenQuery.data.decimals || 18),
+        name: tokenQuery.data.name || '',
+        symbol: tokenQuery.data.symbol || '',
+        type: [ tokenQuery.data.type.toLocaleLowerCase() ],
+        explorer: window.location.host.includes('xonescan') ? network?.url : network?.xscUrl,
+      });
     }
-  }, [ formApi, hash ]);
+  }, [ formApi, tokenInfoQuery, tokenQuery ]);
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(
     async(data) => {
       const requestsBody = convertFormDataToRequestsBody(data);
@@ -145,6 +175,7 @@ const AddTokenInfoForm = () => {
             <FormFieldAddress<FormFields>
               name="id"
               required
+              readOnly
               placeholder="Address (0x...)"
             />
           </GridItem>
@@ -152,11 +183,13 @@ const AddTokenInfoForm = () => {
           <FormFieldText<FormFields>
             name="name"
             required
+            readOnly
             placeholder="Token name"
           />
           <FormFieldText<FormFields>
             name="symbol"
             required
+            readOnly
             placeholder="Token symbol"
           />
           { !isMobile && <div/> }
@@ -164,11 +197,13 @@ const AddTokenInfoForm = () => {
           <FormFieldText<FormFields>
             name="decimals"
             required
+            readOnly
             placeholder="Token decimals"
           />
           <FormFieldSelect<FormFields, 'type'>
             name="type"
             placeholder="Token type"
+            readOnly
             collection={ collection }
             required
           />
@@ -176,6 +211,7 @@ const AddTokenInfoForm = () => {
           <FormFieldUrl<FormFields>
             name="explorer"
             required
+            readOnly
             placeholder="Explorer"
           />
           <FormFieldUrl<FormFields>

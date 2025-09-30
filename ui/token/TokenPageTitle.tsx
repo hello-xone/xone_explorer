@@ -3,6 +3,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 
 import type { Address } from 'types/api/address';
+import type { PoolResponse } from 'types/api/pools';
 import type { TokenInfo } from 'types/api/token';
 import type { EntityTag } from 'ui/shared/EntityTags/types';
 
@@ -34,10 +35,11 @@ const PREDEFINED_TAG_PRIORITY = 100;
 interface Props {
   tokenQuery: UseQueryResult<TokenInfo, ResourceError<unknown>>;
   addressQuery: UseQueryResult<Address, ResourceError<unknown>>;
+  poolQuery: UseQueryResult<PoolResponse, ResourceError<unknown>>;
   hash: string;
 }
 
-const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
+const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) => {
   const multichainContext = useMultichainContext();
   const addressHash = !tokenQuery.isPlaceholderData ?
     tokenQuery.data?.address || '' :
@@ -122,7 +124,7 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
     privateTagQuery.data, tokenQuery.data ]);
   const contentAfter = (
     <>
-      { verifiedInfoQuery.data?.data?.name && (
+      { addressQuery?.data?.is_verified && verifiedInfoQuery.data?.data?.name && (
         <Tooltip
           content={ `Information on this token has been verified by ${ config.chain.name }` }
         >
@@ -182,15 +184,19 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
         flexGrow={{ base: 1, lg: 0 }}
       >
         <TokenVerifiedInfo verifiedInfoQuery={ verifiedInfoQuery }/>
-        <NetworkExplorers
-          type="token"
-          pathParam={ addressHash }
-          ml={{ base: 'auto', lg: 0 }}
-        />
+        {
+          ((poolQuery && poolQuery?.data) || tokenQuery.data?.exchange_rate) && (
+            <NetworkExplorers
+              type="token"
+              pathParam={ addressHash }
+              ml={{ base: 'auto', lg: 0 }}
+            />
+          )
+        }
+
       </Flex>
     </Flex>
   );
-
   return (
     <>
       <PageTitle

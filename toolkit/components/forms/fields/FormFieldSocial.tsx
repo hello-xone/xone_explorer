@@ -26,7 +26,7 @@ const FormFieldUrlContent = <FormFields extends FieldValues>(
       endElement: () => {
         return (
           <Image
-            src={ `/static/social/${ props.name }.svg` }
+            src={ `/static/social/${ props.name.toLocaleLowerCase() }.svg` }
             w={ 8 }
             h={ 8 }
             marginRight={ 6 }
