@@ -2,7 +2,7 @@ export const homeAds = [
   {
     id: 'xid',
     imageUrl:
-      'https://pinata.xonescan.com/ipfs/bafkreig6xrqxgdngkdl3xgqjgb2ovmzofk4pdxsbchanscjotxgbeozkxy',
+      'https://pinata.xonescan.com/ipfs/bafkreidlyixga4ifqvno2wxbzosu3qtynraw2juca7zzonl777bb4zks7q',
     linkUrl: 'https://xid.world/en',
   },
   {
