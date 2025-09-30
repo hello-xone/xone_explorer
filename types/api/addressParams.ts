@@ -9,6 +9,8 @@ export interface AddressImplementation {
 
 export interface AddressTag {
   label: string;
+  name?: string;
+  tagType?: string;
   display_name: string;
   address_hash: string;
 }
