@@ -17,6 +17,7 @@ import getQueryParamString from 'lib/router/getQueryParamString';
 import useEtherscanRedirects from 'lib/router/useEtherscanRedirects';
 import useSocketChannel from 'lib/socket/useSocketChannel';
 import useSocketMessage from 'lib/socket/useSocketMessage';
+import useAccount from 'lib/web3/useAccount';
 import useFetchXStarScore from 'lib/xStarScore/useFetchXStarScore';
 import { ADDRESS_TABS_COUNTERS } from 'stubs/address';
 import { USER_OPS_ACCOUNT } from 'stubs/userOps';
@@ -71,6 +72,7 @@ const AddressPageContent = () => {
   const router = useRouter();
 
   const hash = getQueryParamString(router.query.hash);
+  const { address } = useAccount();
 
   const checkDomainName = useCheckDomainNameParam(hash);
   const checkAddressFormat = useCheckAddressFormat(hash);
@@ -85,6 +87,17 @@ const AddressPageContent = () => {
     queryOptions: {
       enabled: areQueriesEnabled && Boolean(hash),
       placeholderData: ADDRESS_TABS_COUNTERS,
+    },
+  });
+
+  const privateTagQuery = useApiQuery('xone:private_tags_address', {
+    pathParams: { id: hash },
+    queryParams: {
+      account: address,
+    },
+    queryOptions: {
+      enabled:
+        Boolean(hash) && Boolean(address),
     },
   });
 
@@ -350,6 +363,14 @@ const AddressPageContent = () => {
         { slug: 'mud', name: 'MUD World', tagType: 'custom' as const, ordinal: PREDEFINED_TAG_PRIORITY } :
         undefined,
       ...formatUserTags(addressQuery.data),
+      ...privateTagQuery?.data?.map(el => {
+        return {
+          slug: el.name,
+          name: el.name,
+          tagType: 'custom' as const,
+          ordinal: -30,
+        };
+      }) || [],
       ...(addressMetadataQuery.data?.addresses[0]?.tags.filter(tag => tag.tagType !== 'note') || []),
       !addressQuery.data?.is_contract && xScoreFeature.isEnabled && xStarQuery.data?.data.level ?
         {
@@ -366,8 +387,8 @@ const AddressPageContent = () => {
         } :
         undefined,
     ].filter(Boolean).sort(sortEntityTags);
-  }, [ addressMetadataQuery.data, addressQuery.data, isSafeAddress, userOpsAccountQuery.data,
-    mudTablesCountQuery.data, usernameApiTag, xStarQuery?.data?.data ]);
+  }, [ addressQuery.data, isSafeAddress, usernameApiTag, userOpsAccountQuery.data, mudTablesCountQuery.data,
+    privateTagQuery?.data, addressMetadataQuery.data?.addresses, xStarQuery?.data?.data?.level ]);
   const titleContentAfter = (
     <EntityTags
       tags={ tags }
