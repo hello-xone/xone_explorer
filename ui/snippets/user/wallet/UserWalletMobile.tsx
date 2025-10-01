@@ -27,6 +27,8 @@ const UserWalletMobile = () => {
   const handleDisconnectClick = React.useCallback(() => {
     web3Wallet.disconnect();
     walletMenu.onClose();
+    localStorage.removeItem('wagmi.store');
+    localStorage.removeItem('wagmi.recentConnectorId');
   }, [ web3Wallet, walletMenu ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {

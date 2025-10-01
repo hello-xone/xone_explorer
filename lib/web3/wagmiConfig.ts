@@ -65,8 +65,6 @@ function createTokenUpConnector() {
 
     // 断开连接
     disconnect: async() => {
-      const web3Kit = new Web3Kit();
-      web3Kit.logout();
       return;
     },
 
