@@ -1,6 +1,12 @@
 import { isEqual } from 'es-toolkit';
 
-import type { FormFields, FormSubmitResult, FormSubmitResultGrouped, FormSubmitResultItemGrouped, SubmitRequestBody } from './types';
+import type {
+  FormFields,
+  FormSubmitResult,
+  FormSubmitResultGrouped,
+  FormSubmitResultItemGrouped,
+  SubmitRequestBody,
+} from './types';
 import type { UserInfo } from 'types/api/account';
 import type { FormFieldTag } from 'ui/publicTags/submit/types';
 
@@ -10,41 +16,43 @@ import getQueryParamString from 'lib/router/getQueryParamString';
 
 export function convertFormDataToRequestsBody(data: FormFields) {
   return {
-
-    id: data.id,
-    name: data.name,
-    symbol: data.symbol,
-    decimals: data.decimals,
-    status: data.status,
-    type: data.type.toString(),
-    website: data.website,
-    description: data.description,
-    whitepaper: data.whitepaper,
-    explorer: data.explorer,
-    email: data.email,
-
-    twitter: data.twitter,
-    telegram: data.telegram,
-    reddit: data.reddit,
-    discord: data.discord,
-    slack: data.slack,
-    instagram: data.instagram,
-    wechat: data.wechat,
-    facebook: data.facebook,
-    medium: data.medium,
-    github: data.github,
-    blog: data.blog,
-    bitcointalk: data.bitcointalk,
-    youtube: data.youtube,
-    tiktok: data.tiktok,
-    forum: data.forum,
-    linkedin: data.linkedin,
-    opensea: data.opensea,
-
-    coinMarketCap: data.coinMarketCap,
-    coinGecko: data.coinGecko,
-    ave: data.ave,
-
+    Basic_Information: {
+      id: data.id,
+      name: data.name,
+      symbol: data.symbol,
+      decimals: data.decimals,
+      status: 'status',
+      type: data.type.toString(),
+      website: data.website,
+      description: data.description,
+      whitepaper: data.whitepaper,
+      explorer: data.explorer,
+      email: data.email,
+    },
+    Social_Profiles: {
+      twitter: data.twitter,
+      telegram: data.telegram,
+      reddit: data.reddit,
+      discord: data.discord,
+      slack: data.slack,
+      instagram: data.instagram,
+      wechat: data.wechat,
+      facebook: data.facebook,
+      medium: data.medium,
+      github: data.github,
+      blog: data.blog,
+      bitcointalk: data.bitcointalk,
+      youtube: data.youtube,
+      tiktok: data.tiktok,
+      forum: data.forum,
+      linkedin: data.linkedin,
+      opensea: data.opensea,
+    },
+    Price_Data: {
+      coinMarketCap: data.coinMarketCap,
+      coinGecko: data.coinGecko,
+      ave: data.ave,
+    },
   };
   // const result: Array<SubmitRequestBody> = [];
 
@@ -72,7 +80,9 @@ export function convertFormDataToRequestsBody(data: FormFields) {
   // return result;
 }
 
-export function convertTagApiFieldsToFormFields(tag: Pick<SubmitRequestBody, 'name' | 'tagType' | 'meta'>): FormFieldTag {
+export function convertTagApiFieldsToFormFields(
+  tag: Pick<SubmitRequestBody, 'name' | 'tagType' | 'meta'>,
+): FormFieldTag {
   return {
     name: tag.name,
     type: [ tag.tagType ],
@@ -84,7 +94,9 @@ export function convertTagApiFieldsToFormFields(tag: Pick<SubmitRequestBody, 'na
   };
 }
 
-export function groupSubmitResult(data: FormSubmitResult | undefined): FormSubmitResultGrouped | undefined {
+export function groupSubmitResult(
+  data: FormSubmitResult | undefined,
+): FormSubmitResultGrouped | undefined {
   if (!data) {
     return;
   }
@@ -93,15 +105,30 @@ export function groupSubmitResult(data: FormSubmitResult | undefined): FormSubmi
 
   // group by error and address
   for (const item of data) {
-    const existingItem = _items.find(({ error, addresses }) => error === item.error && addresses.length === 1 && addresses[0] === item.payload.address);
+    const existingItem = _items.find(
+      ({ error, addresses }) =>
+        error === item.error &&
+        addresses.length === 1 &&
+        addresses[0] === item.payload.address,
+    );
     if (existingItem) {
-      existingItem.tags.push({ name: item.payload.name, tagType: item.payload.tagType, meta: item.payload.meta });
+      existingItem.tags.push({
+        name: item.payload.name,
+        tagType: item.payload.tagType,
+        meta: item.payload.meta,
+      });
       continue;
     }
     _items.push({
       error: item.error,
       addresses: [ item.payload.address ],
-      tags: [ { name: item.payload.name, tagType: item.payload.tagType, meta: item.payload.meta } ],
+      tags: [
+        {
+          name: item.payload.name,
+          tagType: item.payload.tagType,
+          meta: item.payload.meta,
+        },
+      ],
     });
   }
 
@@ -109,7 +136,9 @@ export function groupSubmitResult(data: FormSubmitResult | undefined): FormSubmi
 
   // merge items with the same error and tags
   for (const item of _items) {
-    const existingItem = items.find(({ error, tags }) => error === item.error && isEqual(tags, item.tags));
+    const existingItem = items.find(
+      ({ error, tags }) => error === item.error && isEqual(tags, item.tags),
+    );
     if (existingItem) {
       existingItem.addresses.push(...item.addresses);
       continue;
@@ -135,11 +164,21 @@ export function groupSubmitResult(data: FormSubmitResult | undefined): FormSubmi
   };
 }
 
-export function getFormDefaultValues(query: Route['query'], userInfo: UserInfo | undefined) {
+export function getFormDefaultValues(
+  query: Route['query'],
+  userInfo: UserInfo | undefined,
+) {
   return {
     addresses: getAddressesFromQuery(query),
-    requesterName: getQueryParamString(query?.requesterName) || userInfo?.nickname || userInfo?.name || undefined,
-    requesterEmail: getQueryParamString(query?.requesterEmail) || userInfo?.email || undefined,
+    requesterName:
+      getQueryParamString(query?.requesterName) ||
+      userInfo?.nickname ||
+      userInfo?.name ||
+      undefined,
+    requesterEmail:
+      getQueryParamString(query?.requesterEmail) ||
+      userInfo?.email ||
+      undefined,
     companyName: getQueryParamString(query?.companyName),
     companyWebsite: getQueryParamString(query?.companyWebsite),
     tags: [ { name: '', type: [ 'name' as const ] } ],

@@ -67,6 +67,24 @@ export function transformXoneTokensResponse(rawResponse: XoneTokensRawResponse):
   };
 }
 
+export interface TokenInfoResponse {
+  data: {
+    Basic_Information: Record<string, string>;
+    Social_Profiles: Record<string, string>;
+    Price_Data: Record<string, string>;
+    metadata: Record<string, string>;
+  };
+  success: boolean;
+}
+export function transformTokenInfoResponse(rawResponse: TokenInfoResponse) {
+  return rawResponse.data && rawResponse.success ? {
+    ...rawResponse.data.Basic_Information,
+    ...rawResponse.data.Social_Profiles,
+    ...rawResponse.data.Price_Data,
+    ...rawResponse.data.metadata,
+  } : {};
+}
+
 export const XONE_API_RESOURCES = {
   // XONE Tokens API - 使用 api.xone.works 端点
   tokens: {
@@ -77,7 +95,7 @@ export const XONE_API_RESOURCES = {
   private_tags_address: {
     path: '/api/account/v2/user/tags/address{/:id}',
     pathParams: [ 'id' as const ],
-    filterFields: [ ],
+    filterFields: [],
     paginated: true,
   },
 } satisfies Record<string, ApiResource>;

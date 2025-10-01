@@ -74,12 +74,12 @@ const TokenInfoMenuItem = ({ hash, type }: ItemProps) => {
 
     const label = (() => {
       if (!isVerifiedAddress) {
-        return tokenInfoQuery.data?.data?.name ?
+        return tokenInfoQuery.data?.name ?
           'Update token info' :
           'Add token info';
       }
 
-      return hasApplication || tokenInfoQuery.data?.data?.name ?
+      return hasApplication || tokenInfoQuery.data?.name ?
         'Update token info' :
         'Add token info';
     })();

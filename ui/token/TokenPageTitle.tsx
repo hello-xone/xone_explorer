@@ -56,7 +56,6 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) =>
         config.features.verifiedTokens.isEnabled,
     },
   });
-
   const privateTagQuery = useApiQuery('xone:private_tags_address', {
     pathParams: { id: addressHash },
     queryParams: {
@@ -133,7 +132,7 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) =>
       { !addressQuery.isPlaceholderData &&
         !verifiedInfoQuery.isPending &&
         addressQuery?.data?.is_verified &&
-        verifiedInfoQuery.data?.data?.name ? (
+        verifiedInfoQuery.data?.name ? (
           <Tooltip
             content={ `Information on this token has been verified by ${ config.chain.name }` }
           >

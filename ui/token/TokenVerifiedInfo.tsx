@@ -1,7 +1,7 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 
-import type { V2TokenVerifiedInfo } from 'types/api/token';
+import type { TokenVerifiedInfo as V2TokenVerifiedInfo } from 'types/api/token';
 
 import type { ResourceError } from 'lib/api/resources';
 import { Link } from 'toolkit/chakra/link';
@@ -35,9 +35,9 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
 
     const websiteLink = (() => {
       try {
-        const url = new URL(data.data.website);
+        const url = new URL(data.website);
         return (
-          <Link external href={ data.data.website } variant="underlaid" flexShrink={ 0 } textStyle="sm">
+          <Link external href={ data.website } variant="underlaid" flexShrink={ 0 } textStyle="sm">
             { url.host }
           </Link>
         );
@@ -49,7 +49,7 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
     return (
       <>
         { websiteLink }
-        <TokenProjectInfo data={ data.data }/>
+        <TokenProjectInfo data={ data }/>
       </>
     );
   })();

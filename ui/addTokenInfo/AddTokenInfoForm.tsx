@@ -100,14 +100,14 @@ const AddTokenInfoForm = () => {
   useEffect(() => {
     // Only initialize the form once to prevent infinite re-renders
     if (formInitialized) return;
-    if (formApi && tokenInfoQuery?.data?.data) {
+    if (formApi && tokenInfoQuery?.data) {
       formApi.reset({
-        ...tokenInfoQuery.data.data,
-        type: tokenInfoQuery.data.data.type ?
-          [ tokenInfoQuery.data.data.type ] :
+        ...tokenInfoQuery.data,
+        type: tokenInfoQuery.data?.type ?
+          [ tokenInfoQuery.data?.type ] :
           [],
-        decimals: tokenInfoQuery.data.data.decimals ?
-          Number(tokenInfoQuery.data.data.decimals) :
+        decimals: tokenInfoQuery.data?.decimals ?
+          Number(tokenInfoQuery.data?.decimals) :
           18,
       });
       setFormInitialized(true);
