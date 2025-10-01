@@ -1,6 +1,5 @@
-import { chakra, Button, Text } from '@chakra-ui/react';
+import { chakra, Text } from '@chakra-ui/react';
 import React from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import type { SubmitHandler } from 'react-hook-form';
 import { FormProvider, useForm } from 'react-hook-form';
 
@@ -9,9 +8,12 @@ import type { EmailFormFields, Screen } from '../types';
 import useApiFetch from 'lib/api/useApiFetch';
 import getErrorMessage from 'lib/errors/getErrorMessage';
 import getErrorObjPayload from 'lib/errors/getErrorObjPayload';
-import useToast from 'lib/hooks/useToast';
 import * as mixpanel from 'lib/mixpanel';
-import FormFieldEmail from 'ui/shared/forms/fields/FormFieldEmail';
+import { Button } from 'toolkit/chakra/button';
+import { toaster } from 'toolkit/chakra/toaster';
+import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
+import CloudflareTurnstileInvisible from 'ui/shared/cloudflareTurnstile/CloudflareTurnstile';
+import useCloudflareTurnstile from 'ui/shared/cloudflareTurnstile/useCloudflareTurnstile';
 
 interface Props {
   onSubmit: (screen: Screen) => void;
@@ -26,8 +28,7 @@ interface Props {
 const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
 
   const apiFetch = useApiFetch();
-  const toast = useToast();
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const turnstile = useCloudflareTurnstile();
 
   const formApi = useForm<EmailFormFields>({
     mode: 'onBlur',
@@ -36,18 +37,22 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
     },
   });
 
+  const sendCodeFetchFactory = React.useCallback((email: string) => (recaptchaToken?: string) => {
+    return apiFetch('general:auth_send_otp', {
+      fetchParams: {
+        method: 'POST',
+        body: { email, recaptcha_response: recaptchaToken },
+        headers: {
+          ...(recaptchaToken && { 'recaptcha-v2-response': recaptchaToken }),
+        },
+      },
+    });
+  }, [ apiFetch ]);
+
   const onFormSubmit: SubmitHandler<EmailFormFields> = React.useCallback(async(formData) => {
     try {
-      const token = await executeRecaptcha?.();
-      await apiFetch('auth_send_otp', {
-        fetchParams: {
-          method: 'POST',
-          body: {
-            email: formData.email,
-            recaptcha_v3_response: token,
-          },
-        },
-      });
+      await turnstile.fetchProtectedResource(sendCodeFetchFactory(formData.email));
+
       if (isAuth) {
         mixpanelConfig?.account_link_info.source !== 'Profile' && mixpanel.logEvent(mixpanel.EventTypes.ACCOUNT_LINK_INFO, {
           Source: mixpanelConfig?.account_link_info.source ?? 'Profile dropdown',
@@ -62,13 +67,12 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
       }
       onSubmit({ type: 'otp_code', email: formData.email, isAuth });
     } catch (error) {
-      toast({
-        status: 'error',
+      toaster.error({
         title: 'Error',
         description: getErrorObjPayload<{ message: string }>(error)?.message || getErrorMessage(error) || 'Something went wrong',
       });
     }
-  }, [ executeRecaptcha, apiFetch, isAuth, onSubmit, mixpanelConfig?.account_link_info.source, toast ]);
+  }, [ turnstile, sendCodeFetchFactory, isAuth, onSubmit, mixpanelConfig?.account_link_info.source ]);
 
   return (
     <FormProvider { ...formApi }>
@@ -79,16 +83,17 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
         <Text>Account email, used for transaction notifications from your watchlist.</Text>
         <FormFieldEmail<EmailFormFields>
           name="email"
-          isRequired
+          required
           placeholder="Email"
-          bgColor="dialog_bg"
+          bgColor="dialog.bg"
           mt={ 6 }
         />
+        <CloudflareTurnstileInvisible { ...turnstile }/>
         <Button
           mt={ 6 }
           type="submit"
-          isDisabled={ formApi.formState.isSubmitting }
-          isLoading={ formApi.formState.isSubmitting }
+          disabled={ formApi.formState.isSubmitting || turnstile.isInitError }
+          loading={ formApi.formState.isSubmitting }
           loadingText="Send a code"
         >
           Send a code

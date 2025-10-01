@@ -1,7 +1,5 @@
 import type * as stats from '@blockscout/stats-types';
 
-import { currencyUnits } from 'lib/units';
-
 export const base: stats.LineCharts = {
   sections: [
     {
@@ -38,7 +36,7 @@ export const base: stats.LineCharts = {
         {
           id: 'averageTxnFee',
           title: 'Average transaction fee',
-          description: `The average amount in ${ currencyUnits.ether } spent per transaction`,
+          description: 'The average amount in XOC spent per transaction',
           units: 'XOC',
           resolutions: [ 'DAY', 'MONTH' ],
         },

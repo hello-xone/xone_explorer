@@ -1,17 +1,16 @@
-import { Skeleton } from '@chakra-ui/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 
-import type { TokenVerifiedInfo as TTokenVerifiedInfo } from 'types/api/token';
+import type { TokenVerifiedInfo as V2TokenVerifiedInfo } from 'types/api/token';
 
-import config from 'configs/app';
 import type { ResourceError } from 'lib/api/resources';
-import LinkExternal from 'ui/shared/links/LinkExternal';
+import { Link } from 'toolkit/chakra/link';
+import { Skeleton } from 'toolkit/chakra/skeleton';
 
 import TokenProjectInfo from './TokenProjectInfo';
 
 interface Props {
-  verifiedInfoQuery: UseQueryResult<TTokenVerifiedInfo, ResourceError<unknown>>;
+  verifiedInfoQuery: UseQueryResult<V2TokenVerifiedInfo, ResourceError<unknown>>;
 }
 
 const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
@@ -19,16 +18,13 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
   const { data, isPending, isError } = verifiedInfoQuery;
 
   const content = (() => {
-    if (!config.features.verifiedTokens.isEnabled) {
-      return null;
-    }
 
     if (isPending) {
       return (
         <>
-          <Skeleton w="100px" h="30px" borderRadius="base"/>
-          <Skeleton w="100px" h="30px" borderRadius="base"/>
-          <Skeleton w="70px" h="30px" borderRadius="base"/>
+          <Skeleton loading w="100px" h="30px" borderRadius="base"/>
+          <Skeleton loading w="100px" h="30px" borderRadius="base"/>
+          <Skeleton loading w="70px" h="30px" borderRadius="base"/>
         </>
       );
     }
@@ -39,11 +35,11 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
 
     const websiteLink = (() => {
       try {
-        const url = new URL(data.projectWebsite);
+        const url = new URL(data.website);
         return (
-          <LinkExternal href={ data.projectWebsite } variant="subtle" flexShrink={ 0 } fontSize="sm" lineHeight={ 5 }>
+          <Link external href={ data.website } variant="underlaid" flexShrink={ 0 } textStyle="sm">
             { url.host }
-          </LinkExternal>
+          </Link>
         );
       } catch (error) {
         return null;

@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'InterFallback';
+  src: url('/static/fonts/Inter-fallback.woff2') format('woff2');
+  unicode-range: U+2192; /* Only the right arrow */
+  font-display: swap;
+}
+#jsweb3_dapp_default_container_loading {
+  display: none !important;
+}

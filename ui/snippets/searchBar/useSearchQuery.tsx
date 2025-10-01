@@ -13,7 +13,7 @@ import useQueryWithPages from 'ui/shared/pagination/useQueryWithPages';
 export default function useSearchQuery(withRedirectCheck?: boolean) {
   const router = useRouter();
   const q = React.useRef(getQueryParamString(router.query.q));
-  const initialValue = q.current;
+  const initialValue = q.current || '';
 
   const [ searchTerm, setSearchTerm ] = React.useState(initialValue);
 
@@ -21,15 +21,15 @@ export default function useSearchQuery(withRedirectCheck?: boolean) {
   const pathname = router.pathname;
 
   const query = useQueryWithPages({
-    resourceName: 'search',
+    resourceName: 'general:search',
     filters: { q: isBech32Address(debouncedSearchTerm) ? fromBech32Address(debouncedSearchTerm) : debouncedSearchTerm },
     options: {
       enabled: debouncedSearchTerm.trim().length > 0,
-      placeholderData: generateListStub<'search'>(SEARCH_RESULT_ITEM, 50, { next_page_params: SEARCH_RESULT_NEXT_PAGE_PARAMS }),
+      placeholderData: generateListStub<'general:search'>(SEARCH_RESULT_ITEM, 50, { next_page_params: SEARCH_RESULT_NEXT_PAGE_PARAMS }),
     },
   });
 
-  const redirectCheckQuery = useApiQuery('search_check_redirect', {
+  const redirectCheckQuery = useApiQuery('general:search_check_redirect', {
     // on search result page we check redirect only once on mount
     queryParams: { q: q.current },
     queryOptions: { enabled: Boolean(q.current) && withRedirectCheck },

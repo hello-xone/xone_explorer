@@ -1,30 +1,32 @@
-import { useColorMode } from '@chakra-ui/react';
 import { createWeb3Modal, useWeb3ModalTheme } from '@web3modal/wagmi/react';
 import React from 'react';
+import type { Config } from 'wagmi';
 import { WagmiProvider } from 'wagmi';
 
 import config from 'configs/app';
+import { getEnvValue } from 'configs/app/utils';
 import wagmiConfig from 'lib/web3/wagmiConfig';
-import colors from 'theme/foundations/colors';
-import { BODY_TYPEFACE } from 'theme/foundations/typography';
-import zIndices from 'theme/foundations/zIndices';
+import { useColorMode } from 'toolkit/chakra/color-mode';
+import colors from 'toolkit/theme/foundations/colors';
+import { BODY_TYPEFACE } from 'toolkit/theme/foundations/typography';
+import zIndex from 'toolkit/theme/foundations/zIndex';
 
 const feature = config.features.blockchainInteraction;
 
 const init = () => {
   try {
-    if (!feature.isEnabled) {
+    if (!feature.isEnabled && wagmiConfig) {
       return;
     }
 
     createWeb3Modal({
-      wagmiConfig,
-      projectId: feature.walletConnect.projectId,
+      wagmiConfig: wagmiConfig!,
+      projectId: getEnvValue('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID') || 'e6f72a19818794e7b12945653634154a',
       themeVariables: {
         '--w3m-font-family': `${ BODY_TYPEFACE }, sans-serif`,
-        '--w3m-accent': colors.blue[600],
+        '--w3m-accent': colors.blue[600].value,
         '--w3m-border-radius-master': '2px',
-        '--w3m-z-index': zIndices.popover,
+        '--w3m-z-index': zIndex.popover.value,
       },
       featuredWalletIds: [],
       allowUnsupportedChain: true,
@@ -42,7 +44,7 @@ interface Props {
 
 const DefaultProvider = ({ children }: Props) => {
   return (
-    <WagmiProvider config={ wagmiConfig }>
+    <WagmiProvider config={ wagmiConfig as Config }>
       { children }
     </WagmiProvider>
   );

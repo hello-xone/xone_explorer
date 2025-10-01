@@ -1,8 +1,9 @@
-import { Box, Flex, Tooltip, useToken } from '@chakra-ui/react';
+import { Flex, useToken } from '@chakra-ui/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 
 import type { Address } from 'types/api/address';
+import type { PoolResponse } from 'types/api/pools';
 import type { TokenInfo } from 'types/api/token';
 import type { EntityTag } from 'ui/shared/EntityTags/types';
 
@@ -10,8 +11,11 @@ import config from 'configs/app';
 import useAddressMetadataInfoQuery from 'lib/address/useAddressMetadataInfoQuery';
 import type { ResourceError } from 'lib/api/resources';
 import useApiQuery from 'lib/api/useApiQuery';
-import { useAppContext } from 'lib/contexts/app';
+import { useMultichainContext } from 'lib/contexts/multichain';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { getTokenTypeName } from 'lib/token/tokenTypes';
+import useAccount from 'lib/web3/useAccount';
+import { Tooltip } from 'toolkit/chakra/tooltip';
 import AddressMetadataAlert from 'ui/address/details/AddressMetadataAlert';
 import AddressQrCode from 'ui/address/details/AddressQrCode';
 import AccountActionsMenu from 'ui/shared/AccountActionsMenu/AccountActionsMenu';
@@ -27,85 +31,125 @@ import PageTitle from 'ui/shared/Page/PageTitle';
 
 import TokenVerifiedInfo from './TokenVerifiedInfo';
 
+const PREDEFINED_TAG_PRIORITY = 100;
+
 interface Props {
   tokenQuery: UseQueryResult<TokenInfo, ResourceError<unknown>>;
   addressQuery: UseQueryResult<Address, ResourceError<unknown>>;
+  poolQuery: UseQueryResult<PoolResponse, ResourceError<unknown>>;
   hash: string;
 }
 
-const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
-  const appProps = useAppContext();
-  const addressHash = !tokenQuery.isPlaceholderData ? (tokenQuery.data?.address || '') : '';
+const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) => {
+  const multichainContext = useMultichainContext();
+  const { address } = useAccount();
+  const addressHash = !tokenQuery.isPlaceholderData ?
+    tokenQuery.data?.address || '' :
+    '';
 
-  const verifiedInfoQuery = useApiQuery('token_verified_info', {
+  const verifiedInfoQuery = useApiQuery('contractInfo:token_verified_info', {
     pathParams: { hash: addressHash, chainId: config.chain.id },
-    queryOptions: { enabled: Boolean(tokenQuery.data) && !tokenQuery.isPlaceholderData && config.features.verifiedTokens.isEnabled },
+    queryOptions: {
+      enabled:
+        Boolean(tokenQuery.data) &&
+        !tokenQuery.isPlaceholderData &&
+        config.features.verifiedTokens.isEnabled,
+    },
+  });
+  const privateTagQuery = useApiQuery('xone:private_tags_address', {
+    pathParams: { id: addressHash },
+    queryParams: {
+      account: address,
+    },
+    queryOptions: {
+      enabled:
+        Boolean(addressHash) && Boolean(address),
+    },
   });
 
-  const addressesForMetadataQuery = React.useMemo(() => ([ hash ].filter(Boolean)), [ hash ]);
-  const addressMetadataQuery = useAddressMetadataInfoQuery(addressesForMetadataQuery);
+  const addressesForMetadataQuery = React.useMemo(
+    () => [ hash ].filter(Boolean),
+    [ hash ],
+  );
+  const addressMetadataQuery = useAddressMetadataInfoQuery(
+    addressesForMetadataQuery,
+  );
 
-  const isLoading = tokenQuery.isPlaceholderData ||
+  const isLoading =
+    tokenQuery.isPlaceholderData ||
     addressQuery.isPlaceholderData ||
     (config.features.verifiedTokens.isEnabled && verifiedInfoQuery.isPending);
 
-  const tokenSymbolText = tokenQuery.data?.symbol ? ` (${ tokenQuery.data.symbol })` : '';
+  const tokenSymbolText = tokenQuery.data?.symbol ?
+    ` (${ tokenQuery.data.symbol })` :
+    '';
 
-  const backLink = React.useMemo(() => {
-    const hasGoBackLink = appProps.referrer && appProps.referrer.includes('/tokens');
-
-    if (!hasGoBackLink) {
-      return;
-    }
-
-    return {
-      label: 'Back to tokens list',
-      url: appProps.referrer,
-    };
-  }, [ appProps.referrer ]);
-
-  const bridgedTokenTagBgColor = useToken('colors', 'blue.500');
-  const bridgedTokenTagTextColor = useToken('colors', 'white');
+  const [ bridgedTokenTagBgColor ] = useToken('colors', 'blue.500');
+  const [ bridgedTokenTagTextColor ] = useToken('colors', 'white');
 
   const tags: Array<EntityTag> = React.useMemo(() => {
     return [
-      tokenQuery.data ? { slug: tokenQuery.data?.type, name: getTokenTypeName(tokenQuery.data.type), tagType: 'custom' as const, ordinal: -20 } : undefined,
+      tokenQuery.data ?
+        {
+          slug: tokenQuery.data?.type,
+          name: getTokenTypeName(tokenQuery.data.type),
+          tagType: 'custom' as const,
+          ordinal: PREDEFINED_TAG_PRIORITY,
+        } :
+        undefined,
       config.features.bridgedTokens.isEnabled && tokenQuery.data?.is_bridged ?
         {
           slug: 'bridged',
           name: 'Bridged',
           tagType: 'custom' as const,
-          ordinal: -10,
-          meta: { bgColor: bridgedTokenTagBgColor, textColor: bridgedTokenTagTextColor },
+          ordinal: PREDEFINED_TAG_PRIORITY,
+          meta: {
+            bgColor: bridgedTokenTagBgColor,
+            textColor: bridgedTokenTagTextColor,
+          },
         } :
         undefined,
       ...formatUserTags(addressQuery.data),
-      verifiedInfoQuery.data?.projectSector ?
-        { slug: verifiedInfoQuery.data.projectSector, name: verifiedInfoQuery.data.projectSector, tagType: 'custom' as const, ordinal: -30 } :
-        undefined,
-      ...(addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags.filter(tag => tag.tagType !== 'note') || []),
-    ].filter(Boolean).sort(sortEntityTags);
-  }, [
-    addressMetadataQuery.data?.addresses,
-    addressQuery.data,
-    bridgedTokenTagBgColor,
-    bridgedTokenTagTextColor,
-    tokenQuery.data,
-    verifiedInfoQuery.data?.projectSector,
-    hash,
-  ]);
+      ...privateTagQuery?.data?.map(el => {
+        return {
+          slug: el.name,
+          name: el.name,
+          tagType: 'custom' as const,
+          ordinal: -30,
+        };
+      }) || [],
+      ...(addressMetadataQuery.data?.addresses[0]?.tags.filter(
+        (tag) => tag.tagType !== 'note',
+      ) || []),
+    ]
+      .filter(Boolean)
+      .sort(sortEntityTags);
+  }, [ addressMetadataQuery.data?.addresses, addressQuery.data, bridgedTokenTagBgColor, bridgedTokenTagTextColor,
+    privateTagQuery.data, tokenQuery.data ]);
 
   const contentAfter = (
     <>
-      { verifiedInfoQuery.data?.tokenAddress && (
-        <Tooltip label={ `Information on this token has been verified by ${ config.chain.name }` }>
-          <Box boxSize={ 6 }>
-            <IconSvg name="certified" color="green.500" boxSize={ 6 } cursor="pointer"/>
-          </Box>
-        </Tooltip>
-      ) }
+      { !addressQuery.isPlaceholderData &&
+        !verifiedInfoQuery.isPending &&
+        addressQuery?.data?.is_verified &&
+        verifiedInfoQuery.data?.name ? (
+          <Tooltip
+            content={ `Information on this token has been verified by ${ config.chain.name }` }
+          >
+            <IconSvg
+              name="certified"
+              color="green.500"
+              boxSize={ 6 }
+              cursor="pointer"
+            />
+          </Tooltip>
+        ) : null }
       <EntityTags
-        isLoading={ isLoading || (config.features.addressMetadata.isEnabled && addressMetadataQuery.isPending) }
+        isLoading={
+          isLoading ||
+          (config.features.addressMetadata.isEnabled &&
+            addressMetadataQuery.isPending)
+        }
         tags={ tags }
         flexGrow={ 1 }
       />
@@ -113,44 +157,86 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, hash }: Props) => {
   );
 
   const secondRow = (
-    <Flex alignItems="center" w="100%" minW={ 0 } columnGap={ 2 } rowGap={ 2 } flexWrap={{ base: 'wrap', lg: 'nowrap' }}>
+    <Flex
+      alignItems="center"
+      w="100%"
+      minW={ 0 }
+      columnGap={ 2 }
+      rowGap={ 2 }
+      flexWrap={{ base: 'wrap', lg: 'nowrap' }}
+    >
       { addressQuery.data && (
         <AddressEntity
           address={{ ...addressQuery.data, name: '' }}
           isLoading={ isLoading }
-          fontFamily="heading"
-          fontSize="lg"
-          fontWeight={ 500 }
+          hiddenTag
+          variant="subheading"
+          icon={
+            multichainContext?.chain ?
+              {
+                shield: { name: 'pie_chart', isLoading },
+              } :
+              undefined
+          }
         />
       ) }
-      { !isLoading && tokenQuery.data && <AddressAddToWallet token={ tokenQuery.data } variant="button"/> }
-      <AddressQrCode address={ addressQuery.data } isLoading={ isLoading }/>
+      { !isLoading && tokenQuery.data && (
+        <AddressAddToWallet token={ tokenQuery.data } variant="button"/>
+      ) }
+      { addressQuery.data && (
+        <AddressQrCode hash={ addressQuery.data.hash } isLoading={ isLoading }/>
+      ) }
       <AccountActionsMenu isLoading={ isLoading }/>
-      <Flex ml={{ base: 0, lg: 'auto' }} columnGap={ 2 } flexGrow={{ base: 1, lg: 0 }}>
+      <Flex
+        ml={{ base: 0, lg: 'auto' }}
+        columnGap={ 2 }
+        flexGrow={{ base: 1, lg: 0 }}
+      >
         <TokenVerifiedInfo verifiedInfoQuery={ verifiedInfoQuery }/>
-        <NetworkExplorers type="token" pathParam={ addressHash } ml={{ base: 'auto', lg: 0 }}/>
+        {
+          ((poolQuery && poolQuery?.data) || tokenQuery.data?.exchange_rate) && (
+            <NetworkExplorers
+              type="token"
+              pathParam={ addressHash }
+              ml={{ base: 'auto', lg: 0 }}
+            />
+          )
+        }
+
       </Flex>
     </Flex>
   );
-
   return (
     <>
       <PageTitle
         title={ `${ tokenQuery.data?.name || 'Unnamed token' }${ tokenSymbolText }` }
         isLoading={ tokenQuery.isPlaceholderData }
-        backLink={ backLink }
-        beforeTitle={ tokenQuery.data ? (
-          <TokenEntity.Icon
-            token={ tokenQuery.data }
-            isLoading={ tokenQuery.isPlaceholderData }
-            size="lg"
-          />
-        ) : null }
+        beforeTitle={
+          tokenQuery.data ? (
+            <TokenEntity.Icon
+              token={{
+                ...tokenQuery.data,
+                icon_url: getTokenIconPath(tokenQuery.data.address || '') ?? null,
+                isIconAddress: true,
+              }}
+              isLoading={ tokenQuery.isPlaceholderData }
+              variant="heading"
+              chain={ multichainContext?.chain }
+            />
+          ) : null
+        }
         contentAfter={ contentAfter }
         secondRow={ secondRow }
       />
-      { !addressMetadataQuery.isPending &&
-        <AddressMetadataAlert tags={ addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags } mt="-4px" mb={ 6 }/> }
+      { !addressMetadataQuery.isPending && (
+        <AddressMetadataAlert
+          tags={
+            addressMetadataQuery.data?.addresses?.[hash.toLowerCase()]?.tags
+          }
+          mt="-4px"
+          mb={ 6 }
+        />
+      ) }
     </>
   );
 };

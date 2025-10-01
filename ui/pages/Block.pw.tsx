@@ -20,7 +20,7 @@ test.beforeEach(async({ mockTextAd }) => {
 });
 
 test('degradation view, details tab', async({ render, mockApiResponse, mockRpcResponse, page }) => {
-  await mockApiResponse('block', null as never, { pathParams: { height_or_hash: height }, status: 500 });
+  await mockApiResponse('general:block', null as never, { pathParams: { height_or_hash: height }, status: 500 });
   await mockRpcResponse({
     Method: 'eth_getBlockByNumber',
     Parameters: [ numberToHex(Number(height)), false ],
@@ -28,7 +28,7 @@ test('degradation view, details tab', async({ render, mockApiResponse, mockRpcRe
   });
 
   const component = await render(<Block/>, { hooksConfig });
-  await page.waitForResponse(config.chain.rpcUrl as string);
+  await page.waitForResponse(config.chain.rpcUrls[0]);
 
   await expect(component).toHaveScreenshot();
 });
@@ -40,8 +40,8 @@ test('degradation view, txs tab', async({ render, mockApiResponse, mockRpcRespon
     },
   };
 
-  await mockApiResponse('block', blockMock.base, { pathParams: { height_or_hash: height } });
-  await mockApiResponse('block_txs', null as never, { pathParams: { height_or_hash: height }, status: 500 });
+  await mockApiResponse('general:block', blockMock.base, { pathParams: { height_or_hash: height } });
+  await mockApiResponse('general:block_txs', null as never, { pathParams: { height_or_hash: height }, status: 500 });
   await mockRpcResponse({
     Method: 'eth_getBlockByNumber',
     Parameters: [ numberToHex(Number(height)), true ],
@@ -49,7 +49,7 @@ test('degradation view, txs tab', async({ render, mockApiResponse, mockRpcRespon
   });
 
   const component = await render(<Block/>, { hooksConfig });
-  await page.waitForResponse(config.chain.rpcUrl as string);
+  await page.waitForResponse(config.chain.rpcUrls[0]);
 
   await expect(component).toHaveScreenshot();
 });
@@ -62,8 +62,8 @@ test('degradation view, withdrawals tab', async({ render, mockApiResponse, mockR
   };
 
   await mockEnvs(ENVS_MAP.beaconChain);
-  await mockApiResponse('block', blockMock.withWithdrawals, { pathParams: { height_or_hash: height } });
-  await mockApiResponse('block_withdrawals', null as never, { pathParams: { height_or_hash: height }, status: 500 });
+  await mockApiResponse('general:block', blockMock.withWithdrawals, { pathParams: { height_or_hash: height } });
+  await mockApiResponse('general:block_withdrawals', null as never, { pathParams: { height_or_hash: height }, status: 500 });
   await mockRpcResponse({
     Method: 'eth_getBlockByNumber',
     Parameters: [ numberToHex(Number(height)), false ],
@@ -71,7 +71,7 @@ test('degradation view, withdrawals tab', async({ render, mockApiResponse, mockR
   });
 
   const component = await render(<Block/>, { hooksConfig });
-  await page.waitForResponse(config.chain.rpcUrl as string);
+  await page.waitForResponse(config.chain.rpcUrls[0]);
 
   await expect(component).toHaveScreenshot();
 });

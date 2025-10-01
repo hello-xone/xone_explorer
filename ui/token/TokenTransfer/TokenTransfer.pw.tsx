@@ -1,6 +1,8 @@
 import { Box } from '@chakra-ui/react';
 import React from 'react';
 
+import { tokenInfoERC20a, tokenInfoERC721a, tokenInfoERC1155a } from 'mocks/tokens/tokenInfo';
+import * as tokenInstanceMock from 'mocks/tokens/tokenInstance';
 import * as tokenTransferMock from 'mocks/tokens/tokenTransfer';
 import { test, expect } from 'playwright/lib';
 
@@ -21,6 +23,10 @@ test('erc20 +@mobile', async({ render }) => {
           // @ts-ignore:
           pagination: { page: 1, isVisible: true },
         }}
+        // @ts-ignore:
+        tokenQuery={{
+          data: tokenInfoERC20a,
+        }}
       />
     </Box>,
   );
@@ -28,7 +34,8 @@ test('erc20 +@mobile', async({ render }) => {
   await expect(component).toHaveScreenshot();
 });
 
-test('erc721 +@mobile', async({ render }) => {
+test('erc721 +@mobile', async({ render, mockAssetResponse }) => {
+  await mockAssetResponse(tokenInstanceMock.base.image_url as string, './playwright/mocks/image_s.jpg');
   const component = await render(
     <Box pt={{ base: '134px', lg: '100px' }}>
       <TokenTransfer
@@ -42,6 +49,10 @@ test('erc721 +@mobile', async({ render }) => {
 
           // @ts-ignore:
           pagination: { page: 1, isVisible: true },
+        }}
+        // @ts-ignore:
+        tokenQuery={{
+          data: tokenInfoERC721a,
         }}
       />
     </Box>,
@@ -69,6 +80,10 @@ test('erc1155 +@mobile', async({ render }) => {
 
           // @ts-ignore:
           pagination: { page: 1, isVisible: true },
+        }}
+        // @ts-ignore:
+        tokenQuery={{
+          data: tokenInfoERC1155a,
         }}
       />
     </Box>,

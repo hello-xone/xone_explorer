@@ -1,113 +1,70 @@
-import { Td, Tr, Skeleton } from '@chakra-ui/react';
+import { HStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React, { useCallback } from 'react';
 
 import type { EpochInfo } from 'types/api/epoch';
 
 import formatDateUTC from 'lib/date/utcTime';
-import * as EntityBase from 'ui/shared/entities/base/components';
-
-type Props = {
-  epoch: EpochInfo;
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import { TableCell, TableRow } from 'toolkit/chakra/table';
+import EpochEntity from 'ui/shared/entities/epoch/EpochEntity';
+interface Props {
+  item: EpochInfo;
   isLoading?: boolean;
 };
 
-const TokensTableItem = ({ epoch, isLoading }: Props) => {
-  const { id, startBlocknumber, endBlocknumber, epochStart, epochEnd } = epoch;
+const EpochsTableItem = ({ item, isLoading }: Props) => {
   const router = useRouter();
 
   const handleLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (isLoading) return;
+
     router.push({
       pathname: '/blocks',
       query: {
         page: '1',
-        ...epoch.endBlocknumber ?
+        ...item.endBlocknumber ?
           {
             next_page_params: encodeURIComponent(JSON.stringify({
-              block_number: epoch.endBlocknumber + 1,
-              end_block: epoch.startBlocknumber,
+              block_number: item.endBlocknumber + 1,
+              end_block: item.startBlocknumber,
             })),
           } :
           {
             next_page_params: encodeURIComponent(JSON.stringify({
-              end_block: epoch.startBlocknumber,
+              end_block: item.startBlocknumber,
             })),
           },
       },
     }, undefined, { shallow: true });
-  }, [ epoch.endBlocknumber, epoch.startBlocknumber, isLoading, router ]);
+  }, [ isLoading, item.endBlocknumber, item.startBlocknumber, router ]);
 
   return (
-    <Tr role="group">
-      <Td>
-        <EntityBase.Link href="/blocks" onClick={ handleLinkClick }>
-          { /* <IconSvg
-            name="checkered_flag"
-            boxSize={5}
-            p="1px"
-            isLoading={isLoading}
-            flexShrink={0}
-          /> */ }
-          <Skeleton
-            isLoaded={ !isLoading }
-            fontSize="sm"
-            lineHeight="24px"
-            fontWeight={ 500 }
-            display="inline-block"
-          >
-            #{ id }
-          </Skeleton>
-        </EntityBase.Link>
-      </Td>
-      <Td isNumeric>
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { startBlocknumber }
+    <TableRow>
+      <TableCell verticalAlign="middle">
+        <HStack gap={ 2 }>
+          <EpochEntity onClick={ handleLinkClick } href="javascript:void(0)" number={ `#${ item.id }` } noIcon fontWeight={ 700 } isLoading={ isLoading }/>
+        </HStack>
+      </TableCell>
+      <TableCell verticalAlign="middle">
+        <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 500 }><span>{ item.startBlocknumber }</span></Skeleton>
+      </TableCell>
+      <TableCell verticalAlign="middle">
+        <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 500 }>
+          <span>{ item.endBlocknumber === 0 ? '…' : item.endBlocknumber }</span>
         </Skeleton>
-      </Td>
-      <Td isNumeric>
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { endBlocknumber === 0 ? '…' : endBlocknumber }
+      </TableCell>
+      <TableCell verticalAlign="middle" isNumeric>
+        <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 500 }><span>{ formatDateUTC(item.epochStart) }</span></Skeleton>
+      </TableCell>
+      <TableCell verticalAlign="middle" isNumeric>
+        <Skeleton loading={ isLoading }>
+          <Skeleton loading={ isLoading } color="text.secondary" fontWeight={ 500 }><span>{ formatDateUTC(item.epochEnd) }</span></Skeleton>
         </Skeleton>
-      </Td>
-      <Td isNumeric maxWidth="300px" width="300px">
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { formatDateUTC(epochStart) }
-        </Skeleton>
-      </Td>
-
-      <Td isNumeric maxWidth="300px" width="300px">
-        <Skeleton
-          isLoaded={ !isLoading }
-          fontSize="sm"
-          lineHeight="24px"
-          fontWeight={ 500 }
-          display="inline-block"
-        >
-          { formatDateUTC(epochEnd) }
-        </Skeleton>
-      </Td>
-    </Tr>
+      </TableCell>
+    </TableRow>
   );
 };
 
-export default TokensTableItem;
+export default EpochsTableItem;

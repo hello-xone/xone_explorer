@@ -1,8 +1,6 @@
 import type * as stats from '@blockscout/stats-types';
 import type { HomeStats } from 'types/api/stats';
 
-import { currencyUnits } from 'lib/units';
-
 export const HOMEPAGE_STATS: HomeStats = {
   average_block_time: 14346,
   coin_price: '1807.68',
@@ -44,17 +42,19 @@ export const HOMEPAGE_STATS: HomeStats = {
   tvl: '1767425.102766552',
 };
 
+const STATS_CHART_INFO: stats.LineChartInfo = {
+  id: 'chart_0',
+  title: 'Average transaction fee',
+  description: 'The average amount in XOC spent per transaction',
+  units: 'XOC',
+  resolutions: [ 'DAY', 'MONTH' ],
+};
+
 export const STATS_CHARTS_SECTION: stats.LineChartSection = {
   id: 'placeholder',
   title: 'Placeholder',
   charts: [
-    {
-      id: 'chart_0',
-      title: 'Average transaction fee',
-      description: `The average amount in ${ currencyUnits.ether } spent per transaction`,
-      units: 'XOC',
-      resolutions: [ 'DAY', 'MONTH' ],
-    },
+    STATS_CHART_INFO,
     {
       id: 'chart_1',
       title: 'Transactions fees',
@@ -79,6 +79,18 @@ export const STATS_CHARTS_SECTION: stats.LineChartSection = {
   ],
 };
 
+export const STATS_CHARTS_SECTION_GAS: stats.LineChartSection = {
+  id: 'gas',
+  title: 'Gas',
+  charts: [ {
+    id: 'averageGasPrice',
+    title: 'Average gas price',
+    description: 'Average gas price',
+    units: 'XOC',
+    resolutions: [ 'DAY', 'MONTH' ],
+  } ],
+};
+
 export const STATS_CHARTS = {
   sections: [ STATS_CHARTS_SECTION ],
 };
@@ -89,4 +101,22 @@ export const STATS_COUNTER: stats.Counter = {
   title: 'Placeholder Counter',
   description: 'Placeholder description',
   units: '',
+};
+
+export const HOMEPAGE_STATS_MICROSERVICE: stats.MainPageStats = {
+  average_block_time: STATS_COUNTER,
+  total_addresses: STATS_COUNTER,
+  total_blocks: STATS_COUNTER,
+  total_transactions: STATS_COUNTER,
+  yesterday_transactions: STATS_COUNTER,
+  total_operational_transactions: STATS_COUNTER,
+  yesterday_operational_transactions: STATS_COUNTER,
+  daily_new_transactions: {
+    chart: [],
+    info: STATS_CHART_INFO,
+  },
+  daily_new_operational_transactions: {
+    chart: [],
+    info: STATS_CHART_INFO,
+  },
 };

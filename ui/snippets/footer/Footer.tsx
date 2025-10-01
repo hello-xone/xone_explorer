@@ -1,322 +1,412 @@
-import type { GridProps, HTMLChakraProps } from '@chakra-ui/react';
-import { Box, Grid, Flex, Text, Link, VStack, Skeleton, useColorModeValue, Button, SimpleGrid, Heading } from '@chakra-ui/react';
-import { useQuery } from '@tanstack/react-query';
-import React, { useCallback } from 'react';
+import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import React, { useCallback, useState } from 'react';
 
-import type { CustomLinksGroup } from 'types/footerLinks';
-
-import config from 'configs/app';
 import chain from 'configs/app/chain';
+import { getEnvValue } from 'configs/app/utils';
 import type { ResourceError } from 'lib/api/resources';
-import useApiQuery from 'lib/api/useApiQuery';
-import useFetch from 'lib/hooks/useFetch';
-import useIssueUrl from 'lib/hooks/useIssueUrl';
-import useToast from 'lib/hooks/useToast';
-import { copy } from 'lib/html-entities';
-import useAddOrSwitchChain from 'lib/web3/useAddOrSwitchChain';
+import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
+import { Button } from 'toolkit/chakra/button';
+import { useColorModeValue } from 'toolkit/chakra/color-mode';
+import { Heading } from 'toolkit/chakra/heading';
+import { Link } from 'toolkit/chakra/link';
+import { toaster } from 'toolkit/chakra/toaster';
+import { isEmail } from 'ui/address/contract/methods/utils';
 import IconSvg from 'ui/shared/IconSvg';
-import { CONTENT_MAX_WIDTH } from 'ui/shared/layout/utils';
-import NetworkAddToWallet from 'ui/shared/NetworkAddToWallet';
 
-import FooterLinkItem from './FooterLinkItem';
-import IntTxsIndexingStatus from './IntTxsIndexingStatus';
-import getApiVersionUrl from './utils/getApiVersionUrl';
+import EmailInput from './EmailInput';
 
-const MAX_LINKS_COLUMNS = 4;
+//   const { data: backendVersionData } = useApiQuery('general:config_backend_version', {
+//     queryOptions: {
+//       staleTime: Infinity,
+//       enabled: !config.features.opSuperchain.isEnabled,
+//     },
+//   });
+//   const apiVersionUrl = getApiVersionUrl(backendVersionData?.backend_version);
+//   const issueUrl = useIssueUrl(backendVersionData?.backend_version);
 
-const FRONT_VERSION_URL = `https://github.com/blockscout/frontend/tree/${ config.UI.footer.frontendVersion }`;
-const FRONT_COMMIT_URL = `https://github.com/blockscout/frontend/commit/${ config.UI.footer.frontendCommit }`;
+//   const BLOCKSCOUT_LINKS = [
+//     {
+//       icon: 'edit' as const,
+//       iconSize: '16px',
+//       text: 'Submit an issue',
+//       url: issueUrl,
+//     },
+//     {
+//       icon: 'social/git' as const,
+//       iconSize: '18px',
+//       text: 'Contribute',
+//       url: 'https://github.com/blockscout/blockscout',
+//     },
+//     {
+//       icon: 'social/twitter' as const,
+//       iconSize: '18px',
+//       text: 'X (ex-Twitter)',
+//       url: 'https://x.com/blockscout',
+//     },
+//     {
+//       icon: 'social/discord' as const,
+//       iconSize: '24px',
+//       text: 'Discord',
+//       url: 'https://discord.gg/blockscout',
+//     },
+//     {
+//       icon: 'brands/blockscout' as const,
+//       iconSize: '18px',
+//       text: 'All chains',
+//       url: 'https://www.blockscout.com/chains-and-projects',
+//     },
+//     {
+//       icon: 'donate' as const,
+//       iconSize: '20px',
+//       text: 'Donate',
+//       url: 'https://eth.blockscout.com/address/0xfB4aF6A8592041E9BcE186E5aC4BDbd2B137aD11',
+//     },
+//   ];
 
-// @ts-ignore
+//   const frontendLink = (() => {
+//     if (config.UI.footer.frontendVersion) {
+//       return <Link href={ FRONT_VERSION_URL } target="_blank">{ config.UI.footer.frontendVersion }</Link>;
+//     }
+
+//     if (config.UI.footer.frontendCommit) {
+//       return <Link href={ FRONT_COMMIT_URL } target="_blank">{ config.UI.footer.frontendCommit }</Link>;
+//     }
+
+//     return null;
+//   })();
+
+//   const fetch = useFetch();
+
+//   const { isPlaceholderData, data: linksData } = useQuery<unknown, ResourceError<unknown>, Array<CustomLinksGroup>>({
+//     queryKey: [ 'footer-links' ],
+//     queryFn: async() => fetch(config.UI.footer.links || '', undefined, { resource: 'footer-links' }),
+//     enabled: Boolean(config.UI.footer.links),
+//     staleTime: Infinity,
+//     placeholderData: [],
+//   });
+
+//   const colNum = isPlaceholderData ? 1 : Math.min(linksData?.length || Infinity, MAX_LINKS_COLUMNS) + 1;
+
+//   const renderNetworkInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
+//     return (
+//       <Flex
+//         gridArea={ gridArea }
+//         flexWrap="wrap"
+//         columnGap={ 8 }
+//         rowGap={ 6 }
+//         mb={{ base: 5, lg: 10 }}
+//         _empty={{ display: 'none' }}
+//       >
+//         { !config.UI.indexingAlert.intTxs.isHidden && <IntTxsIndexingStatus/> }
+//         <NetworkAddToWallet/>
+//       </Flex>
+//     );
+//   }, []);
+
+//   const renderProjectInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
+//     const logoColor = { base: 'blue.600', _dark: 'white' };
+
+//     return (
+//       <Box gridArea={ gridArea }>
+//         <Flex columnGap={ 2 } textStyle="xs" alignItems="center">
+//           <span>Made with</span>
+//           <Link href="https://www.blockscout.com" target="_blank" display="inline-flex" color={ logoColor } _hover={{ color: logoColor }}>
+//             <IconSvg
+//               name="networks/logo-placeholder"
+//               width="80px"
+//               height={ 4 }
+//             />
+//           </Link>
+//         </Flex>
+//         <Text mt={ 3 } fontSize="xs">
+//           Blockscout is a tool for inspecting and analyzing EVM based blockchains. Blockchain explorer for Ethereum Networks.
+//         </Text>
+//         <Box mt={ 6 } alignItems="start" textStyle="xs">
+//           { apiVersionUrl && (
+//             <Text>
+//               Backend: <Link href={ apiVersionUrl } target="_blank">{ backendVersionData?.backend_version }</Link>
+//             </Text>
+//           ) }
+//           { frontendLink && (
+//             <Text>
+//               Frontend: { frontendLink }
+//             </Text>
+//           ) }
+//           <Text>
+//             Copyright { copy } Blockscout Limited 2023-{ (new Date()).getFullYear() }
+//           </Text>
+//         </Box>
+//       </Box>
+//     );
+//   }, [ apiVersionUrl, backendVersionData?.backend_version, frontendLink ]);
+
+//   const containerProps: HTMLChakraProps<'div'> = {
+//     as: 'footer',
+//     borderTopWidth: '1px',
+//     borderTopColor: 'border.divider',
+//   };
+
+//   const contentProps: GridProps = {
+//     px: { base: 4, lg: config.UI.navigation.layout === 'horizontal' ? 6 : 12, '2xl': 6 },
+//     py: { base: 4, lg: 8 },
+//     gridTemplateColumns: { base: '1fr', lg: 'minmax(auto, 470px) 1fr' },
+//     columnGap: { lg: '32px', xl: '100px' },
+//     maxW: `${ CONTENT_MAX_WIDTH }px`,
+//     m: '0 auto',
+//   };
+
+//   const renderRecaptcha = (gridArea?: GridProps['gridArea']) => {
+//     if (!config.services.reCaptchaV2.siteKey) {
+//       return <Box gridArea={ gridArea }/>;
+//     }
+
+//     return (
+//       <Box gridArea={ gridArea } textStyle="xs" mt={ 6 }>
+//         <span>This site is protected by reCAPTCHA and the Google </span>
+//         <Link href="https://policies.google.com/privacy" external noIcon>Privacy Policy</Link>
+//         <span> and </span>
+//         <Link href="https://policies.google.com/terms" external noIcon>Terms of Service</Link>
+//         <span> apply.</span>
+//       </Box>
+//     );
+//   };
+
+//   if (config.UI.footer.links) {
+//     return (
+//       <Box { ...containerProps }>
+//         <Grid { ...contentProps }>
+//           <div>
+//             { renderNetworkInfo() }
+//             { renderProjectInfo() }
+//             { renderRecaptcha() }
+//           </div>
+
+//           <Grid
+//             gap={{ base: 6, lg: colNum === MAX_LINKS_COLUMNS + 1 ? 2 : 8, xl: 12 }}
+//             gridTemplateColumns={{
+//               base: 'repeat(auto-fill, 160px)',
+//               lg: `repeat(${ colNum }, 135px)`,
+//               xl: `repeat(${ colNum }, 160px)`,
+//             }}
+//             justifyContent={{ lg: 'flex-end' }}
+//             mt={{ base: 8, lg: 0 }}
+//           >
+//             {
+//               ([
+//                 { title: 'Blockscout', links: BLOCKSCOUT_LINKS },
+//                 ...(linksData || []),
+//               ])
+//                 .slice(0, colNum)
+//                 .map(linkGroup => (
+//                   <Box key={ linkGroup.title }>
+//                     <Skeleton fontWeight={ 500 } mb={ 3 } display="inline-block" loading={ isPlaceholderData }>{ linkGroup.title }</Skeleton>
+//                     <VStack gap={ 1 } alignItems="start">
+//                       { linkGroup.links.map(link => <FooterLinkItem { ...link } key={ link.text } isLoading={ isPlaceholderData }/>) }
+//                     </VStack>
+//                   </Box>
+//                 ))
+//             }
+//           </Grid>
+//         </Grid>
+//       </Box>
+//     );
+//   }
+
+//   return (
+//     <Box { ...containerProps }>
+//       <Grid
+//         { ...contentProps }
+//         gridTemplateAreas={{
+//           lg: `
+//           "network links-top"
+//           "info links-bottom"
+//           "recaptcha links-bottom"
+//         `,
+//         }}
+//       >
+
+//         { renderNetworkInfo({ lg: 'network' }) }
+//         { renderProjectInfo({ lg: 'info' }) }
+//         { renderRecaptcha({ lg: 'recaptcha' }) }
+
+//         <Grid
+//           gridArea={{ lg: 'links-bottom' }}
+//           gap={ 1 }
+//           gridTemplateColumns={{
+//             base: 'repeat(auto-fill, 160px)',
+//             lg: 'repeat(2, 160px)',
+//             xl: 'repeat(3, 160px)',
+//           }}
+//           gridTemplateRows={{
+//             base: 'auto',
+//             lg: 'repeat(3, auto)',
+//             xl: 'repeat(2, auto)',
+//           }}
+//           gridAutoFlow={{ base: 'row', lg: 'column' }}
+//           alignContent="start"
+//           justifyContent={{ lg: 'flex-end' }}
+//           mt={{ base: 8, lg: 0 }}
+//         >
+//           { BLOCKSCOUT_LINKS.map(link => <FooterLinkItem { ...link } key={ link.text }/>) }
+//         </Grid>
+//       </Grid>
+//     </Box>
+//   );
+// };
+
 const Footer = () => {
 
-  const { data: backendVersionData } = useApiQuery('config_backend_version', {
-    queryOptions: {
-      staleTime: Infinity,
-    },
-  });
-  const apiVersionUrl = getApiVersionUrl(backendVersionData?.backend_version);
-  const issueUrl = useIssueUrl(backendVersionData?.backend_version);
-  const logoColor = useColorModeValue('blue.600', 'white');
-
-  const BLOCKSCOUT_LINKS = [
-    {
-      icon: 'edit' as const,
-      iconSize: '16px',
-      text: 'Submit an issue',
-      url: issueUrl,
-    },
-    {
-      icon: 'social/canny' as const,
-      iconSize: '20px',
-      text: 'Feature request',
-      url: 'https://blockscout.canny.io/feature-requests',
-    },
-    {
-      icon: 'social/git' as const,
-      iconSize: '18px',
-      text: 'Contribute',
-      url: 'https://github.com/blockscout/blockscout',
-    },
-    {
-      icon: 'social/twitter' as const,
-      iconSize: '18px',
-      text: 'X (ex-Twitter)',
-      url: 'https://www.twitter.com/blockscoutcom',
-    },
-    {
-      icon: 'social/discord' as const,
-      iconSize: '24px',
-      text: 'Discord',
-      url: 'https://discord.gg/blockscout',
-    },
-    {
-      icon: 'brands/blockscout' as const,
-      iconSize: '18px',
-      text: 'All chains',
-      url: 'https://www.blockscout.com/chains-and-projects',
-    },
-    {
-      icon: 'donate' as const,
-      iconSize: '20px',
-      text: 'Donate',
-      url: 'https://github.com/sponsors/blockscout',
-    },
-  ];
-
-  const frontendLink = (() => {
-    if (config.UI.footer.frontendVersion) {
-      return <Link href={ FRONT_VERSION_URL } target="_blank">{ config.UI.footer.frontendVersion }</Link>;
-    }
-
-    if (config.UI.footer.frontendCommit) {
-      return <Link href={ FRONT_COMMIT_URL } target="_blank">{ config.UI.footer.frontendCommit }</Link>;
-    }
-
-    return null;
-  })();
-
-  const fetch = useFetch();
-
-  const { isPlaceholderData, data: linksData } = useQuery<unknown, ResourceError<unknown>, Array<CustomLinksGroup>>({
-    queryKey: [ 'footer-links' ],
-    queryFn: async() => fetch(config.UI.footer.links || '', undefined, { resource: 'footer-links' }),
-    enabled: Boolean(config.UI.footer.links),
-    staleTime: Infinity,
-    placeholderData: [],
-  });
-
-  const colNum = isPlaceholderData ? 1 : Math.min(linksData?.length || Infinity, MAX_LINKS_COLUMNS) + 1;
-
-  const renderNetworkInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
-    return (
-      <Flex
-        gridArea={ gridArea }
-        flexWrap="wrap"
-        columnGap={ 8 }
-        rowGap={ 6 }
-        mb={{ base: 5, lg: 10 }}
-        _empty={{ display: 'none' }}
-      >
-        { !config.UI.indexingAlert.intTxs.isHidden && <IntTxsIndexingStatus/> }
-        <NetworkAddToWallet/>
-      </Flex>
-    );
-  }, []);
-
-  const renderProjectInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
-    return (
-      <Box gridArea={ gridArea }>
-        <Flex columnGap={ 2 } fontSize="xs" lineHeight={ 5 } alignItems="center" color="text">
-          <span>Made with</span>
-          <Link href="https://www.blockscout.com" isExternal display="inline-flex" color={ logoColor } _hover={{ color: logoColor }}>
-            <IconSvg
-              name="networks/logo-placeholder"
-              width="80px"
-              height={ 4 }
-            />
-          </Link>
-        </Flex>
-        <Text mt={ 3 } fontSize="xs">
-          Blockscout is a tool for inspecting and analyzing EVM based blockchains. Blockchain explorer for Ethereum Networks.
-        </Text>
-        <Box mt={ 6 } alignItems="start" fontSize="xs" lineHeight={ 5 }>
-          { apiVersionUrl && (
-            <Text>
-              Backend: <Link href={ apiVersionUrl } target="_blank">{ backendVersionData?.backend_version }</Link>
-            </Text>
-          ) }
-          { frontendLink && (
-            <Text>
-              Frontend: { frontendLink }
-            </Text>
-          ) }
-          <Text>
-            Copyright { copy } Blockscout Limited 2023-{ (new Date()).getFullYear() }
-          </Text>
-        </Box>
-      </Box>
-    );
-  }, [ apiVersionUrl, backendVersionData?.backend_version, frontendLink, logoColor ]);
-
-  const containerProps: HTMLChakraProps<'div'> = {
-    as: 'footer',
-    borderTopWidth: '1px',
-    borderTopColor: 'solid',
-  };
-
-  const contentProps: GridProps = {
-    px: { base: 4, lg: config.UI.navigation.layout === 'horizontal' ? 6 : 12, '2xl': 6 },
-    py: { base: 4, lg: 8 },
-    gridTemplateColumns: { base: '1fr', lg: 'minmax(auto, 470px) 1fr' },
-    columnGap: { lg: '32px', xl: '100px' },
-    maxW: `${ CONTENT_MAX_WIDTH }px`,
-    m: '0 auto',
-  };
-
-  if (config.UI.footer.links) {
-    return (
-      <Box { ...containerProps }>
-        <Grid { ...contentProps }>
-          <div>
-            { renderNetworkInfo() }
-            { renderProjectInfo() }
-          </div>
-
-          <Grid
-            gap={{ base: 6, lg: colNum === MAX_LINKS_COLUMNS + 1 ? 2 : 8, xl: 12 }}
-            gridTemplateColumns={{
-              base: 'repeat(auto-fill, 160px)',
-              lg: `repeat(${ colNum }, 135px)`,
-              xl: `repeat(${ colNum }, 160px)`,
-            }}
-            justifyContent={{ lg: 'flex-end' }}
-            mt={{ base: 8, lg: 0 }}
-          >
-            {
-              ([
-                { title: 'Blockscout', links: BLOCKSCOUT_LINKS },
-                ...(linksData || []),
-              ])
-                .slice(0, colNum)
-                .map(linkGroup => (
-                  <Box key={ linkGroup.title }>
-                    <Skeleton fontWeight={ 500 } mb={ 3 } display="inline-block" isLoaded={ !isPlaceholderData }>{ linkGroup.title }</Skeleton>
-                    <VStack spacing={ 1 } alignItems="start">
-                      { linkGroup.links.map(link => <FooterLinkItem { ...link } key={ link.text } isLoading={ isPlaceholderData }/>) }
-                    </VStack>
-                  </Box>
-                ))
-            }
-          </Grid>
-        </Grid>
-      </Box>
-    );
-  }
-
-  return (
-    <Box { ...containerProps }>
-      <Grid
-        { ...contentProps }
-        gridTemplateAreas={{
-          lg: `
-          "network links-top"
-          "info links-bottom"
-        `,
-        }}
-      >
-
-        { renderNetworkInfo({ lg: 'network' }) }
-        { renderProjectInfo({ lg: 'info' }) }
-
-        <Grid
-          gridArea={{ lg: 'links-bottom' }}
-          gap={ 1 }
-          gridTemplateColumns={{
-            base: 'repeat(auto-fill, 160px)',
-            lg: 'repeat(3, 160px)',
-            xl: 'repeat(4, 160px)',
-          }}
-          gridTemplateRows={{
-            base: 'auto',
-            lg: 'repeat(3, auto)',
-            xl: 'repeat(2, auto)',
-          }}
-          gridAutoFlow={{ base: 'row', lg: 'column' }}
-          alignContent="start"
-          justifyContent={{ lg: 'flex-end' }}
-          mt={{ base: 8, lg: 0 }}
-        >
-          { BLOCKSCOUT_LINKS.map(link => <FooterLinkItem { ...link } key={ link.text }/>) }
-        </Grid>
-      </Grid>
-    </Box>
-  );
-};
-
-const Footer2 = () => {
-  const toast = useToast();
-  const addOrSwitchChain = useAddOrSwitchChain();
+  const handleAddToWalletClick = useAddChainClick();
+  const [ email, setEmail ] = useState<string>('');
   const buttonColor = useColorModeValue('black', 'white');
-
+  // const formik = useFormik({
+  //   initialValues: {
+  //     email: '',
+  //   },
+  //   onSubmit: () => { },
+  // });
+  // const { values, getFieldProps, setFieldValue } = formik;
   const onAddChain = useCallback(async() => {
-    try {
-      await addOrSwitchChain();
-      toast({
-        position: 'top-right',
-        title: 'Success',
-        description: 'Successfully added network to your wallet',
-        status: 'success',
-        variant: 'subtle',
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        position: 'top-right',
+    await handleAddToWalletClick();
+  }, [ handleAddToWalletClick ]);
+
+  const send = useCallback(async() => {
+    if (email && isEmail(email)) {
+      try {
+        // fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=45186e736c77`, {
+        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/emailsub/subscribe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        }).then(async res => {
+          if (res.ok) {
+            const result = await res.json() as { msg: string; code: number; data: string; message: string };
+            setEmail('');
+            if (result.code === 0) {
+              toaster.success({
+                title: 'Success',
+                description: result.msg || result.message || 'Subscribed',
+              });
+            } else {
+              toaster.error({
+                title: 'Error',
+                description: result.msg || result.data || 'Something went wrong',
+              });
+            }
+
+          } else {
+            const result = await res.json() as { msg: string };
+            toaster.error({
+              title: 'Error',
+              description: result.msg || 'Something went wrong',
+            });
+          }
+        });
+        // apiFetch('xonePublic:subscribe', {
+        //   fetchParams: {
+        //     method: 'POST',
+        //     body: {
+        //       email: [ email ],
+        //     },
+        //   },
+        // });
+        // setEmail('');
+        // toaster.success({
+        //   title: 'Success',
+        //   description: 'Subscribed',
+        // });
+      } catch (error) {
+        toaster.error({
+          title: 'Error',
+          description: (error as ResourceError<{ message: string }>)?.payload?.message || 'Something went wrong. Try again later.',
+        });
+      }
+    } else {
+      toaster.error({
         title: 'Error',
-        description: (error as Error)?.message || 'Something went wrong',
-        status: 'error',
-        variant: 'subtle',
-        isClosable: true,
+        description: 'Please enter a valid email address',
       });
     }
-  }, [ toast, addOrSwitchChain ]);
+
+  }, [ email ]);
 
   return (
-    <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="divider">
+    <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="border.divider">
       <VStack alignItems="start" minH="140px" >
-        <Button variant="outline" borderColor="priRed.500" onClick={ onAddChain } _hover={{
-          borderColor: 'priRed.700',
-        }} size="sm">
+        <Button onClick={ onAddChain } bgColor={{ _light: 'theme.topbar.bg._light', _dark: 'theme.topbar.bg._dark' }} size="sm">
           <IconSvg name={ WALLETS_INFO['metamask'].icon } boxSize={ 6 } mr="2"/>
-          <Text color={ buttonColor }>Add { chain.name }</Text>
+          <Text color={ buttonColor }>Add { chain.name } { chain.isTestnet ? '' : 'Mainnet' }</Text>
         </Button>
-        <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone.</Text>
+        <Box marginTop={ 6 }>
+          <Box w={{ base: '100%', md: '386px' }} position="relative" marginBottom={ 4 }>
+            <Heading fontSize="lg" mb={ 4 } color={ buttonColor }>Subscribe to Newsletter</Heading>
+            <Box fontSize="sm" color="#6B6A6A" mb={ 4 } >
+              Xone Chain is a modular Layer-1 that goes beyond scalability and efficiency, ensuring every on-chain action creates tangible, traceable value.
+            </Box>
+            <Box display="flex" alignItems="center" gap={ 2 }>
+              <EmailInput email={ email } setEmail={ setEmail }></EmailInput>
+              <Button onClick={ send } size="sm" flexShrink={ 0 }>
+                Join
+              </Button>
+            </Box>
+          </Box>
+          <Box display="flex" fontSize="sm" color="#6B6A6A" gap={ 2 }>
+            <Text mt="auto" fontSize="sm" color="#828E9D">&copy; 2025 Xone Foundation</Text>
+            <Box ml={ 4 } pl={ 4 } display="flex" alignItems="center" borderLeft="1px" borderColor="#828E9D">
+              <Link color="#828E9D" href="https://docs.xone.org/study/privacy" target="_blank">
+                Privacy
+              </Link>
+              <Box w="2px" h="2px" borderRadius="full" bg="#828E9D" mx={ 4 }></Box>
+              <Link color="#828E9D" href="https://docs.xone.org/study/service" target="_blank">
+                Terms
+              </Link>
+            </Box>
+          </Box>
+
+        </Box>
       </VStack>
-      <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 3 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
+      <SimpleGrid mt={{ base: '5', md: '0' }} columns={{ base: 2, lg: 4 }} ml={{ md: 'auto' }} w="100%" maxW="500px" gap="4">
         <Links title="Xone" links={ [
           { text: 'Home', to: 'https://xone.org' },
-          { text: 'About', to: 'https://docs.xone.org/study/xone' },
-          { text: 'Terms of Service', to: 'https://docs.xone.org/study/service' },
-          { text: 'Privacy Policy', to: 'https://docs.xone.org/study/privacy' },
-          { text: 'Events', to: 'https://lu.ma/xone' },
+          { text: 'About Us', to: 'https://docs.xone.org/study/xone' },
+          { text: 'Bounty Hunter', to: 'https://docs.xone.org/study/bug' },
+          { text: 'White Paper', to: 'https://docs.xone.org/study/wiki' },
+          { text: 'Media Kit', to: 'https://docs.xone.org/study/media' },
+          { text: 'Roadmap', to: 'https://docs.xone.org/study/roadmap' },
+          // { text: 'Terms of Service', to: 'https://docs.xone.org/study/service' },
+          // { text: 'Privacy Policy', to: 'https://docs.xone.org/study/privacy' },
+          // { text: 'Events', to: 'https://lu.ma/xone' },
         ] }/>
 
-        <Links title="Developers" links={ [
-          { text: 'Docs', to: 'https://docs.xone.org/developers/ready' },
+        <Links title="Building" links={ [
+          { text: 'Dev Center', to: 'https://xone.org/developer' },
+          { text: 'Dev Docs', to: 'https://docs.xone.org/developers/ready' },
           { text: 'RPC Endpoints', to: 'https://docs.xone.org/developers/rpc' },
-          { text: 'Tools', to: 'https://docs.xone.org/developers/tools' },
+          { text: 'Dev Tools', to: 'https://docs.xone.org/developers/tools' },
           { text: 'Faucets', to: 'https://faucet.xone.org/' },
+          { text: 'Status', to: 'https://status.xone.org/' },
           { text: 'Github', to: 'https://github.com/hello-xone' },
-          { text: 'Gmail', to: 'mailto:developers@xone.org' },
+        ] }/>
+
+        <Links title="Global" links={ [
+          { text: 'Forum', to: 'https://forum.xone.org/' },
+          { text: 'Cooperation', to: 'https://xone.org/commercial' },
+          { text: 'Blog', to: 'https://docs.xone.org/blog' },
+          { text: 'Events', to: 'https://luma.com/xone' },
         ] }/>
 
         <Links title="Community" links={ [
           { text: 'Telegram', to: 'https://t.me/hello_xonechain/2' },
           { text: 'X', to: 'https://x.com/xone_chain' },
+          { text: 'Discord', to: 'https://discord.com/invite/Du9y2GHV' },
           { text: 'Youtube', to: 'https://www.youtube.com/@HelloXone' },
+          { text: 'Github', to: 'https://github.com/hello-xone/' },
+          { text: 'Reddit', to: 'https://www.reddit.com/r/XoneChain/' },
           { text: 'Medium', to: 'https://medium.com/@xone_chain' },
+          { text: 'ChatMe', to: 'https://share.chatme.global/share/group/ztgqmws2k?lang=en&mode=light' },
         ] }/>
 
       </SimpleGrid>
@@ -324,7 +414,7 @@ const Footer2 = () => {
   );
 };
 
-const Links = ({ title, links }: { title: string;links: Array<{ text: string;to: string }> }) => {
+const Links = ({ title, links }: { title: string; links: Array<{ text: string; to: string }> }) => {
   const titleColor = useColorModeValue('black', 'white');
   const hoverColor = useColorModeValue('black', 'white');
   return (
@@ -334,9 +424,9 @@ const Links = ({ title, links }: { title: string;links: Array<{ text: string;to:
         { links.map((li, i) => {
           return (
             <Box key={ i } py="1">
-              <Text as="a" href={ li.to } color="#6B6A6A" _hover={{
+              <Link href={ li.to || '' } color="#6B6A6A" _hover={{
                 color: hoverColor,
-              }} fontSize="sm">{ li.text }</Text>
+              }} fontSize="sm">{ li.text }</Link>
             </Box>
           );
         }) }
@@ -345,4 +435,4 @@ const Links = ({ title, links }: { title: string;links: Array<{ text: string;to:
   );
 };
 
-export default React.memo(Footer2);
+export default React.memo(Footer);

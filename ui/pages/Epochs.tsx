@@ -1,28 +1,17 @@
+import { Box } from '@chakra-ui/react';
 import React, { useEffect, useMemo } from 'react';
 import { animateScroll } from 'react-scroll';
 
 import type { EpochInfo } from 'types/api/epoch';
-import type { RoutedTab } from 'ui/shared/Tabs/types';
 
 import useQueryEpochs from 'lib/api/useQueryEpochs';
-import useIsMobile from 'lib/hooks/useIsMobile';
-import EpochsList from 'ui/epochs/Epochs';
 import EpochsActionBar from 'ui/epochs/EpochsActionBar';
+import EpochsListItem from 'ui/epochs/EpochsListItem';
+import EpochsTable from 'ui/epochs/EpochsTable';
+import { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
+import DataFetchAlert from 'ui/shared/DataFetchAlert';
+import DataListDisplay from 'ui/shared/DataListDisplay';
 import PageTitle from 'ui/shared/Page/PageTitle';
-import RoutedTabs from 'ui/shared/Tabs/RoutedTabs';
-
-const TAB_LIST_PROPS = {
-  marginBottom: 0,
-  pt: 6,
-  pb: 6,
-  marginTop: -5,
-  alignItems: 'center',
-};
-
-const TABS_RIGHT_SLOT_PROPS = {
-  ml: 8,
-  flexGrow: 1,
-};
 
 const PAGE_LIMIT = 50;
 
@@ -46,8 +35,7 @@ type PaginationState = {
 
 type PaginationUpdate = Partial<PaginationState>;
 
-const Epochs = () => {
-  const isMobile = useIsMobile();
+const EpochsPageContent = () => {
   const { fetchEpochs } = useQueryEpochs();
 
   const [ epochData, setEpochData ] = React.useState<
@@ -89,7 +77,6 @@ const Epochs = () => {
       ...newData,
     });
   };
-
   useEffect(() => {
     setEpochData(null);
     const fetchData = async() => {
@@ -146,32 +133,46 @@ const Epochs = () => {
     />
   );
 
-  const tabs: Array<RoutedTab> = [
-    {
-      id: 'all',
-      title: 'All',
-      component: (
-        <EpochsList
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          query={ epochQuery as any }
-          actionBar={ isMobile ? actionBar : null }
-        />
-      ),
-    },
-  ].filter(Boolean);
+  const content = (() => {
+    if (epochQuery.isError) {
+      return <DataFetchAlert/>;
+    }
+
+    return epochData?.epochInfoss ? (
+      <>
+        <Box hideBelow="lg">
+          <EpochsTable
+            items={ epochData?.epochInfoss }
+            top={ pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+            isLoading={ epochQuery.isPlaceholderData }
+          />
+        </Box>
+        <Box hideFrom="lg">
+          { epochData.epochInfoss.map((item, index) => (
+            <EpochsListItem
+              key={ item.id + (epochQuery.isPlaceholderData ? String(index) : '') }
+              epoch={ item }
+              isLoading={ epochQuery.isPlaceholderData }
+            />
+          )) }
+        </Box>
+      </>
+    ) : null;
+  })();
 
   return (
     <>
       <PageTitle title="Epochs" withTextAd/>
-      { !isMobile && actionBar }
-      <RoutedTabs
-        tabs={ tabs }
-        tabListProps={ isMobile ? undefined : TAB_LIST_PROPS }
-        rightSlotProps={ !isMobile ? TABS_RIGHT_SLOT_PROPS : undefined }
-        stickyEnabled={ !isMobile }
-      />
+      <DataListDisplay
+        isError={ epochQuery.isError }
+        itemsNum={ epochQuery.data.epochInfoss.length }
+        emptyText="There are no epochs."
+        actionBar={ pagination.isVisible ? actionBar : null }
+      >
+        { content }
+      </DataListDisplay>
     </>
   );
 };
 
-export default Epochs;
+export default EpochsPageContent;

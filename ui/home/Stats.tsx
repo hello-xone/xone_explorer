@@ -1,14 +1,14 @@
-import { Grid, Box, Progress } from '@chakra-ui/react';
+import { Box, Grid, Progress, Stack } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import type { HomeStatsWidgetId } from 'types/homepage';
 
 import config from 'configs/app';
 import useApiQuery from 'lib/api/useApiQuery';
 import useQueryEpochs from 'lib/api/useQueryEpochs';
-import { WEI } from 'lib/consts';
-import { HOMEPAGE_STATS } from 'stubs/stats';
+import { HOMEPAGE_STATS, HOMEPAGE_STATS_MICROSERVICE } from 'stubs/stats';
+import { WEI } from 'toolkit/utils/consts';
 import GasInfoTooltip from 'ui/shared/gas/GasInfoTooltip';
 import GasPrice from 'ui/shared/gas/GasPrice';
 import IconSvg from 'ui/shared/IconSvg';
@@ -16,6 +16,9 @@ import type { Props as StatsWidgetProps } from 'ui/shared/stats/StatsWidget';
 import StatsWidget from 'ui/shared/stats/StatsWidget';
 
 const rollupFeature = config.features.rollup;
+const isOptimisticRollup = rollupFeature.isEnabled && rollupFeature.type === 'optimistic';
+const isArbitrumRollup = rollupFeature.isEnabled && rollupFeature.type === 'arbitrum';
+const isStatsFeatureEnabled = config.features.stats.isEnabled;
 
 function getTimeRatioOfDay() {
   const now = new Date();
@@ -26,67 +29,71 @@ function getTimeRatioOfDay() {
 }
 
 const Stats = () => {
+  const [ hasGasTracker, setHasGasTracker ] = React.useState(config.features.gasTracker.isEnabled);
   const { fetchEpochs } = useQueryEpochs();
+  const [ currentEpoch, setCurrentEpoch ] = React.useState<number | null>(null);
 
-  const [ hasGasTracker, setHasGasTracker ] = React.useState(
-    config.features.gasTracker.isEnabled,
-  );
-  const { data, isPlaceholderData, isError, dataUpdatedAt } = useApiQuery(
-    'stats',
-    {
-      queryOptions: {
-        refetchOnMount: false,
-        placeholderData: HOMEPAGE_STATS,
-      },
+  // data from stats microservice is prioritized over data from stats api
+  const statsQuery = useApiQuery('stats:pages_main', {
+    queryOptions: {
+      refetchOnMount: false,
+      placeholderData: isStatsFeatureEnabled ? HOMEPAGE_STATS_MICROSERVICE : undefined,
+      enabled: isStatsFeatureEnabled,
     },
-  );
+  });
+
+  const apiQuery = useApiQuery('general:stats', {
+    queryOptions: {
+      refetchOnMount: false,
+      placeholderData: HOMEPAGE_STATS,
+    },
+  });
+
+  const getCurrentEpoch = useCallback(async() => {
+    const res = await fetchEpochs({
+      limit: 1,
+      page: 0,
+    });
+    setCurrentEpoch(res.epochInfoss[0]?.id);
+  }, [ fetchEpochs ]);
 
   React.useEffect(() => {
-    if (!isPlaceholderData && !data?.gas_prices?.average) {
+    getCurrentEpoch();
+  }, [ getCurrentEpoch ]);
+
+  const isPlaceholderData = statsQuery.isPlaceholderData || apiQuery.isPlaceholderData;
+
+  React.useEffect(() => {
+    if (!isPlaceholderData && !apiQuery.data?.gas_prices?.average) {
       setHasGasTracker(false);
     }
     // should run only after initial fetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ isPlaceholderData ]);
 
-  const zkEvmLatestBatchQuery = useApiQuery('homepage_zkevm_latest_batch', {
+  const zkEvmLatestBatchQuery = useApiQuery('general:homepage_zkevm_latest_batch', {
     queryOptions: {
       placeholderData: 12345,
-      enabled:
-        rollupFeature.isEnabled &&
-        rollupFeature.type === 'zkEvm' &&
-        config.UI.homepage.stats.includes('latest_batch'),
+      enabled: rollupFeature.isEnabled && rollupFeature.type === 'zkEvm' && config.UI.homepage.stats.includes('latest_batch'),
     },
   });
 
-  const zkSyncLatestBatchQuery = useApiQuery('homepage_zksync_latest_batch', {
+  const zkSyncLatestBatchQuery = useApiQuery('general:homepage_zksync_latest_batch', {
     queryOptions: {
       placeholderData: 12345,
-      enabled:
-        rollupFeature.isEnabled &&
-        rollupFeature.type === 'zkSync' &&
-        config.UI.homepage.stats.includes('latest_batch'),
+      enabled: rollupFeature.isEnabled && rollupFeature.type === 'zkSync' && config.UI.homepage.stats.includes('latest_batch'),
     },
   });
 
-  const arbitrumLatestBatchQuery = useApiQuery(
-    'homepage_arbitrum_latest_batch',
-    {
-      queryOptions: {
-        placeholderData: 12345,
-        enabled:
-          rollupFeature.isEnabled &&
-          rollupFeature.type === 'arbitrum' &&
-          config.UI.homepage.stats.includes('latest_batch'),
-      },
+  const arbitrumLatestBatchQuery = useApiQuery('general:homepage_arbitrum_latest_batch', {
+    queryOptions: {
+      placeholderData: 12345,
+      enabled: rollupFeature.isEnabled && rollupFeature.type === 'arbitrum' && config.UI.homepage.stats.includes('latest_batch'),
     },
-  );
+  });
 
   const latestBatchQuery = (() => {
-    if (
-      !rollupFeature.isEnabled ||
-      !config.UI.homepage.stats.includes('latest_batch')
-    ) {
+    if (!rollupFeature.isEnabled || !config.UI.homepage.stats.includes('latest_batch')) {
       return;
     }
 
@@ -100,22 +107,7 @@ const Stats = () => {
     }
   })();
 
-  const [ currentEpoch, setCurrentEpoch ] = React.useState<number | null>(null);
-
-  const getCurrentEpoch = async() => {
-    const res = await fetchEpochs({
-      limit: 1,
-      page: 0,
-    });
-    setCurrentEpoch(res.epochInfoss[0].id);
-  };
-
-  React.useEffect(() => {
-    getCurrentEpoch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (isError || latestBatchQuery?.isError) {
+  if (apiQuery.isError || statsQuery.isError || latestBatchQuery?.isError) {
     return null;
   }
 
@@ -124,28 +116,28 @@ const Stats = () => {
   interface Item extends StatsWidgetProps {
     id: HomeStatsWidgetId;
   }
+  const apiData = apiQuery.data;
+  const statsData = statsQuery.data;
 
   const items: Array<Item> = (() => {
-    if (!data) {
+    if (!statsData && !apiData) {
       return [];
     }
 
-    const gasInfoTooltip =
-      hasGasTracker && data.gas_prices && data.gas_prices.average ? (
-        <GasInfoTooltip data={ data } dataUpdatedAt={ dataUpdatedAt }>
-          <IconSvg
-            isLoading={ isLoading }
-            name="info"
-            boxSize={ 5 }
-            flexShrink={ 0 }
-            cursor="pointer"
-            color="icon_info"
-            _hover={{ color: 'link_hovered' }}
-          />
-        </GasInfoTooltip>
-      ) : null;
+    const gasInfoTooltip = hasGasTracker && apiData?.gas_prices && apiData.gas_prices.average ? (
+      <GasInfoTooltip data={ apiData } dataUpdatedAt={ apiQuery.dataUpdatedAt }>
+        <IconSvg
+          isLoading={ isLoading }
+          name="info"
+          boxSize={ 5 }
+          flexShrink={ 0 }
+          cursor="pointer"
+          color="icon.secondary"
+          _hover={{ color: 'hover' }}
+        />
+      </GasInfoTooltip>
+    ) : null;
 
-    // 当前时间占当天的百分比
     const currentTimePercentage = getTimeRatioOfDay();
 
     return [
@@ -157,89 +149,106 @@ const Stats = () => {
         href: { pathname: '/batches' as const },
         isLoading,
       },
-      {
+      (statsData?.total_blocks?.value || apiData?.total_blocks) && {
         id: 'total_blocks' as const,
         icon: 'block_slim' as const,
-        label: 'Total blocks',
-        value: Number(data.total_blocks).toLocaleString(),
+        label: statsData?.total_blocks?.title || 'Total blocks',
+        value: Number(statsData?.total_blocks?.value || apiData?.total_blocks).toLocaleString(),
         href: { pathname: '/blocks' as const },
         isLoading,
       },
-      {
+      (statsData?.average_block_time?.value || apiData?.average_block_time) && {
         id: 'average_block_time' as const,
         icon: 'clock-light' as const,
-        label: 'Average block time',
-        value: `${ (data.average_block_time / 1000).toFixed(1) }s`,
+        label: statsData?.average_block_time?.title || 'Average block time',
+        value: `${ statsData?.average_block_time?.value ?
+          Number(statsData.average_block_time.value).toFixed(1) :
+          (apiData!.average_block_time / 1000).toFixed(1)
+        }s`,
         isLoading,
       },
-      {
+      (statsData?.total_transactions?.value || apiData?.total_transactions) && {
         id: 'total_txs' as const,
         icon: 'transactions_slim' as const,
-        label: 'Total transactions',
-        value: Number(data.total_transactions).toLocaleString(),
+        label: statsData?.total_transactions?.title || 'Total transactions',
+        value: Number(statsData?.total_transactions?.value || apiData?.total_transactions).toLocaleString(),
         href: { pathname: '/txs' as const },
         isLoading,
       },
-      data.last_output_root_size && {
+      (isArbitrumRollup && statsData?.total_operational_transactions?.value) && {
+        id: 'total_operational_txs' as const,
+        icon: 'transactions_slim' as const,
+        label: statsData?.total_operational_transactions?.title || 'Total operational transactions',
+        value: Number(statsData?.total_operational_transactions?.value).toLocaleString(),
+        href: { pathname: '/txs' as const },
+        isLoading,
+      },
+      (isOptimisticRollup && statsData?.op_stack_total_operational_transactions?.value) && {
+        id: 'total_operational_txs' as const,
+        icon: 'transactions_slim' as const,
+        label: statsData?.op_stack_total_operational_transactions?.title || 'Total operational transactions',
+        value: Number(statsData?.op_stack_total_operational_transactions?.value).toLocaleString(),
+        href: { pathname: '/txs' as const },
+        isLoading,
+      },
+      apiData?.last_output_root_size && {
         id: 'latest_l1_state_batch' as const,
         icon: 'txn_batches_slim' as const,
         label: 'Latest L1 state batch',
-        value: data.last_output_root_size,
+        value: apiData?.last_output_root_size,
         href: { pathname: '/batches' as const },
         isLoading,
       },
-      {
+      (statsData?.total_addresses?.value || apiData?.total_addresses) && {
         id: 'wallet_addresses' as const,
         icon: 'wallet' as const,
-        label: 'Wallet addresses',
-        value: Number(data.total_addresses).toLocaleString(),
+        label: statsData?.total_addresses?.title || 'Wallet addresses',
+        value: Number(statsData?.total_addresses?.value || apiData?.total_addresses).toLocaleString(),
         isLoading,
       },
-      hasGasTracker &&
-      data.gas_prices && {
+      hasGasTracker && apiData?.gas_prices && {
         id: 'gas_tracker' as const,
         icon: 'gas' as const,
         label: 'Gas tracker',
-        value: data.gas_prices.average ? (
-          <GasPrice data={ data.gas_prices.average }/>
-        ) : (
-          'N/A'
-        ),
+        value: apiData.gas_prices.average ? <GasPrice data={ apiData.gas_prices.average }/> : 'N/A',
         hint: gasInfoTooltip,
         isLoading,
       },
-      data.rootstock_locked_btc && {
+      apiData?.rootstock_locked_btc && {
         id: 'btc_locked' as const,
         icon: 'coins/bitcoin' as const,
         label: 'BTC Locked in 2WP',
-        value: `${ BigNumber(data.rootstock_locked_btc)
-          .div(WEI)
-          .dp(0)
-          .toFormat() } RBTC`,
+        value: `${ BigNumber(apiData.rootstock_locked_btc).div(WEI).dp(0).toFormat() } RBTC`,
         isLoading,
       },
       {
         id: 'current_epoch' as const,
-        icon: 'hourglass' as const,
+        icon: 'hourglass_slim' as const,
         label: 'Current epoch',
-        value: <Box display="flex" alignItems="center" gap={ 2 }>
+        value: <Box display="flex" width="100%" flexDirection={{ base: 'column', lg: 'row' }}
+          justifyContent="space-between" alignItems={{ base: 'start', lg: 'center' }} gap={{ base: 0, lg: 2 }}>
           <Box>
             #{ currentEpoch || '-' }
           </Box>
-          <Progress
-            width="100px"
-            value={ currentTimePercentage * 100 }
-            size="sm"
-            colorScheme="blue"
-            bg="gray.200"
-            borderRadius="md"
-          />
-          <Box fontSize="xs">
-            { (currentTimePercentage * 100).toFixed(1) }%
+          <Box display="flex" alignItems="center" gap="2">
+            <Stack gap="4" maxW="240px">
+              <Progress.Root width="100px"
+                value={ currentTimePercentage * 100 }
+                size="sm"
+                colorPalette="red"
+                borderRadius="md" variant="subtle">
+                <Progress.Track>
+                  <Progress.Range/>
+                </Progress.Track>
+              </Progress.Root>
+            </Stack>
+            <Box fontSize="xs">
+              { (currentTimePercentage * 100).toFixed(1) }%
+            </Box>
           </Box>
         </Box>,
         href: { pathname: '/epochs' as const },
-        isLoading: currentEpoch === null,
+        isLoading,
       },
     ]
       .filter(Boolean)
@@ -273,14 +282,11 @@ const Stats = () => {
           key={ item.id }
           { ...item }
           isLoading={ isLoading }
-          _last={
-            items.length % 2 === 1 && index === items.length - 1 ?
-              { gridColumn: 'span 2' } :
-              undefined
-          }
-        />
-      )) }
+          _last={ items.length % 2 === 1 && index === items.length - 1 ? { gridColumn: 'span 2' } : undefined }/>
+      ),
+      ) }
     </Grid>
+
   );
 };
 

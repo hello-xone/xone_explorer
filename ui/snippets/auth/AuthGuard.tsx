@@ -1,8 +1,10 @@
-import { useDisclosure } from '@chakra-ui/react';
 import React from 'react';
 
+import useWeb3Wallet from 'lib/web3/useWallet';
+import { useDisclosure } from 'toolkit/hooks/useDisclosure';
+
 import AuthModal from './AuthModal';
-import useIsAuth from './useIsAuth';
+import useProfileQuery from './useProfileQuery';
 
 interface InjectedProps {
   onClick: () => void;
@@ -11,27 +13,57 @@ interface InjectedProps {
 interface Props {
   children: (props: InjectedProps) => React.ReactNode;
   onAuthSuccess: () => void;
+  ensureEmail?: boolean;
 }
 
-const AuthGuard = ({ children, onAuthSuccess }: Props) => {
+const AuthGuard = ({ children, onAuthSuccess, ensureEmail }: Props) => {
+  const [ isConnectFlag, setIsConnectFlag ] = React.useState(false);
   const authModal = useDisclosure();
-  const isAuth = useIsAuth();
+  const profileQuery = useProfileQuery();
+  const web3Wallet = useWeb3Wallet({ source: 'Header' });
 
   const handleClick = React.useCallback(() => {
-    isAuth ? onAuthSuccess() : authModal.onOpen();
-  }, [ authModal, isAuth, onAuthSuccess ]);
+    if (web3Wallet.isConnected && web3Wallet.address) {
+      onAuthSuccess();
+    } else {
+      setIsConnectFlag(true);
+      web3Wallet.openModal();
+    }
+  }, [ web3Wallet, onAuthSuccess ]);
+
+  React.useEffect(() => {
+    if (isConnectFlag && web3Wallet.isConnected && web3Wallet.address) {
+      setIsConnectFlag(false);
+      onAuthSuccess();
+    }
+  }, [ isConnectFlag, web3Wallet, onAuthSuccess ]);
 
   const handleModalClose = React.useCallback((isSuccess?: boolean) => {
     if (isSuccess) {
+      if (web3Wallet.isConnected && web3Wallet.address) {
+        // If the user has logged in and has not added an email
+        // we need to close the modal and open it again
+        // so the initial screen will be correct
+        authModal.onClose();
+        window.setTimeout(() => {
+          web3Wallet.openModal();
+        }, 500);
+        return;
+      }
       onAuthSuccess();
     }
     authModal.onClose();
-  }, [ authModal, onAuthSuccess ]);
+  }, [ authModal, web3Wallet, onAuthSuccess ]);
 
   return (
     <>
       { children({ onClick: handleClick }) }
-      { authModal.isOpen && <AuthModal onClose={ handleModalClose } initialScreen={{ type: 'select_method' }}/> }
+      { authModal.open && (
+        <AuthModal
+          onClose={ handleModalClose }
+          initialScreen={ profileQuery.data && !profileQuery.data.email && ensureEmail ? { type: 'email', isAuth: true } : { type: 'select_method' } }
+        />
+      ) }
     </>
   );
 };

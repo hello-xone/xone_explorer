@@ -1,13 +1,13 @@
 import type CspDev from 'csp-dev';
 
-import config from 'configs/app';
+// import config from 'configs/app';
 
 import { KEY_WORDS } from '../utils';
 
 export function walletConnect(): CspDev.DirectiveDescriptor {
-  if (!config.features.blockchainInteraction.isEnabled) {
-    return {};
-  }
+  // if (!config.features.blockchainInteraction.isEnabled) {
+  //   return {};
+  // }
 
   return {
     'connect-src': [
@@ -16,11 +16,14 @@ export function walletConnect(): CspDev.DirectiveDescriptor {
       '*.walletconnect.com',
       '*.walletconnect.org',
       'wss://relay.walletconnect.com',
+      'wss://relay.walletconnect.org',
       'wss://www.walletlink.org',
     ],
     'frame-ancestors': [
       '*.walletconnect.org',
+      'secure.walletconnect.org',
       '*.walletconnect.com',
+      'secure.walletconnect.com',
     ],
     'img-src': [
       KEY_WORDS.BLOB,

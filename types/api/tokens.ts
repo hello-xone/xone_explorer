@@ -4,10 +4,13 @@ import type { TokenTransfer } from './tokenTransfer';
 export type TokensResponse = {
   items: Array<TokenInfo>;
   next_page_params: {
+    contract_address_hash: string;
+    fiat_value: string | null;
     holder_count: number;
+    is_name_null: boolean;
     items_count: number;
-    name: string;
     market_cap: string | null;
+    name: string;
   } | null;
 };
 
@@ -28,10 +31,10 @@ export interface TokenInstanceTransferPagination {
 }
 
 export interface TokensSorting {
-  sort: 'fiat_value' | 'holder_count' | 'circulating_market_cap';
+  sort: 'fiat_value' | 'holders_count' | 'circulating_market_cap';
   order: 'asc' | 'desc';
 }
 
 export type TokensSortingField = TokensSorting['sort'];
 
-export type TokensSortingValue = `${ TokensSortingField }-${ TokensSorting['order'] }`;
+export type TokensSortingValue = `${ TokensSortingField }-${ TokensSorting['order'] }` | 'default';

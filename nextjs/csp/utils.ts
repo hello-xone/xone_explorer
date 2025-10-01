@@ -1,4 +1,5 @@
 import type CspDev from 'csp-dev';
+import { uniq } from 'es-toolkit';
 
 export const KEY_WORDS = {
   BLOB: 'blob:',
@@ -10,17 +11,6 @@ export const KEY_WORDS = {
   UNSAFE_INLINE: '\'unsafe-inline\'',
   UNSAFE_EVAL: '\'unsafe-eval\'',
 };
-
-// we cannot use lodash/uniq and lodash/mergeWith in middleware code since it calls new Set() and it'is causing an error in Next.js
-// "Dynamic Code Evaluation (e. g. 'eval', 'new Function', 'WebAssembly.compile') not allowed in Edge Runtime"
-export function unique(array: Array<string | undefined>) {
-  const set: Record<string, boolean> = {};
-  for (const item of array) {
-    item && (set[item] = true);
-  }
-
-  return Object.keys(set);
-}
 
 export function mergeDescriptors(...descriptors: Array<CspDev.DirectiveDescriptor>) {
   return descriptors.reduce((result, item) => {
@@ -44,14 +34,26 @@ export function mergeDescriptors(...descriptors: Array<CspDev.DirectiveDescripto
 }
 
 export function makePolicyString(policyDescriptor: CspDev.DirectiveDescriptor) {
+  // 确保只包含ASCII字符
+  const ensureAscii = (str: string): string => {
+    return str.split('').map(char => {
+      const code = char.charCodeAt(0);
+      // 如果字符码大于255，替换为安全的ASCII字符
+      return code > 255 ? ' ' : char;
+    }).join('');
+  };
+
   return Object.entries(policyDescriptor)
     .map(([ key, value ]) => {
       if (!value || value.length === 0) {
         return;
       }
 
-      const uniqueValues = unique(value);
-      return [ key, uniqueValues.join(' ') ].join(' ');
+      const uniqueValues = uniq(value);
+      // 对每个值和最终的策略字符串进行ASCII检查
+      const asciiValues = uniqueValues.map(val => ensureAscii(val));
+      const policyPart = [ key, asciiValues.join(' ') ].join(' ');
+      return ensureAscii(policyPart);
     })
     .filter(Boolean)
     .join(';');

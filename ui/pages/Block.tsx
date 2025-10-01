@@ -1,34 +1,40 @@
-import { chakra, Skeleton, Tooltip } from '@chakra-ui/react';
-import capitalize from 'lodash/capitalize';
+import { chakra } from '@chakra-ui/react';
+import { capitalize } from 'es-toolkit';
 import { useRouter } from 'next/router';
 import React from 'react';
 
+import type { TabItemRegular } from 'toolkit/components/AdaptiveTabs/types';
 import type { PaginationParams } from 'ui/shared/pagination/types';
-import type { RoutedTab } from 'ui/shared/Tabs/types';
+
+import { routeParams } from 'nextjs/routes';
 
 import config from 'configs/app';
-import { useAppContext } from 'lib/contexts/app';
+import { useMultichainContext } from 'lib/contexts/multichain';
 import throwOnAbsentParamError from 'lib/errors/throwOnAbsentParamError';
 import throwOnResourceLoadError from 'lib/errors/throwOnResourceLoadError';
 import useIsMobile from 'lib/hooks/useIsMobile';
 import getNetworkValidationActionText from 'lib/networks/getNetworkValidationActionText';
 import getQueryParamString from 'lib/router/getQueryParamString';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import RoutedTabs from 'toolkit/components/RoutedTabs/RoutedTabs';
+import BlockCeloEpochTag from 'ui/block/BlockCeloEpochTag';
+import BlockDeposits from 'ui/block/BlockDeposits';
 import BlockDetails from 'ui/block/BlockDetails';
-import BlockEpochRewards from 'ui/block/BlockEpochRewards';
+import BlockInternalTxs from 'ui/block/BlockInternalTxs';
 import BlockWithdrawals from 'ui/block/BlockWithdrawals';
 import useBlockBlobTxsQuery from 'ui/block/useBlockBlobTxsQuery';
+import useBlockDepositsQuery from 'ui/block/useBlockDepositsQuery';
+import useBlockInternalTxsQuery from 'ui/block/useBlockInternalTxsQuery';
 import useBlockQuery from 'ui/block/useBlockQuery';
 import useBlockTxsQuery from 'ui/block/useBlockTxsQuery';
 import useBlockWithdrawalsQuery from 'ui/block/useBlockWithdrawalsQuery';
 import TextAd from 'ui/shared/ad/TextAd';
 import ServiceDegradationWarning from 'ui/shared/alerts/ServiceDegradationWarning';
-import Tag from 'ui/shared/chakra/Tag';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
+import * as BlockEntity from 'ui/shared/entities/block/BlockEntity';
 import NetworkExplorers from 'ui/shared/NetworkExplorers';
 import PageTitle from 'ui/shared/Page/PageTitle';
 import Pagination from 'ui/shared/pagination/Pagination';
-import RoutedTabs from 'ui/shared/Tabs/RoutedTabs';
-import TabsSkeleton from 'ui/shared/Tabs/TabsSkeleton';
 import TxsWithFrontendSorting from 'ui/txs/TxsWithFrontendSorting';
 
 const TAB_LIST_PROPS = {
@@ -42,21 +48,25 @@ const TABS_HEIGHT = 88;
 const BlockPageContent = () => {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const appProps = useAppContext();
   const heightOrHash = getQueryParamString(router.query.height_or_hash);
   const tab = getQueryParamString(router.query.tab);
+  const multichainContext = useMultichainContext();
 
   const blockQuery = useBlockQuery({ heightOrHash });
   const blockTxsQuery = useBlockTxsQuery({ heightOrHash, blockQuery, tab });
   const blockWithdrawalsQuery = useBlockWithdrawalsQuery({ heightOrHash, blockQuery, tab });
+  const blockDepositsQuery = useBlockDepositsQuery({ heightOrHash, blockQuery, tab });
   const blockBlobTxsQuery = useBlockBlobTxsQuery({ heightOrHash, blockQuery, tab });
+  const blockInternalTxsQuery = useBlockInternalTxsQuery({ heightOrHash, blockQuery, tab });
 
   const hasPagination = !isMobile && (
     (tab === 'txs' && blockTxsQuery.pagination.isVisible) ||
-    (tab === 'withdrawals' && blockWithdrawalsQuery.pagination.isVisible)
+    (tab === 'withdrawals' && blockWithdrawalsQuery.pagination.isVisible) ||
+    (tab === 'deposits' && blockDepositsQuery.pagination.isVisible) ||
+    (tab === 'internal_txs' && blockInternalTxsQuery.pagination.isVisible)
   );
 
-  const tabs: Array<RoutedTab> = React.useMemo(() => ([
+  const tabs: Array<TabItemRegular> = React.useMemo(() => ([
     {
       id: 'index',
       title: 'Details',
@@ -73,16 +83,37 @@ const BlockPageContent = () => {
       component: (
         <>
           { blockTxsQuery.isDegradedData && <ServiceDegradationWarning isLoading={ blockTxsQuery.isPlaceholderData } mb={ 6 }/> }
-          <TxsWithFrontendSorting query={ blockTxsQuery } showBlockInfo={ false } showSocketInfo={ false } top={ hasPagination ? TABS_HEIGHT : 0 }/>
+          <TxsWithFrontendSorting query={ blockTxsQuery } showBlockInfo={ false } top={ hasPagination ? TABS_HEIGHT : 0 }/>
         </>
       ),
     },
-    config.features.dataAvailability.isEnabled && blockQuery.data?.blob_tx_count ?
+    blockQuery.data?.internal_transactions_count ? {
+      id: 'internal_txs',
+      title: 'Internal txns',
+      component: (
+        <>
+          { blockTxsQuery.isDegradedData && <ServiceDegradationWarning isLoading={ blockTxsQuery.isPlaceholderData } mb={ 6 }/> }
+          <BlockInternalTxs query={ blockInternalTxsQuery } top={ hasPagination ? TABS_HEIGHT : 0 }/>
+        </>
+      ),
+    } : null,
+    config.features.dataAvailability.isEnabled && blockQuery.data?.blob_transaction_count ?
       {
         id: 'blob_txs',
         title: 'Blob txns',
         component: (
-          <TxsWithFrontendSorting query={ blockBlobTxsQuery } showBlockInfo={ false } showSocketInfo={ false }/>
+          <TxsWithFrontendSorting query={ blockBlobTxsQuery } showBlockInfo={ false }/>
+        ),
+      } : null,
+    config.features.beaconChain.isEnabled && Boolean(blockQuery.data?.beacon_deposits_count) ?
+      {
+        id: 'deposits',
+        title: 'Deposits',
+        component: (
+          <>
+            { blockDepositsQuery.isDegradedData && <ServiceDegradationWarning isLoading={ blockDepositsQuery.isPlaceholderData } mb={ 6 }/> }
+            <BlockDeposits blockDepositsQuery={ blockDepositsQuery }/>
+          </>
         ),
       } : null,
     config.features.beaconChain.isEnabled && Boolean(blockQuery.data?.withdrawals_count) ?
@@ -96,38 +127,25 @@ const BlockPageContent = () => {
           </>
         ),
       } : null,
-    blockQuery.data?.celo?.is_epoch_block ? {
-      id: 'epoch_rewards',
-      title: 'Epoch rewards',
-      component: <BlockEpochRewards heightOrHash={ heightOrHash }/>,
-    } : null,
-  ].filter(Boolean)), [ blockBlobTxsQuery, blockQuery, blockTxsQuery, blockWithdrawalsQuery, hasPagination, heightOrHash ]);
+  ].filter(Boolean)), [ blockBlobTxsQuery, blockDepositsQuery, blockInternalTxsQuery, blockQuery, blockTxsQuery, blockWithdrawalsQuery, hasPagination ]);
 
   let pagination;
   if (tab === 'txs') {
     pagination = blockTxsQuery.pagination;
   } else if (tab === 'withdrawals') {
     pagination = blockWithdrawalsQuery.pagination;
+  } else if (tab === 'deposits') {
+    pagination = blockDepositsQuery.pagination;
+  } else if (tab === 'internal_txs') {
+    pagination = blockInternalTxsQuery.pagination;
   }
-
-  const backLink = React.useMemo(() => {
-    const hasGoBackLink = appProps.referrer && appProps.referrer.includes('/blocks');
-
-    if (!hasGoBackLink) {
-      return;
-    }
-
-    return {
-      label: 'Back to blocks list',
-      url: appProps.referrer,
-    };
-  }, [ appProps.referrer ]);
 
   throwOnAbsentParamError(heightOrHash);
 
   if (blockQuery.isError) {
     if (!blockQuery.isDegradedData && blockQuery.error.status === 404 && !heightOrHash.startsWith('0x')) {
-      router.push({ pathname: '/block/countdown/[height]', query: { height: heightOrHash } });
+      const url = routeParams({ pathname: '/block/countdown/[height]', query: { height: heightOrHash } }, multichainContext);
+      router.push(url, undefined, { shallow: true });
       return null;
     } else {
       throwOnResourceLoadError(blockQuery);
@@ -146,30 +164,16 @@ const BlockPageContent = () => {
         return `Block #${ blockQuery.data?.height }`;
     }
   })();
-  const contentAfter = (() => {
-    if (!blockQuery.data?.celo) {
-      return null;
-    }
 
-    if (!blockQuery.data.celo.is_epoch_block) {
-      return (
-        <Tooltip label="Displays the epoch this block belongs to before the epoch is finalized" maxW="280px" textAlign="center">
-          <Tag>Epoch #{ blockQuery.data.celo.epoch_number }</Tag>
-        </Tooltip>
-      );
-    }
+  const beforeTitleElement = multichainContext?.chain ? (
+    <BlockEntity.Icon variant="heading" chain={ multichainContext.chain } isLoading={ blockQuery.isPlaceholderData }/>
+  ) : null;
 
-    return (
-      <Tooltip label="Displays the epoch finalized by this block" maxW="280px" textAlign="center">
-        <Tag bgColor="celo" color="blackAlpha.800">Finalized epoch #{ blockQuery.data.celo.epoch_number }</Tag>
-      </Tooltip>
-    );
-  })();
   const titleSecondRow = (
     <>
       { !config.UI.views.block.hiddenFields?.miner && blockQuery.data?.miner && (
         <Skeleton
-          isLoaded={ !blockQuery.isPlaceholderData }
+          loading={ blockQuery.isPlaceholderData }
           fontFamily="heading"
           display="flex"
           minW={ 0 }
@@ -182,7 +186,11 @@ const BlockPageContent = () => {
           <AddressEntity address={ blockQuery.data.miner }/>
         </Skeleton>
       ) }
-      <NetworkExplorers type="block" pathParam={ heightOrHash } ml={{ base: config.UI.views.block.hiddenFields?.miner ? 0 : 3, lg: 'auto' }}/>
+      <NetworkExplorers
+        type="block"
+        pathParam={ heightOrHash }
+        ml={{ base: config.UI.views.block.hiddenFields?.miner ? 0 : 3, lg: 'auto' }}
+      />
     </>
   );
 
@@ -191,19 +199,18 @@ const BlockPageContent = () => {
       <TextAd mb={ 6 }/>
       <PageTitle
         title={ title }
-        backLink={ backLink }
-        contentAfter={ contentAfter }
+        beforeTitle={ beforeTitleElement }
+        contentAfter={ <BlockCeloEpochTag blockQuery={ blockQuery }/> }
         secondRow={ titleSecondRow }
         isLoading={ blockQuery.isPlaceholderData }
       />
-      { blockQuery.isPlaceholderData ? <TabsSkeleton tabs={ tabs }/> : (
-        <RoutedTabs
-          tabs={ tabs }
-          tabListProps={ isMobile ? undefined : TAB_LIST_PROPS }
-          rightSlot={ hasPagination ? <Pagination { ...(pagination as PaginationParams) }/> : null }
-          stickyEnabled={ hasPagination }
-        />
-      ) }
+      <RoutedTabs
+        tabs={ tabs }
+        isLoading={ blockQuery.isPlaceholderData }
+        listProps={ isMobile ? undefined : TAB_LIST_PROPS }
+        rightSlot={ hasPagination ? <Pagination { ...(pagination as PaginationParams) }/> : null }
+        stickyEnabled={ hasPagination }
+      />
     </>
   );
 };

@@ -1,4 +1,3 @@
-import { ColorModeScript } from '@chakra-ui/react';
 import type { DocumentContext } from 'next/document';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import React from 'react';
@@ -7,7 +6,6 @@ import logRequestFromBot from 'nextjs/utils/logRequestFromBot';
 import * as serverTiming from 'nextjs/utils/serverTiming';
 
 import config from 'configs/app';
-import theme from 'theme/theme';
 import * as svgSprite from 'ui/shared/IconSvg';
 
 class MyDocument extends Document {
@@ -46,6 +44,17 @@ class MyDocument extends Document {
 
           { /* eslint-disable-next-line @next/next/no-sync-scripts */ }
           <script src="/assets/envs.js"/>
+          { config.features.opSuperchain.isEnabled && (
+            <>
+              { /* eslint-disable-next-line @next/next/no-sync-scripts */ }
+              <script src="/assets/multichain/config.js"/>
+            </>
+          ) }
+
+          { /* Cloudflare Turnstile */ }
+          { config.services.cloudflareTurnstile.siteKey && (
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer/>
+          ) }
 
           { /* FAVICON */ }
           <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png"/>
@@ -57,7 +66,6 @@ class MyDocument extends Document {
           <link rel="preload" as="image" href={ svgSprite.href }/>
         </Head>
         <body>
-          <ColorModeScript initialColorMode={ theme.config.initialColorMode }/>
           <Main/>
           <NextScript/>
         </body>

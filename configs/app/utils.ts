@@ -1,12 +1,21 @@
-import isBrowser from 'lib/isBrowser';
-import * as regexp from 'lib/regexp';
+import { isBrowser } from 'toolkit/utils/isBrowser';
+import * as regexp from 'toolkit/utils/regexp';
 
-export const replaceQuotes = (value: string | undefined) => value?.replaceAll('\'', '"');
+export const replaceQuotes = (value: string | undefined) => {
+  if (!value) return value;
+  // 移除字符串两端的引号（如果存在）
+  const trimmedValue = value.trim();
+  if ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) ||
+      (trimmedValue.startsWith('\'') && trimmedValue.endsWith('\''))) {
+    return trimmedValue.substring(1, trimmedValue.length - 1);
+  }
+  // 将单引号替换为双引号（仅适用于没有被引号包裹的字符串）
+  return trimmedValue.replaceAll('\'', '"');
+};
 
 export const getEnvValue = (envName: string) => {
   // eslint-disable-next-line no-restricted-properties
   const envs = (isBrowser() ? window.__envs : process.env) ?? {};
-
   if (isBrowser() && envs.NEXT_PUBLIC_APP_INSTANCE === 'pw') {
     const storageValue = localStorage.getItem(envName);
 
@@ -14,6 +23,7 @@ export const getEnvValue = (envName: string) => {
       return storageValue;
     }
   }
+
   return replaceQuotes(envs[envName]);
 };
 
@@ -45,7 +55,6 @@ export const buildExternalAssetFilePath = (name: string, value: string) => {
     }
     return `/assets/configs/${ fileName }.${ fileExtension }`;
   } catch (error) {
-
     return;
   }
 };

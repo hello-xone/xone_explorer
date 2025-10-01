@@ -1,29 +1,32 @@
-import { Flex, Skeleton } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
 import React from 'react';
 
 import type { TokenTransfer } from 'types/api/tokenTransfer';
+import type { ChainConfig } from 'types/multichain';
 
 import getCurrencyValue from 'lib/getCurrencyValue';
 import { NFT_TOKEN_TYPE_IDS } from 'lib/token/tokenTypes';
-import Tag from 'ui/shared/chakra/Tag';
+import { Badge } from 'toolkit/chakra/badge';
+import { Skeleton } from 'toolkit/chakra/skeleton';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 import BlockEntity from 'ui/shared/entities/block/BlockEntity';
 import NftEntity from 'ui/shared/entities/nft/NftEntity';
 import TokenEntity from 'ui/shared/entities/token/TokenEntity';
 import TxEntity from 'ui/shared/entities/tx/TxEntity';
 import ListItemMobileGrid from 'ui/shared/ListItemMobile/ListItemMobileGrid';
-import TimeAgoWithTooltip from 'ui/shared/TimeAgoWithTooltip';
+import TimeWithTooltip from 'ui/shared/time/TimeWithTooltip';
 
 type Props = {
   item: TokenTransfer;
   isLoading: boolean;
+  chainData?: ChainConfig;
 };
 
-const TokenTransfersListItem = ({ item, isLoading }: Props) => {
+const TokenTransfersListItem = ({ item, isLoading, chainData }: Props) => {
 
   const { valueStr } = item.total && 'value' in item.total && item.total.value !== null ? getCurrencyValue({
     value: item.total.value,
-    exchangeRate: item.token.exchange_rate,
+    exchangeRate: item.token?.exchange_rate,
     accuracy: 8,
     accuracyUsd: 2,
     decimals: item.total.decimals || '0',
@@ -33,12 +36,12 @@ const TokenTransfersListItem = ({ item, isLoading }: Props) => {
     <ListItemMobileGrid.Container>
       <ListItemMobileGrid.Label isLoading={ isLoading }>Txn hash</ListItemMobileGrid.Label>
       <ListItemMobileGrid.Value>
-        <TxEntity hash={ item.transaction_hash } isLoading={ isLoading } truncation="constant_long" noIcon/>
+        <TxEntity hash={ item.transaction_hash } isLoading={ isLoading } truncation="constant_long" noIcon={ !chainData } chain={ chainData }/>
       </ListItemMobileGrid.Value>
 
       <ListItemMobileGrid.Label isLoading={ isLoading }>Age</ListItemMobileGrid.Label>
       <ListItemMobileGrid.Value>
-        <TimeAgoWithTooltip
+        <TimeWithTooltip
           timestamp={ item.timestamp }
           enableIncrement
           isLoading={ isLoading }
@@ -48,7 +51,7 @@ const TokenTransfersListItem = ({ item, isLoading }: Props) => {
       { item.method && (
         <>
           <ListItemMobileGrid.Label isLoading={ isLoading }>Method</ListItemMobileGrid.Label><ListItemMobileGrid.Value>
-            <Tag isLoading={ isLoading }>{ item.method }</Tag>
+            <Badge loading={ isLoading }>{ item.method }</Badge>
           </ListItemMobileGrid.Value>
         </>
       ) }
@@ -68,13 +71,14 @@ const TokenTransfersListItem = ({ item, isLoading }: Props) => {
         <AddressEntity address={ item.to } isLoading={ isLoading } truncation="constant"/>
       </ListItemMobileGrid.Value>
 
-      { item.total && 'token_id' in item.total && (NFT_TOKEN_TYPE_IDS.includes(item.token.type)) && item.total.token_id !== null && (
+      { item.total && 'token_id' in item.total && item.token && (NFT_TOKEN_TYPE_IDS.includes(item.token.type)) && item.total.token_id !== null && (
         <>
           <ListItemMobileGrid.Label isLoading={ isLoading }>Token ID</ListItemMobileGrid.Label>
           <ListItemMobileGrid.Value overflow="hidden">
             <NftEntity
-              hash={ item.token.address }
+              hash={ item.token.address_hash || item.token.address || '' }
               id={ item.total.token_id }
+              instance={ item.total.token_instance }
               isLoading={ isLoading }
               noIcon
             />
@@ -82,12 +86,12 @@ const TokenTransfersListItem = ({ item, isLoading }: Props) => {
         </>
       ) }
 
-      { valueStr && (item.token.type === 'ERC-20' || item.token.type === 'ERC-1155') && (
+      { valueStr && item.token && (item.token.type === 'ERC-20' || item.token.type === 'ERC-1155') && (
         <>
           <ListItemMobileGrid.Label isLoading={ isLoading }>Amount</ListItemMobileGrid.Label>
           <ListItemMobileGrid.Value>
             <Flex gap={ 2 } overflow="hidden">
-              <Skeleton isLoaded={ !isLoading } wordBreak="break-all">
+              <Skeleton loading={ isLoading } wordBreak="break-all">
                 { valueStr }
               </Skeleton>
               <TokenEntity

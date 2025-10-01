@@ -1,56 +1,57 @@
-/* eslint-disable */
-import { Box, Flex, Heading, useColorModeValue } from '@chakra-ui/react';
+// we use custom heading size for hero banner
+// eslint-disable-next-line no-restricted-imports
+import { Box, Flex, Heading } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
+import { homeAds } from 'configs/app/features/ads';
 import RewardsButton from 'ui/rewards/RewardsButton';
-import AdBanner from 'ui/shared/ad/AdBanner';
+import AdSwiperCarousel from 'ui/shared/ad/AdSwiperCarousel';
 import SearchBar from 'ui/snippets/searchBar/SearchBar';
 import UserProfileDesktop from 'ui/snippets/user/profile/UserProfileDesktop';
 import UserWalletDesktop from 'ui/snippets/user/wallet/UserWalletDesktop';
 
-const BACKGROUND_DEFAULT = 'radial-gradient(103.03% 103.03% at 0% 0%, rgba(183, 148, 244, 0.8) 0%, rgba(0, 163, 196, 0.8) 100%), var(--chakra-colors-blue-400)';
+export const BACKGROUND_DEFAULT =
+  'radial-gradient(103.03% 103.03% at 0% 0%, rgba(183, 148, 244, 0.8) 0%, rgba(0, 163, 196, 0.8) 100%), var(--chakra-colors-blue-400)';
 const TEXT_COLOR_DEFAULT = 'white';
 const BORDER_DEFAULT = 'none';
 
 const HeroBanner = () => {
-  const background = useColorModeValue(
-    // light mode
-    config.UI.homepage.heroBanner?.background?.[0] ||
-    config.UI.homepage.plate.background ||
-    BACKGROUND_DEFAULT,
-    // dark mode
-    config.UI.homepage.heroBanner?.background?.[1] ||
-    config.UI.homepage.heroBanner?.background?.[0] ||
-    config.UI.homepage.plate.background ||
-    BACKGROUND_DEFAULT,
-  );
 
-  const textColor = useColorModeValue(
-    // light mode
-    config.UI.homepage.heroBanner?.text_color?.[0] ||
-    config.UI.homepage.plate.textColor ||
-    TEXT_COLOR_DEFAULT,
+  const textColor = {
+    _light:
+      // light mode
+      config.UI.homepage.heroBanner?.text_color?.[0] ||
+      config.UI.homepage.plate.textColor ||
+      TEXT_COLOR_DEFAULT,
     // dark mode
-    config.UI.homepage.heroBanner?.text_color?.[1] ||
-    config.UI.homepage.heroBanner?.text_color?.[0] ||
-    config.UI.homepage.plate.textColor ||
-    TEXT_COLOR_DEFAULT,
-  );
+    _dark:
+      config.UI.homepage.heroBanner?.text_color?.[1] ||
+      config.UI.homepage.heroBanner?.text_color?.[0] ||
+      config.UI.homepage.plate.textColor ||
+      TEXT_COLOR_DEFAULT,
+  };
 
-  const border = useColorModeValue(
-    config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
-    config.UI.homepage.heroBanner?.border?.[1] || config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
-  );
+  const border = {
+    _light:
+      config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
+    _dark:
+      config.UI.homepage.heroBanner?.border?.[1] || config.UI.homepage.heroBanner?.border?.[0] || BORDER_DEFAULT,
+  };
 
   return (
     <Flex
       w="100%"
-      background={ background }
+      backgroundImage={{
+        base: 'url(/static/banner-bg-h5.png)',
+        lg: 'url(/static/banner-bg.png)',
+      }}
+      backgroundRepeat="no-repeat"
+      backgroundSize="cover"
       border={ border }
       borderRadius="md"
       p={{ base: 4, lg: 8 }}
-      columnGap={ 8 }
+      columnGap={ 6 }
       alignItems="center"
     >
       <Box flexGrow={ 1 }>
@@ -77,10 +78,22 @@ const HeroBanner = () => {
               }
             </Box>
           ) }
-        </Flex> 
+        </Flex>
         <SearchBar isHomepage/>
       </Box>
       { /* <AdBanner platform="mobile" w="fit-content" flexShrink={ 0 } borderRadius="md" overflow="hidden" display={{ base: 'none', lg: 'block ' }}/> */ }
+      {
+        homeAds.length > 0 && (
+          <Box
+            w="300px"
+            borderRadius="md"
+            overflow="hidden"
+            display={{ base: 'none', lg: 'block ' }}
+          >
+            <AdSwiperCarousel showArrows={ false } ads={ homeAds } autoPlayInterval={ 5000 } showDots={ true }/>
+          </Box>
+        )
+      }
     </Flex>
   );
 };

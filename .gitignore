@@ -36,7 +36,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env
+# .env
 .env.example
 /configs/envs/.env.secrets
 /configs/envs/.samples
@@ -63,3 +63,4 @@ yarn-error.log*
 /tools/preset-sync/index.js
 
 sync.sh
+.history

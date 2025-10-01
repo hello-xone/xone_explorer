@@ -1,0 +1,778 @@
+[
+  {
+    "name": "columns.svg",
+    "file_size": 1220
+  },
+  {
+    "name": "lightning.svg",
+    "file_size": 226
+  },
+  {
+    "name": "verified_slim.svg",
+    "file_size": 1908
+  },
+  {
+    "name": "search.svg",
+    "file_size": 373
+  },
+  {
+    "name": "ENS.svg",
+    "file_size": 962
+  },
+  {
+    "name": "info_filled.svg",
+    "file_size": 241
+  },
+  {
+    "name": "payment_link.svg",
+    "file_size": 1249
+  },
+  {
+    "name": "gear_slim.svg",
+    "file_size": 1480
+  },
+  {
+    "name": "watchlist.svg",
+    "file_size": 1004
+  },
+  {
+    "name": "dots.svg",
+    "file_size": 236
+  },
+  {
+    "name": "flashblock.svg",
+    "file_size": 1780
+  },
+  {
+    "name": "repeat.svg",
+    "file_size": 367
+  },
+  {
+    "name": "transactions_slim.svg",
+    "file_size": 747
+  },
+  {
+    "name": "MUD.svg",
+    "file_size": 1324
+  },
+  {
+    "name": "hourglass.svg",
+    "file_size": 2224
+  },
+  {
+    "name": "restAPI.svg",
+    "file_size": 1906
+  },
+  {
+    "name": "rocket_xl.svg",
+    "file_size": 1194
+  },
+  {
+    "name": "empty_search_result.svg",
+    "file_size": 7498
+  },
+  {
+    "name": "clock-light.svg",
+    "file_size": 1537
+  },
+  {
+    "name": "merits_slim.svg",
+    "file_size": 1096
+  },
+  {
+    "name": "apps_slim.svg",
+    "file_size": 768
+  },
+  {
+    "name": "scope.svg",
+    "file_size": 487
+  },
+  {
+    "name": "globe-b.svg",
+    "file_size": 1090
+  },
+  {
+    "name": "user_op_slim.svg",
+    "file_size": 1180
+  },
+  {
+    "name": "publictags_slim.svg",
+    "file_size": 827
+  },
+  {
+    "name": "verified.svg",
+    "file_size": 629
+  },
+  {
+    "name": "merits_with_dot_slim.svg",
+    "file_size": 1125
+  },
+  {
+    "name": "nft_shield.svg",
+    "file_size": 1146
+  },
+  {
+    "name": "games.svg",
+    "file_size": 3271
+  },
+  {
+    "name": "user_op.svg",
+    "file_size": 1059
+  },
+  {
+    "name": "open-link.svg",
+    "file_size": 566
+  },
+  {
+    "name": "lock.svg",
+    "file_size": 813
+  },
+  {
+    "name": "private_tags_slim.svg",
+    "file_size": 2912
+  },
+  {
+    "name": "link.svg",
+    "file_size": 686
+  },
+  {
+    "name": "integration/partial.svg",
+    "file_size": 1070
+  },
+  {
+    "name": "integration/full.svg",
+    "file_size": 1182
+  },
+  {
+    "name": "key.svg",
+    "file_size": 329
+  },
+  {
+    "name": "brands/tac.svg",
+    "file_size": 453
+  },
+  {
+    "name": "brands/safe.svg",
+    "file_size": 761
+  },
+  {
+    "name": "brands/celenium.svg",
+    "file_size": 1063
+  },
+  {
+    "name": "brands/blockscout.svg",
+    "file_size": 784
+  },
+  {
+    "name": "brands/ton.svg",
+    "file_size": 481
+  },
+  {
+    "name": "brands/solidity_scan.svg",
+    "file_size": 758
+  },
+  {
+    "name": "brands/graph.svg",
+    "file_size": 658
+  },
+  {
+    "name": "certified.svg",
+    "file_size": 752
+  },
+  {
+    "name": "contracts/verified.svg",
+    "file_size": 791
+  },
+  {
+    "name": "contracts/regular.svg",
+    "file_size": 666
+  },
+  {
+    "name": "contracts/verified_many.svg",
+    "file_size": 949
+  },
+  {
+    "name": "contracts/regular_many.svg",
+    "file_size": 822
+  },
+  {
+    "name": "contracts/proxy.svg",
+    "file_size": 1116
+  },
+  {
+    "name": "token.svg",
+    "file_size": 3358
+  },
+  {
+    "name": "pie_chart.svg",
+    "file_size": 490
+  },
+  {
+    "name": "internal_txns.svg",
+    "file_size": 3567
+  },
+  {
+    "name": "apps.svg",
+    "file_size": 458
+  },
+  {
+    "name": "block_slim.svg",
+    "file_size": 726
+  },
+  {
+    "name": "moon-with-star.svg",
+    "file_size": 630
+  },
+  {
+    "name": "verification-steps/unfinalized.svg",
+    "file_size": 181
+  },
+  {
+    "name": "verification-steps/finalized.svg",
+    "file_size": 352
+  },
+  {
+    "name": "verification-steps/error.svg",
+    "file_size": 504
+  },
+  {
+    "name": "tokens.svg",
+    "file_size": 657
+  },
+  {
+    "name": "explorer.svg",
+    "file_size": 649
+  },
+  {
+    "name": "star_filled.svg",
+    "file_size": 630
+  },
+  {
+    "name": "wallet.svg",
+    "file_size": 875
+  },
+  {
+    "name": "output_roots.svg",
+    "file_size": 5433
+  },
+  {
+    "name": "coins/bitcoin.svg",
+    "file_size": 491
+  },
+  {
+    "name": "transactions.svg",
+    "file_size": 507
+  },
+  {
+    "name": "plus.svg",
+    "file_size": 505
+  },
+  {
+    "name": "status/warning.svg",
+    "file_size": 695
+  },
+  {
+    "name": "status/pending.svg",
+    "file_size": 252
+  },
+  {
+    "name": "status/success.svg",
+    "file_size": 324
+  },
+  {
+    "name": "status/error.svg",
+    "file_size": 381
+  },
+  {
+    "name": "check.svg",
+    "file_size": 255
+  },
+  {
+    "name": "validator.svg",
+    "file_size": 985
+  },
+  {
+    "name": "email.svg",
+    "file_size": 409
+  },
+  {
+    "name": "info.svg",
+    "file_size": 654
+  },
+  {
+    "name": "heart_outline.svg",
+    "file_size": 768
+  },
+  {
+    "name": "gear.svg",
+    "file_size": 1085
+  },
+  {
+    "name": "close.svg",
+    "file_size": 531
+  },
+  {
+    "name": "copy.svg",
+    "file_size": 545
+  },
+  {
+    "name": "heart_filled.svg",
+    "file_size": 398
+  },
+  {
+    "name": "apps_list.svg",
+    "file_size": 1015
+  },
+  {
+    "name": "burger.svg",
+    "file_size": 432
+  },
+  {
+    "name": "blobs/raw.svg",
+    "file_size": 675
+  },
+  {
+    "name": "blobs/text.svg",
+    "file_size": 608
+  },
+  {
+    "name": "blobs/image.svg",
+    "file_size": 3349
+  },
+  {
+    "name": "refresh.svg",
+    "file_size": 920
+  },
+  {
+    "name": "error-pages/500.svg",
+    "file_size": 3620
+  },
+  {
+    "name": "error-pages/403.svg",
+    "file_size": 2473
+  },
+  {
+    "name": "error-pages/429.svg",
+    "file_size": 3065
+  },
+  {
+    "name": "error-pages/404.svg",
+    "file_size": 1730
+  },
+  {
+    "name": "error-pages/422.svg",
+    "file_size": 2473
+  },
+  {
+    "name": "social/discord_filled.svg",
+    "file_size": 937
+  },
+  {
+    "name": "social/opensea_filled.svg",
+    "file_size": 2416
+  },
+  {
+    "name": "social/telegram_filled.svg",
+    "file_size": 860
+  },
+  {
+    "name": "social/reddit_filled.svg",
+    "file_size": 1169
+  },
+  {
+    "name": "social/git.svg",
+    "file_size": 936
+  },
+  {
+    "name": "social/telega.svg",
+    "file_size": 434
+  },
+  {
+    "name": "social/linkedin_filled.svg",
+    "file_size": 603
+  },
+  {
+    "name": "social/slack_filled.svg",
+    "file_size": 1187
+  },
+  {
+    "name": "social/github_filled.svg",
+    "file_size": 855
+  },
+  {
+    "name": "social/defi_llama.svg",
+    "file_size": 2954
+  },
+  {
+    "name": "social/medium_filled.svg",
+    "file_size": 487
+  },
+  {
+    "name": "social/coinmarketcap.svg",
+    "file_size": 797
+  },
+  {
+    "name": "social/facebook_filled.svg",
+    "file_size": 409
+  },
+  {
+    "name": "social/twitter.svg",
+    "file_size": 279
+  },
+  {
+    "name": "social/discord.svg",
+    "file_size": 2218
+  },
+  {
+    "name": "social/coingecko.svg",
+    "file_size": 3487
+  },
+  {
+    "name": "social/stats.svg",
+    "file_size": 622
+  },
+  {
+    "name": "social/twitter_filled.svg",
+    "file_size": 388
+  },
+  {
+    "name": "donate.svg",
+    "file_size": 1728
+  },
+  {
+    "name": "merits_colored.svg",
+    "file_size": 1890
+  },
+  {
+    "name": "networks/icon-placeholder.svg",
+    "file_size": 741
+  },
+  {
+    "name": "networks/logo-placeholder.svg",
+    "file_size": 2972
+  },
+  {
+    "name": "score/score-ok.svg",
+    "file_size": 591
+  },
+  {
+    "name": "score/score-not-ok.svg",
+    "file_size": 670
+  },
+  {
+    "name": "ENS_slim.svg",
+    "file_size": 1493
+  },
+  {
+    "name": "hourglass_slim.svg",
+    "file_size": 567
+  },
+  {
+    "name": "top-accounts.svg",
+    "file_size": 1052
+  },
+  {
+    "name": "RPC.svg",
+    "file_size": 1004
+  },
+  {
+    "name": "txn_batches_slim.svg",
+    "file_size": 3116
+  },
+  {
+    "name": "block_countdown.svg",
+    "file_size": 2231
+  },
+  {
+    "name": "bvi.svg",
+    "file_size": 1933
+  },
+  {
+    "name": "monaco/rust.svg",
+    "file_size": 3269
+  },
+  {
+    "name": "monaco/solidity.svg",
+    "file_size": 228
+  },
+  {
+    "name": "monaco/file.svg",
+    "file_size": 198
+  },
+  {
+    "name": "monaco/folder-open.svg",
+    "file_size": 215
+  },
+  {
+    "name": "monaco/toml.svg",
+    "file_size": 279
+  },
+  {
+    "name": "monaco/vyper.svg",
+    "file_size": 610
+  },
+  {
+    "name": "monaco/cargo.svg",
+    "file_size": 388
+  },
+  {
+    "name": "monaco/folder.svg",
+    "file_size": 182
+  },
+  {
+    "name": "merits_with_dot.svg",
+    "file_size": 1130
+  },
+  {
+    "name": "star_outline.svg",
+    "file_size": 1118
+  },
+  {
+    "name": "sign_out.svg",
+    "file_size": 836
+  },
+  {
+    "name": "sun.svg",
+    "file_size": 1043
+  },
+  {
+    "name": "operation.svg",
+    "file_size": 773
+  },
+  {
+    "name": "edit.svg",
+    "file_size": 536
+  },
+  {
+    "name": "API.svg",
+    "file_size": 730
+  },
+  {
+    "name": "MUD_menu.svg",
+    "file_size": 1877
+  },
+  {
+    "name": "files/json.svg",
+    "file_size": 2774
+  },
+  {
+    "name": "files/sol.svg",
+    "file_size": 3867
+  },
+  {
+    "name": "files/yul.svg",
+    "file_size": 1484
+  },
+  {
+    "name": "files/image.svg",
+    "file_size": 694
+  },
+  {
+    "name": "files/csv.svg",
+    "file_size": 1581
+  },
+  {
+    "name": "files/placeholder.svg",
+    "file_size": 921
+  },
+  {
+    "name": "collection.svg",
+    "file_size": 620
+  },
+  {
+    "name": "token-placeholder.svg",
+    "file_size": 177
+  },
+  {
+    "name": "beta.svg",
+    "file_size": 2627
+  },
+  {
+    "name": "ABI_slim.svg",
+    "file_size": 1184
+  },
+  {
+    "name": "privattags.svg",
+    "file_size": 2885
+  },
+  {
+    "name": "merits.svg",
+    "file_size": 1105
+  },
+  {
+    "name": "uniswap.svg",
+    "file_size": 3803
+  },
+  {
+    "name": "checkered_flag.svg",
+    "file_size": 507
+  },
+  {
+    "name": "delete.svg",
+    "file_size": 831
+  },
+  {
+    "name": "clock.svg",
+    "file_size": 429
+  },
+  {
+    "name": "wallets/metamask.svg",
+    "file_size": 1809
+  },
+  {
+    "name": "wallets/token-pocket.svg",
+    "file_size": 1336
+  },
+  {
+    "name": "wallets/coinbase.svg",
+    "file_size": 701
+  },
+  {
+    "name": "lightning_navbar.svg",
+    "file_size": 282
+  },
+  {
+    "name": "arrows/up-down.svg",
+    "file_size": 503
+  },
+  {
+    "name": "arrows/south-east.svg",
+    "file_size": 283
+  },
+  {
+    "name": "arrows/east.svg",
+    "file_size": 313
+  },
+  {
+    "name": "arrows/north-east.svg",
+    "file_size": 246
+  },
+  {
+    "name": "arrows/east-mini.svg",
+    "file_size": 256
+  },
+  {
+    "name": "arrows/down-right.svg",
+    "file_size": 281
+  },
+  {
+    "name": "arrows/up-head.svg",
+    "file_size": 286
+  },
+  {
+    "name": "docs.svg",
+    "file_size": 4509
+  },
+  {
+    "name": "token-transfers.svg",
+    "file_size": 2956
+  },
+  {
+    "name": "profile.svg",
+    "file_size": 626
+  },
+  {
+    "name": "share.svg",
+    "file_size": 311
+  },
+  {
+    "name": "qr_code.svg",
+    "file_size": 1555
+  },
+  {
+    "name": "ABI.svg",
+    "file_size": 780
+  },
+  {
+    "name": "interop.svg",
+    "file_size": 708
+  },
+  {
+    "name": "publictags.svg",
+    "file_size": 914
+  },
+  {
+    "name": "filter.svg",
+    "file_size": 355
+  },
+  {
+    "name": "globe.svg",
+    "file_size": 983
+  },
+  {
+    "name": "cross.svg",
+    "file_size": 388
+  },
+  {
+    "name": "networks.svg",
+    "file_size": 705
+  },
+  {
+    "name": "API_slim.svg",
+    "file_size": 665
+  },
+  {
+    "name": "link_external.svg",
+    "file_size": 239
+  },
+  {
+    "name": "rocket.svg",
+    "file_size": 687
+  },
+  {
+    "name": "tokens/xdai.svg",
+    "file_size": 45606
+  },
+  {
+    "name": "blob.svg",
+    "file_size": 2488
+  },
+  {
+    "name": "copy_check.svg",
+    "file_size": 226
+  },
+  {
+    "name": "flame.svg",
+    "file_size": 538
+  },
+  {
+    "name": "txn_batches.svg",
+    "file_size": 7069
+  },
+  {
+    "name": "gas_xl.svg",
+    "file_size": 834
+  },
+  {
+    "name": "stats.svg",
+    "file_size": 1020
+  },
+  {
+    "name": "block.svg",
+    "file_size": 726
+  },
+  {
+    "name": "beta_xs.svg",
+    "file_size": 932
+  },
+  {
+    "name": "minus.svg",
+    "file_size": 343
+  },
+  {
+    "name": "gas.svg",
+    "file_size": 467
+  },
+  {
+    "name": "moon.svg",
+    "file_size": 413
+  },
+  {
+    "name": "swap.svg",
+    "file_size": 1997
+  },
+  {
+    "name": "operation_slim.svg",
+    "file_size": 699
+  }
+]

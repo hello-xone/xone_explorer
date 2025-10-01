@@ -1,22 +1,30 @@
-import type { As } from '@chakra-ui/react';
-import { Image, Skeleton, chakra } from '@chakra-ui/react';
+import { Box, chakra } from '@chakra-ui/react';
 import React from 'react';
 
 import type { TokenInfo } from 'types/api/token';
 
-import { route } from 'nextjs-routes';
+import { route } from 'nextjs/routes';
 
-import { getEnvValue } from 'configs/app/utils';
+import config from 'configs/app';
+import { useMultichainContext } from 'lib/contexts/multichain';
+import getChainTooltipText from 'lib/multichain/getChainTooltipText';
+import getIconUrl from 'lib/multichain/getIconUrl';
+import getTokenIconPath from 'lib/token/getTokenIconPath';
+import { Skeleton } from 'toolkit/chakra/skeleton';
+import { Tooltip } from 'toolkit/chakra/tooltip';
+import { TruncatedTextTooltip } from 'toolkit/components/truncation/TruncatedTextTooltip';
 import * as EntityBase from 'ui/shared/entities/base/components';
-import TokenLogoPlaceholder from 'ui/shared/TokenLogoPlaceholder';
-import TruncatedTextTooltip from 'ui/shared/TruncatedTextTooltip';
+import IconSvg from 'ui/shared/IconSvg';
 
 import { distributeEntityProps, getIconProps } from '../base/utils';
 
 type LinkProps = EntityBase.LinkBaseProps & Pick<EntityProps, 'token'>;
 
 const Link = chakra((props: LinkProps) => {
-  const defaultHref = route({ pathname: '/token/[hash]', query: { ...props.query, hash: props.token.address } });
+  const defaultHref = route(
+    { pathname: '/token/[hash]', query: { ...props.query, hash: props.token.address_hash || props.token.address || '' } },
+    props.chain ? { chain: props.chain } : undefined,
+  );
 
   return (
     <EntityBase.Link
@@ -34,27 +42,55 @@ const Icon = (props: IconProps) => {
   if (props.noIcon) {
     return null;
   }
-
   const styles = {
-    marginRight: props.marginRight ?? 2,
-    boxSize: props.boxSize ?? getIconProps(props.size).boxSize,
-    borderRadius: 'base',
-    flexShrink: 0,
+    ...getIconProps(props, Boolean(props.shield ?? props.chain)),
+    borderRadius: props.token.type === 'ERC-20' ? 'full' : 'base',
   };
 
-  if (props.isLoading) {
-    return <Skeleton { ...styles } className={ props.className }/>;
-  }
+  // 创建首字母头像作为 fallback
+  const getInitial = () => {
+    const text = props.token.name || props.token.symbol || '';
+    if (!text) return '?';
+    const firstChar = text.trim().charAt(0).toUpperCase();
+    return firstChar || '';
+  };
+
+  // 使用与 EntityBase.Icon 相同的尺寸
+  const iconSize = styles.boxSize;
+
+  const InitialAvatar = () => (
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      fontWeight={ 600 }
+      fontSize="sm"
+      bgColor={{ _light: 'gray.200', _dark: 'gray.600' }}
+      color={{ _light: 'gray.600', _dark: 'gray.200' }}
+      borderRadius={ props.token.type === 'ERC-20' ? 'full' : 'base' }
+      transitionProperty="background-color,color"
+      transitionDuration="normal"
+      transitionTimingFunction="ease"
+      w={ iconSize }
+      h={ iconSize }
+      minW={ iconSize }
+      minH={ iconSize }
+      mr={ 2 }
+    >
+      { getInitial() }
+    </Box>
+  );
 
   return (
-    <Image
+    <EntityBase.Icon
       { ...styles }
-      borderRadius={ props.token.type === 'ERC-20' ? 'full' : 'base' }
       className={ props.className }
-      src={ props.token.icon_url ?? getEnvValue('NEXT_PUBLIC_TOKEN_ICON_BASE_PATH')?.replace('[address]', props.token.address) }
+      src={ props.token.isIconAddress ? (props.token.icon_url || '') : (getTokenIconPath(props.token.address_hash || props.token.address || '') || '') }
       alt={ `${ props.token.name || 'token' } logo` }
-      fallback={ <TokenLogoPlaceholder { ...styles }/> }
-      fallbackStrategy={ props.token.icon_url ? 'onError' : 'beforeLoadOrError' }
+      fallback={ <InitialAvatar/> }
+      shield={ props.shield ?? (props.chain ? { src: getIconUrl(props.chain) } : undefined) }
+      hint={ props.chain ? getChainTooltipText(props.chain, 'Token on ') : undefined }
+      { ...props }
     />
   );
 };
@@ -69,18 +105,11 @@ const Content = chakra((props: ContentProps) => {
   ].filter(Boolean).join(' ');
 
   return (
-    <TruncatedTextTooltip label={ nameString }>
-      <Skeleton
-        isLoaded={ !props.isLoading }
-        display="inline-block"
-        whiteSpace="nowrap"
-        overflow="hidden"
-        textOverflow="ellipsis"
-        height="fit-content"
-      >
-        { nameString }
-      </Skeleton>
-    </TruncatedTextTooltip>
+    <EntityBase.Content
+      { ...props }
+      text={ nameString }
+      truncation="tail"
+    />
   );
 });
 
@@ -95,12 +124,12 @@ const Symbol = (props: SymbolProps) => {
 
   return (
     <Skeleton
-      isLoaded={ !props.isLoading }
+      loading={ props.isLoading }
       display="inline-flex"
       alignItems="center"
       maxW="20%"
       ml={ 2 }
-      color="text_secondary"
+      color="text.secondary"
     >
       <div>(</div>
       <TruncatedTextTooltip label={ symbol }>
@@ -125,7 +154,7 @@ const Copy = (props: CopyProps) => {
   return (
     <EntityBase.Copy
       { ...props }
-      text={ props.token.address }
+      text={ props.token.address_hash || props.token.address || '' }
     />
   );
 };
@@ -133,28 +162,44 @@ const Copy = (props: CopyProps) => {
 const Container = EntityBase.Container;
 
 export interface EntityProps extends EntityBase.EntityBaseProps {
-  token: Pick<TokenInfo, 'address' | 'icon_url' | 'name' | 'symbol' | 'type'>;
+  token: Pick<TokenInfo, 'address_hash' | 'address' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress' | 'is_verified' | 'is_submit_token_info'>;
   noSymbol?: boolean;
   jointSymbol?: boolean;
   onlySymbol?: boolean;
 }
 
 const TokenEntity = (props: EntityProps) => {
-  const partsProps = distributeEntityProps(props);
+  const multichainContext = useMultichainContext();
+  const partsProps = distributeEntityProps(props, multichainContext);
 
+  const content = <Content { ...partsProps.content }/>;
   return (
     <Container w="100%" { ...partsProps.container }>
       <Icon { ...partsProps.icon }/>
-      <Link { ...partsProps.link }>
-        <Content { ...partsProps.content }/>
-      </Link>
+      { props.noLink ? content : <Link { ...partsProps.link }>{ content }</Link> }
       <Symbol { ...partsProps.symbol }/>
       <Copy { ...partsProps.copy }/>
+      {
+        props.token.is_verified && props.token.is_submit_token_info && (
+          <Tooltip
+            content={ `Information on this token has been verified by ${ config.chain.name }` }
+          >
+            <IconSvg
+              name="certified"
+              color="green.500"
+              boxSize={ 6 }
+              ml={ 2 }
+              cursor="pointer"
+            />
+          </Tooltip>
+        )
+      }
+
     </Container>
   );
 };
 
-export default React.memo(chakra<As, EntityProps>(TokenEntity));
+export default React.memo(chakra(TokenEntity));
 
 export {
   Container,

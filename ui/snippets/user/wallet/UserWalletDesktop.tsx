@@ -1,10 +1,12 @@
-import { PopoverBody, PopoverContent, PopoverTrigger, useDisclosure, type ButtonProps } from '@chakra-ui/react';
+import { type ButtonProps } from '@chakra-ui/react';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
 import React from 'react';
 
 import { useMarketplaceContext } from 'lib/contexts/marketplace';
 import useWeb3AccountWithDomain from 'lib/web3/useAccountWithDomain';
 import useWeb3Wallet from 'lib/web3/useWallet';
-import Popover from 'ui/shared/chakra/Popover';
+import { PopoverBody, PopoverContent, PopoverRoot, PopoverTrigger } from 'toolkit/chakra/popover';
+import { useDisclosure } from 'toolkit/hooks/useDisclosure';
 
 import UserWalletButton from './UserWalletButton';
 import UserWalletMenuContent from './UserWalletMenuContent';
@@ -16,15 +18,14 @@ interface Props {
 
 const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const walletMenu = useDisclosure();
+  const { close } = useWeb3Modal();
 
   const web3Wallet = useWeb3Wallet({ source: 'Header' });
   const web3AccountWithDomain = useWeb3AccountWithDomain(web3Wallet.isConnected);
   const { isAutoConnectDisabled } = useMarketplaceContext();
-
   const isPending =
     (web3Wallet.isConnected && web3AccountWithDomain.isLoading) ||
     (!web3Wallet.isConnected && web3Wallet.isOpen);
-
   const handleOpenWalletClick = React.useCallback(() => {
     web3Wallet.openModal();
     walletMenu.onClose();
@@ -33,22 +34,38 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const handleDisconnectClick = React.useCallback(() => {
     web3Wallet.disconnect();
     walletMenu.onClose();
-  }, [ web3Wallet, walletMenu ]);
+    close();
+    localStorage.removeItem('wagmi.store');
+    sessionStorage.removeItem('wagmi.store');
+    localStorage.removeItem('w3m_last_connected');
+    localStorage.removeItem('wagmi.recentConnectorId');
+  }, [ close, web3Wallet, walletMenu ]);
 
+  const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
+    if (!web3Wallet.isConnected) {
+      web3Wallet.openModal();
+      return;
+    }
+
+    if (open) {
+      walletMenu.onOpen();
+    } else {
+      walletMenu.onClose();
+    }
+  }, [ walletMenu, web3Wallet ]);
   return (
-    <Popover openDelay={ 300 } placement="bottom-end" isLazy isOpen={ walletMenu.isOpen } onClose={ walletMenu.onClose }>
+    <PopoverRoot positioning={{ placement: 'bottom-end' }} lazyMount open={ walletMenu.open } onOpenChange={ handleOpenChange }>
       <PopoverTrigger>
         <UserWalletButton
           size={ buttonSize }
           variant={ buttonVariant }
-          onClick={ web3Wallet.isConnected ? walletMenu.onOpen : web3Wallet.openModal }
           address={ web3AccountWithDomain.address }
           domain={ web3AccountWithDomain.domain }
           isPending={ isPending }
           isAutoConnectDisabled={ isAutoConnectDisabled }
         />
       </PopoverTrigger>
-      { web3AccountWithDomain.address && (
+      { web3AccountWithDomain.address && walletMenu.open && (
         <PopoverContent w="235px">
           <PopoverBody>
             <UserWalletMenuContent
@@ -62,7 +79,7 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
           </PopoverBody>
         </PopoverContent>
       ) }
-    </Popover>
+    </PopoverRoot>
   );
 };
 

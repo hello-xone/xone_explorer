@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
-import _omit from 'lodash/omit';
-import _pickBy from 'lodash/pickBy';
+import { omit, pickBy } from 'es-toolkit';
 import React from 'react';
 
 import type { CsrfData } from 'types/client/account';
+import type { ChainConfig } from 'types/multichain';
 
 import config from 'configs/app';
 import isBodyAllowed from 'lib/api/isBodyAllowed';
@@ -14,33 +14,35 @@ import type { Params as FetchParams } from 'lib/hooks/useFetch';
 import useFetch from 'lib/hooks/useFetch';
 
 import buildUrl from './buildUrl';
-import { RESOURCES } from './resources';
-import type { ApiResource, ResourceName, ResourcePathParams } from './resources';
+import getResourceParams from './getResourceParams';
+import type { ResourceName, ResourcePathParams } from './resources';
 
 export interface Params<R extends ResourceName> {
   pathParams?: ResourcePathParams<R>;
   queryParams?: Record<string, string | Array<string> | number | boolean | undefined | null>;
   fetchParams?: Pick<FetchParams, 'body' | 'method' | 'signal' | 'headers'>;
+  logError?: boolean;
+  chain?: ChainConfig;
 }
 
 export default function useApiFetch() {
   const fetch = useFetch();
   const queryClient = useQueryClient();
-  const { token: csrfToken } = queryClient.getQueryData<CsrfData>(getResourceKey('csrf')) || {};
+
+  const { token: csrfToken } = queryClient.getQueryData<CsrfData>(getResourceKey('general:csrf')) || {};
 
   return React.useCallback(<R extends ResourceName, SuccessType = unknown, ErrorType = unknown>(
     resourceName: R,
-    { pathParams, queryParams, fetchParams }: Params<R> = {},
+    { pathParams, queryParams, fetchParams, logError, chain }: Params<R> = {},
   ) => {
-
     const apiToken = cookies.get(cookies.NAMES.API_TOKEN);
 
-    const resource: ApiResource = RESOURCES[resourceName];
-    const url = buildUrl(resourceName, pathParams, queryParams);
+    const { api, apiName, resource } = getResourceParams(resourceName, chain);
+    const url = buildUrl(resourceName, pathParams, queryParams, undefined, chain);
     const withBody = isBodyAllowed(fetchParams?.method);
-    const headers = _pickBy({
-      'x-endpoint': resource.endpoint && isNeedProxy() ? resource.endpoint : undefined,
-      Authorization: resource.endpoint && resource.needAuth ? apiToken : undefined,
+    const headers = pickBy({
+      'x-endpoint': isNeedProxy() ? api.endpoint : undefined,
+      Authorization: [ 'admin', 'contractInfo' ].includes(apiName) ? apiToken : undefined,
       'x-csrf-token': withBody && csrfToken ? csrfToken : undefined,
       ...resource.headers,
       ...fetchParams?.headers,
@@ -55,11 +57,11 @@ export default function useApiFetch() {
         // change condition here if something is changed
         credentials: config.features.account.isEnabled ? 'include' : 'same-origin',
         headers,
-        ..._omit(fetchParams, 'headers'),
+        ...(fetchParams ? omit(fetchParams, [ 'headers' ]) : {}),
       },
       {
         resource: resource.path,
-        omitSentryErrorLog: true, // disable logging of API errors to Sentry
+        logError,
       },
     );
   }, [ fetch, csrfToken ]);

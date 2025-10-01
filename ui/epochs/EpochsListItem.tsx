@@ -1,10 +1,11 @@
-import { HStack, Skeleton } from '@chakra-ui/react';
+import { HStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React, { useCallback } from 'react';
 
 import type { EpochInfo } from 'types/api/epoch';
 
 import formatDateUTC from 'lib/date/utcTime';
+import { Skeleton } from 'toolkit/chakra/skeleton';
 import * as EntityBase from 'ui/shared/entities/base/components';
 import ListItemMobile from 'ui/shared/ListItemMobile/ListItemMobile';
 
@@ -43,7 +44,7 @@ const EpochsListItem = ({ epoch, isLoading }: Props) => {
 
   return (
     <ListItemMobile rowGap={ 3 }>
-      <HStack spacing={ 3 }>
+      <HStack gap={ 3 }>
         <EntityBase.Link href="/blocks" onClick={ handleLinkClick }>
           { /* <IconSvg
             name="checkered_flag"
@@ -52,44 +53,44 @@ const EpochsListItem = ({ epoch, isLoading }: Props) => {
             isLoading={isLoading}
             flexShrink={0}
           /> */ }
-          <Skeleton isLoaded={ !isLoading } fontSize="sm">
+          <Skeleton loading={ isLoading } fontSize="sm">
             <span>#{ id }</span>
           </Skeleton>
         </EntityBase.Link>
       </HStack>
 
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
+      <HStack gap={ 3 }>
+        <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>
           Start Block Number
         </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
+        <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary">
           <span>{ startBlocknumber }</span>
         </Skeleton>
       </HStack>
 
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
+      <HStack gap={ 3 }>
+        <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>
           End Block Number
         </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
+        <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary">
           <span>{ endBlocknumber === 0 ? '…' : endBlocknumber }</span>
         </Skeleton>
       </HStack>
 
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
+      <HStack gap={ 3 }>
+        <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>
           Start Time (UTC+0)
         </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
+        <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary">
           <span>{ formatDateUTC(epochStart) }</span>
         </Skeleton>
       </HStack>
 
-      <HStack spacing={ 3 }>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" fontWeight={ 500 }>
+      <HStack gap={ 3 }>
+        <Skeleton loading={ isLoading } fontSize="sm" fontWeight={ 500 }>
           End Time (UTC+0)
         </Skeleton>
-        <Skeleton isLoaded={ !isLoading } fontSize="sm" color="text_secondary">
+        <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary">
           <span>{ formatDateUTC(epochEnd) }</span>
         </Skeleton>
       </HStack>
