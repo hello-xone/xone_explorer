@@ -119,9 +119,9 @@ const AddTokenInfoForm = () => {
         name: tokenQuery.data.name || '',
         symbol: tokenQuery.data.symbol || '',
         type: [ tokenQuery.data.type.toLocaleLowerCase() ],
-        explorer: window.location.host.includes('xonescan') ?
-          network?.url :
-          network?.xscUrl,
+        explorer: window.location.host.includes('xscscan') ?
+          network?.xscUrl :
+          network?.url,
       });
       if (!tokenQuery.isLoading) {
         setFormInitialized(true);

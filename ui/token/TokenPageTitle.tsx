@@ -169,6 +169,7 @@ const TokenPageTitle = ({ tokenQuery, addressQuery, poolQuery, hash }: Props) =>
         <AddressEntity
           address={{ ...addressQuery.data, name: '' }}
           isLoading={ isLoading }
+          hiddenTag
           variant="subheading"
           icon={
             multichainContext?.chain ?
