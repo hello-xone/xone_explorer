@@ -47,7 +47,7 @@ function useCustomAccount(): UseAccountReturnType {
       setIsInitialLoad(false);
       setShowDisconnected(false);
     }
-  }, [ connect, connectors, disconnect, isInitialLoad, wagmiAccount.address, wagmiAccount.connector, wagmiAccount.isConnecting ]);
+  }, [ isInitialLoad, wagmiAccount.address, wagmiAccount.connector, disconnect, connect, connectors, wagmiAccount.isConnecting ]);
 
   // 在初始加载期间且设置了显示disconnected状态时，返回disconnected状态
   if (isInitialLoad && showDisconnected) {
