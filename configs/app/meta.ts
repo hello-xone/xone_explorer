@@ -1,13 +1,12 @@
-import app from './app';
-import { getEnvValue, getExternalAssetFilePath } from './utils';
+import { getEnvValue } from './utils';
 
-const defaultImageUrl = '/static/og_image.png';
+const defaultImageUrl = '/static/xonescan_banner.png';
 
 const meta = Object.freeze({
   promoteBlockscoutInTitle: getEnvValue('NEXT_PUBLIC_PROMOTE_BLOCKSCOUT_IN_TITLE') === 'false' ? false : true,
   og: {
     description: getEnvValue('NEXT_PUBLIC_OG_DESCRIPTION') || '',
-    imageUrl: app.baseUrl + (getExternalAssetFilePath('NEXT_PUBLIC_OG_IMAGE_URL') || defaultImageUrl),
+    imageUrl: defaultImageUrl,
     enhancedDataEnabled: getEnvValue('NEXT_PUBLIC_OG_ENHANCED_DATA_ENABLED') === 'true',
   },
   seo: {
