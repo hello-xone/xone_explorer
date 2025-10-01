@@ -5,13 +5,16 @@ import type { TokenInfo } from 'types/api/token';
 
 import { route } from 'nextjs/routes';
 
+import config from 'configs/app';
 import { useMultichainContext } from 'lib/contexts/multichain';
 import getChainTooltipText from 'lib/multichain/getChainTooltipText';
 import getIconUrl from 'lib/multichain/getIconUrl';
 import getTokenIconPath from 'lib/token/getTokenIconPath';
 import { Skeleton } from 'toolkit/chakra/skeleton';
+import { Tooltip } from 'toolkit/chakra/tooltip';
 import { TruncatedTextTooltip } from 'toolkit/components/truncation/TruncatedTextTooltip';
 import * as EntityBase from 'ui/shared/entities/base/components';
+import IconSvg from 'ui/shared/IconSvg';
 
 import { distributeEntityProps, getIconProps } from '../base/utils';
 
@@ -19,7 +22,7 @@ type LinkProps = EntityBase.LinkBaseProps & Pick<EntityProps, 'token'>;
 
 const Link = chakra((props: LinkProps) => {
   const defaultHref = route(
-    { pathname: '/token/[hash]', query: { ...props.query, hash: props.token.address_hash } },
+    { pathname: '/token/[hash]', query: { ...props.query, hash: props.token.address_hash || props.token.address || '' } },
     props.chain ? { chain: props.chain } : undefined,
   );
 
@@ -151,7 +154,7 @@ const Copy = (props: CopyProps) => {
   return (
     <EntityBase.Copy
       { ...props }
-      text={ props.token.address_hash }
+      text={ props.token.address_hash || props.token.address || '' }
     />
   );
 };
@@ -159,7 +162,7 @@ const Copy = (props: CopyProps) => {
 const Container = EntityBase.Container;
 
 export interface EntityProps extends EntityBase.EntityBaseProps {
-  token: Pick<TokenInfo, 'address_hash' | 'address' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress'>;
+  token: Pick<TokenInfo, 'address_hash' | 'address' | 'icon_url' | 'name' | 'symbol' | 'type' | 'isIconAddress' | 'is_verified' | 'is_submit_token_info'>;
   noSymbol?: boolean;
   jointSymbol?: boolean;
   onlySymbol?: boolean;
@@ -170,13 +173,28 @@ const TokenEntity = (props: EntityProps) => {
   const partsProps = distributeEntityProps(props, multichainContext);
 
   const content = <Content { ...partsProps.content }/>;
-
   return (
     <Container w="100%" { ...partsProps.container }>
       <Icon { ...partsProps.icon }/>
       { props.noLink ? content : <Link { ...partsProps.link }>{ content }</Link> }
       <Symbol { ...partsProps.symbol }/>
       <Copy { ...partsProps.copy }/>
+      {
+        props.token.is_verified && props.token.is_submit_token_info && (
+          <Tooltip
+            content={ `Information on this token has been verified by ${ config.chain.name }` }
+          >
+            <IconSvg
+              name="certified"
+              color="green.500"
+              boxSize={ 6 }
+              ml={ 2 }
+              cursor="pointer"
+            />
+          </Tooltip>
+        )
+      }
+
     </Container>
   );
 };

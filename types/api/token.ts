@@ -18,6 +18,8 @@ export interface TokenInfo<T extends TokenType = TokenType> {
   circulating_market_cap: string | null;
   // bridged token fields
   is_bridged?: boolean | null;
+  is_submit_token_info?: boolean | null;
+  is_verified?: boolean | null;
   bridge_type?: string | null;
   origin_chain_id?: string | null;
   foreign_address?: string | null;

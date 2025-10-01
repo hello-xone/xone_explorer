@@ -16,6 +16,8 @@ export interface XoneTokenInfo {
   total_supply: string;
   type: TokenType;
   volume_24h: string | null;
+  is_verified: boolean;
+  is_submit_token_info: boolean;
 }
 
 // XONE API 返回的原始响应结构（包含 items 数组和分页参数）
@@ -46,6 +48,8 @@ function transformXoneTokenInfo(xoneToken: XoneTokenInfo): TokenInfo {
     total_supply: xoneToken.total_supply,
     icon_url: xoneToken.icon_url,
     circulating_market_cap: xoneToken.circulating_market_cap,
+    is_submit_token_info: xoneToken.is_submit_token_info,
+    is_verified: xoneToken.is_verified,
     // 项目中没有的字段设为默认值
     is_bridged: null,
     bridge_type: null,

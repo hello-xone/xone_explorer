@@ -40,7 +40,7 @@ const TokenHoldersContent = ({ holdersQuery, token, shouldRender = true, tabsHei
     <ActionBar mt={ -6 }>
       { token && (
         <AddressCsvExportLink
-          address={ token.address_hash }
+          address={ token.address_hash || token.address || '' }
           params={{ type: 'holders' }}
           isLoading={ holdersQuery.pagination.isLoading }
         />

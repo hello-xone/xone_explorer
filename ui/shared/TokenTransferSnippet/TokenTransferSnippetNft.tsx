@@ -27,7 +27,7 @@ const NftTokenTransferSnippet = ({ value, token, tokenId, instance }: Props) => 
 
     return (
       <NftEntity
-        hash={ token.address_hash }
+        hash={ token.address_hash || token.address || '' }
         id={ tokenId }
         instance={ instance }
         variant="content"

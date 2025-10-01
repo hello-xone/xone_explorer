@@ -41,7 +41,6 @@ const TokensTableItem = ({
     circulating_market_cap: marketCap,
     origin_chain_id: originalChainId,
   } = token;
-
   const bridgedChainTag = bridgedTokensFeature.isEnabled ?
     bridgedTokensFeature.chains.find(({ id }) => id === originalChainId)?.short_title :
     undefined;

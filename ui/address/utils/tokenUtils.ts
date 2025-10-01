@@ -10,7 +10,7 @@ import { ZERO } from 'toolkit/utils/consts';
 const celoFeature = config.features.celo;
 
 const isNativeToken = (token: TokenEnhancedData) =>
-  celoFeature.isEnabled && token.token.address_hash.toLowerCase() === celoFeature.nativeTokenAddress?.toLowerCase();
+  celoFeature.isEnabled && (token.token.address_hash?.toLowerCase() || token.token.address?.toLowerCase()) === celoFeature.nativeTokenAddress?.toLowerCase();
 
 export type TokenEnhancedData = AddressTokenBalance & {
   usd?: BigNumber ;
@@ -75,7 +75,7 @@ export const sortingFns = {
 
 export const filterTokens = (searchTerm: string) => ({ token }: AddressTokenBalance) => {
   if (!token.name) {
-    return !searchTerm ? true : token.address_hash.toLowerCase().includes(searchTerm);
+    return !searchTerm ? true : (token.address_hash?.toLowerCase() || token.address?.toLowerCase() || '').includes(searchTerm);
   }
 
   return token.name?.toLowerCase().includes(searchTerm);

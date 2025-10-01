@@ -32,7 +32,6 @@ const TokensTable = ({ items, page, isLoading, sorting, setSorting, top }: Props
     const value = getNextSortValue(field)(sorting);
     setSorting(value);
   }, [ sorting, setSorting ]);
-
   return (
     <TableRoot>
       <TableHeaderSticky top={ top ?? ACTION_BAR_HEIGHT_DESKTOP }>
