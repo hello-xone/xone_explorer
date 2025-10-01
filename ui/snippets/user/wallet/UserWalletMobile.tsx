@@ -11,7 +11,6 @@ import UserWalletMenuContent from './UserWalletMenuContent';
 
 const UserWalletMobile = () => {
   const walletMenu = useDisclosure();
-
   const web3Wallet = useWeb3Wallet({ source: 'Header' });
   const web3AccountWithDomain = useWeb3AccountWithDomain(web3Wallet.isConnected);
   const { isAutoConnectDisabled } = useMarketplaceContext();

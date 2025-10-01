@@ -115,12 +115,12 @@ const Icon = (props: IconProps) => {
   );
 };
 
-export type ContentProps = Omit<EntityBase.ContentBaseProps, 'text'> & Pick<EntityProps, 'address'> & { altHash?: string };
+export type ContentProps = Omit<EntityBase.ContentBaseProps, 'text'> & Pick<EntityProps, 'address' | 'hiddenTag'> & { altHash?: string };
 
 const Content = chakra((props: ContentProps) => {
   const displayedAddress = getDisplayedAddress(props.address, props.altHash);
   const nameTag = props.address.public_tags?.find(tag => tag.tagType === 'name')?.name;
-  const nameText = nameTag || props.address.ens_domain_name || props.address.name;
+  const nameText = props.hiddenTag ? props.address.name : nameTag || props.address.ens_domain_name || props.address.name;
 
   const isProxy = props.address.implementations && props.address.implementations.length > 0 && props.address.proxy_type !== 'eip7702';
 
@@ -184,6 +184,7 @@ export interface EntityProps extends EntityBase.EntityBaseProps {
   isSafeAddress?: boolean;
   noHighlight?: boolean;
   noAltHash?: boolean;
+  hiddenTag?: boolean;
 }
 
 const AddressEntity = (props: EntityProps) => {
@@ -196,7 +197,7 @@ const AddressEntity = (props: EntityProps) => {
   // inside highlight context all tooltips should be interactive
   // because non-interactive ones will not pass 'onMouseLeave' event to the parent component
   // see issue - https://github.com/chakra-ui/chakra-ui/issues/9939#issuecomment-2810567024
-  const content = <Content { ...partsProps.content } altHash={ altHash } tooltipInteractive={ Boolean(highlightContext) }/>;
+  const content = <Content { ...partsProps.content } hiddenTag={ props.hiddenTag } altHash={ altHash } tooltipInteractive={ Boolean(highlightContext) }/>;
 
   return (
     <Container
