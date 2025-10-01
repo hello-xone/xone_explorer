@@ -74,7 +74,8 @@ const AssetFilter = ({ value = [], handleFilterChange }: Props) => {
   });
 
   const onTokenClick = React.useCallback((token: TokenInfo) => () => {
-    setCurrentValue(prev => prev.findIndex(i => i.token.address_hash === token.address_hash) > -1 ? prev : [ { token, mode: 'include' }, ...prev ]);
+    setCurrentValue(prev => prev.findIndex(i => ((i.token.address_hash === token.address_hash) || (i.token.address === token.address))) >
+    -1 ? prev : [ { token, mode: 'include' }, ...prev ]);
   }, []);
 
   const onReset = React.useCallback(() => setCurrentValue([]), []);

@@ -47,7 +47,7 @@ const AddressCollections = ({ collectionsQuery, address, tokenTypes, onTokenType
     const collectionUrl = route({
       pathname: '/token/[hash]',
       query: {
-        hash: item.token.address_hash,
+        hash: item.token.address_hash || item.token.address || '',
         tab: 'inventory',
         holder_address_hash: address,
         scroll_to_tabs: 'true',

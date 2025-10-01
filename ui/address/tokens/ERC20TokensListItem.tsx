@@ -22,7 +22,8 @@ const ERC20TokensListItem = ({ token, value, isLoading }: Props) => {
     valueStr: tokenQuantity,
     usd: tokenValue,
   } = getCurrencyValue({ value: value, exchangeRate: token.exchange_rate, decimals: token.decimals, accuracy: 8, accuracyUsd: 2 });
-  const isNativeToken = celoFeature.isEnabled && token.address_hash.toLowerCase() === celoFeature.nativeTokenAddress?.toLowerCase();
+  const isNativeToken = celoFeature.isEnabled &&
+  (token.address_hash?.toLowerCase() || token.address?.toLowerCase()) === celoFeature.nativeTokenAddress?.toLowerCase();
 
   return (
     <ListItemMobile rowGap={ 2 }>
@@ -39,7 +40,7 @@ const ERC20TokensListItem = ({ token, value, isLoading }: Props) => {
       </Flex>
       <Flex alignItems="center" pl={ 8 }>
         <AddressEntity
-          address={{ hash: token.address_hash }}
+          address={{ hash: token.address_hash || token.address || '' }}
           isLoading={ isLoading }
           truncation="constant"
           noIcon

@@ -27,7 +27,8 @@ const ERC20TokensTableItem = ({
     usd: tokenValue,
   } = getCurrencyValue({ value: value, exchangeRate: token.exchange_rate, decimals: token.decimals, accuracy: 8, accuracyUsd: 2 });
 
-  const isNativeToken = celoFeature.isEnabled && token.address_hash.toLowerCase() === celoFeature.nativeTokenAddress?.toLowerCase();
+  const isNativeToken = celoFeature.isEnabled &&
+  (token.address_hash?.toLowerCase() || token.address?.toLowerCase()) === celoFeature.nativeTokenAddress?.toLowerCase();
 
   return (
     <TableRow role="group" >
@@ -47,7 +48,7 @@ const ERC20TokensTableItem = ({
       <TableCell verticalAlign="middle">
         <Flex alignItems="center" width="150px" justifyContent="space-between">
           <AddressEntity
-            address={{ hash: token.address_hash }}
+            address={{ hash: token.address_hash || token.address || '' }}
             isLoading={ isLoading }
             truncation="constant"
             noIcon

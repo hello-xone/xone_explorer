@@ -29,6 +29,8 @@ function convertToXoneFormat(tokenInfo: TokenInfo): XoneTokenInfo {
     total_supply: tokenInfo.total_supply || '0',
     type: tokenInfo.type,
     volume_24h: null,
+    is_verified: false,
+    is_submit_token_info: false,
   };
 }
 

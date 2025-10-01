@@ -21,7 +21,8 @@ interface Props {
 
 const TokenSelectItem = ({ data }: Props) => {
 
-  const isNativeToken = celoFeature.isEnabled && data.token.address_hash.toLowerCase() === celoFeature.nativeTokenAddress?.toLowerCase();
+  const isNativeToken = celoFeature.isEnabled &&
+  (data.token.address_hash?.toLowerCase() || data.token.address?.toLowerCase()) === celoFeature.nativeTokenAddress?.toLowerCase();
 
   const secondRow = (() => {
     switch (data.token.type) {
@@ -74,7 +75,7 @@ const TokenSelectItem = ({ data }: Props) => {
     }
   })();
 
-  const url = route({ pathname: '/token/[hash]', query: { hash: data.token.address_hash } });
+  const url = route({ pathname: '/token/[hash]', query: { hash: data.token.address_hash || data.token.address || '' } });
 
   return (
     <Link
