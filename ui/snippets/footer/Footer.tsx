@@ -274,7 +274,8 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=45186e736c77`, {
+        // fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=45186e736c77`, {
+        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/emailsub/subscribe`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -282,17 +283,17 @@ const Footer = () => {
           body: JSON.stringify({ email }),
         }).then(async res => {
           if (res.ok) {
-            const result = await res.json() as { msg: string; code: number };
+            const result = await res.json() as { msg: string; code: number; data: string; message: string };
             setEmail('');
-            if (result.code === 200) {
+            if (result.code === 0) {
               toaster.success({
                 title: 'Success',
-                description: result.msg,
+                description: result.msg || result.message || 'Subscribed',
               });
             } else {
               toaster.error({
                 title: 'Error',
-                description: result.msg || 'Something went wrong',
+                description: result.msg || result.data || 'Something went wrong',
               });
             }
 
