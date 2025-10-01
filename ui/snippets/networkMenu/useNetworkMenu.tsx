@@ -17,7 +17,7 @@ export default function useNetworkMenu() {
   const { isPending, data } = useQuery<unknown, ResourceError<unknown>, Array<FeaturedNetwork>>({
     queryKey: [ 'featured-network' ],
     queryFn: async() => networks.map(network => ({ ...network,
-      url: window.location.host.includes('xonescan') ? network.url : network.xscUrl, isActive: new URL(network.url).host === window.location.host })),
+      url: window.location.host.includes('xscscan') ? network.xscUrl : network.url, isActive: new URL(network.url).host === window.location.host })),
     enabled: Boolean(config.UI.navigation.featuredNetworks) && open,
     staleTime: Infinity,
   });
