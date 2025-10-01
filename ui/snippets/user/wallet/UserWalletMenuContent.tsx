@@ -18,8 +18,14 @@ interface Props {
   onOpenWallet: () => void;
 }
 
-const UserWalletMenuContent = ({ isAutoConnectDisabled, address, domain, isReconnecting, onDisconnect, onOpenWallet }: Props) => {
-
+const UserWalletMenuContent = ({
+  isAutoConnectDisabled,
+  address,
+  domain,
+  isReconnecting,
+  onDisconnect,
+  onOpenWallet,
+}: Props) => {
   const handleOpenWalletClick = React.useCallback(async() => {
     await delay(100);
     onOpenWallet();
@@ -28,7 +34,9 @@ const UserWalletMenuContent = ({ isAutoConnectDisabled, address, domain, isRecon
   return (
     <Box>
       { isAutoConnectDisabled && <UserWalletAutoConnectAlert/> }
-      <Text fontSize="sm" fontWeight={ 600 } mb={ 1 }>My wallet</Text>
+      <Text fontSize="sm" fontWeight={ 600 } mb={ 1 }>
+        My wallet
+      </Text>
       <Text fontSize="sm" mb={ 5 } fontWeight={ 400 } color="text.secondary">
         Your wallet is used to interact with apps and contracts in the explorer.
       </Text>
@@ -40,7 +48,9 @@ const UserWalletMenuContent = ({ isAutoConnectDisabled, address, domain, isRecon
           fontSize="sm"
           fontWeight={ 700 }
         />
-        { isReconnecting ? <Spinner size="sm" m="2px" flexShrink={ 0 }/> : (
+        { isReconnecting ? (
+          <Spinner size="sm" m="2px" flexShrink={ 0 }/>
+        ) : (
           <IconButton
             aria-label="Open wallet"
             variant="icon_secondary"
@@ -51,7 +61,13 @@ const UserWalletMenuContent = ({ isAutoConnectDisabled, address, domain, isRecon
           </IconButton>
         ) }
       </Flex>
-      <Button size="sm" width="full" variant="outline" onClick={ onDisconnect } mt={ 6 }>
+      <Button
+        size="sm"
+        width="full"
+        variant="outline"
+        onClick={ onDisconnect }
+        mt={ 6 }
+      >
         Disconnect
       </Button>
     </Box>

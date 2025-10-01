@@ -65,6 +65,8 @@ function createTokenUpConnector() {
 
     // 断开连接
     disconnect: async() => {
+      const web3Kit = new Web3Kit();
+      web3Kit.logout();
       return;
     },
 
@@ -125,8 +127,8 @@ function createTokenUpConnector() {
         },
 
         // 实现标准的事件监听方法
-        on: () => {},
-        removeListener: () => {},
+        on: () => { },
+        removeListener: () => { },
 
         // 添加isMetaMask标志，一些库会检查这个标志
         isMetaMask: false,
@@ -139,16 +141,16 @@ function createTokenUpConnector() {
     },
 
     // 账户变化监听
-    onAccountsChanged: () => {},
+    onAccountsChanged: () => { },
 
     // 链变化监听
-    onChainChanged: () => {},
+    onChainChanged: () => { },
 
     // 断开连接监听
-    onDisconnect: () => {},
+    onDisconnect: () => { },
 
     // 消息监听
-    onMessage: () => {},
+    onMessage: () => { },
 
     // 发送交易
     sendTransaction: async(args: {

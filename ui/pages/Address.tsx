@@ -431,6 +431,7 @@ const AddressPageContent = () => {
           ens_domain_name: '',
           implementations: null,
         }}
+        hiddenTag={ true }
         isLoading={ isLoading }
         variant="subheading"
         noLink

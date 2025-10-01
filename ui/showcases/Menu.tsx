@@ -21,7 +21,7 @@ const MenuShowcase = () => {
                 </IconButton>
               </MenuTrigger>
               <MenuContent>
-                <MenuItem value="refresh-metadata">Refresh metadata</MenuItem>
+                { /* <MenuItem value="refresh-metadata">Refresh metadata</MenuItem> */ }
                 <MenuItem value="add-token-info">Add token info</MenuItem>
                 <MenuItem value="add-private-tag">Add private tag</MenuItem>
                 <MenuItem value="add-public-tag">Add public tag</MenuItem>
@@ -35,7 +35,7 @@ const MenuShowcase = () => {
                 </IconButton>
               </MenuTrigger>
               <MenuContent>
-                <MenuItem value="refresh-metadata">Refresh metadata</MenuItem>
+                { /* <MenuItem value="refresh-metadata">Refresh metadata</MenuItem> */ }
                 <MenuItem value="add-token-info">Add token info</MenuItem>
                 <MenuItem value="add-private-tag">Add private tag</MenuItem>
                 <MenuItem value="add-public-tag">Add public tag</MenuItem>
