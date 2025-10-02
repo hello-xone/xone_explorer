@@ -15,7 +15,7 @@ const AddressEntityContentProxy = (props: ContentProps) => {
   }
 
   const colNum = Math.min(implementations.length, 3);
-  const nameTag = props.address.metadata?.tags.find(tag => tag.tagType === 'name')?.name;
+  const nameTag = props.address.public_tags?.find(tag => tag.tagType === 'name')?.name;
 
   const implementationName = implementations.length === 1 && implementations[0].name ? implementations[0].name : undefined;
 
