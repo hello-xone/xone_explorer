@@ -47,9 +47,9 @@ export function app(): CspDev.DirectiveDescriptor {
       // APIs
       ...Object.values(config.apis).filter(Boolean).map((api) => api.endpoint),
       ...Object.values(config.apis).filter(Boolean).map((api) => api.socketEndpoint),
-      'http://8.218.76.177',
-      'ws://8.218.76.177',
-      'http://8.218.76.177:8080',
+      'https://explorer-api.xscscan.com',
+      'wss://xonescan.com',
+      'https://xonescan.com',
       'https://explorer-api.xonetest.plus',
       'https://mail.xone.plus',
       'https://*.xone.works',
