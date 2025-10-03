@@ -113,8 +113,3 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 }
 
 export default MyApp;
-
-// Configure all pages to use Edge Runtime for Cloudflare Pages
-export const config = {
-  runtime: 'experimental-edge',
-};
