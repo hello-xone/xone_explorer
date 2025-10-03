@@ -9,10 +9,14 @@ interface Props {
 }
 
 const SocketAlert = ({ className }: Props) => {
+  const reloadHref = typeof window !== 'undefined' && window.document?.location
+    ? window.document.location.href
+    : '#';
+
   return (
     <Alert status="warning" className={ className }>
       <Text whiteSpace="pre">Connection lost, click </Text>
-      <Link href={ window.document.location.href }>to load newer records</Link>
+      <Link href={ reloadHref }>to load newer records</Link>
     </Alert>
   );
 };

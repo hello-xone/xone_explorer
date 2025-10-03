@@ -34,6 +34,7 @@ export default function useNavItems(): ReturnType {
     } : null;
     const blocks: NavItem | null = {
       text: 'Blocks',
+      // @ts-ignore - Route type generation incomplete
       nextRoute: { pathname: '/blocks' as const },
       icon: 'block',
       isActive: pathname === '/blocks' || pathname === '/block/[height_or_hash]' || pathname === '/chain/[chain-slug]/block/[height_or_hash]',

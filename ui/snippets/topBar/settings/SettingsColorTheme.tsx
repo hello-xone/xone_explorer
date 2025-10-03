@@ -30,7 +30,9 @@ const SettingsColorTheme = ({ onSelect }: Props) => {
     setColorMode(nextTheme.colorMode);
 
     const varName = nextTheme.colorMode === 'light' ? '--chakra-colors-white' : '--chakra-colors-black';
-    window.document.documentElement.style.setProperty(varName, varValue);
+    if (typeof window !== 'undefined' && window.document?.documentElement) {
+      window.document.documentElement.style.setProperty(varName, varValue);
+    }
 
     cookies.set(cookies.NAMES.COLOR_MODE, nextTheme.colorMode);
     cookies.set(cookies.NAMES.COLOR_THEME, themeId);

@@ -56,11 +56,14 @@ const Sol2UmlDiagram = ({ addressHash }: Props) => {
   const imgUrl = `data:image/svg+xml;base64,${ umlQuery.data?.svg }`;
 
   const handleClick = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
     const image = new Image();
     image.src = imgUrl;
 
     const newWindow = window.open(imgUrl);
-    newWindow?.document.write(image.outerHTML);
+    if (newWindow && newWindow.document) {
+      newWindow.document.write(image.outerHTML);
+    }
   }, [ imgUrl ]);
 
   throwOnAbsentParamError(addressHash);

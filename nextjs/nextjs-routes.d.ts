@@ -28,6 +28,7 @@ declare module "nextjs-routes" {
     | StaticRoute<"/api/monitoring/invalid-api-schema">
     | StaticRoute<"/api/proxy">
     | StaticRoute<"/api-docs">
+    | StaticRoute<"/api-key">
     | DynamicRoute<"/apps/[id]", { "id": string }>
     | StaticRoute<"/apps">
     | StaticRoute<"/auth/profile">
@@ -52,15 +53,18 @@ declare module "nextjs-routes" {
     | StaticRoute<"/chakra">
     | StaticRoute<"/contract-verification">
     | StaticRoute<"/csv-export">
+    | StaticRoute<"/custom-abi">
     | StaticRoute<"/deposits">
     | StaticRoute<"/dispute-games">
     | DynamicRoute<"/epochs/[number]", { "number": string }>
     | StaticRoute<"/epochs">
     | StaticRoute<"/gas-tracker">
+    | StaticRoute<"/healthz">
     | StaticRoute<"/">
     | StaticRoute<"/internal-txs">
     | StaticRoute<"/interop-messages">
     | StaticRoute<"/login">
+    | StaticRoute<"/merits">
     | StaticRoute<"/mud-worlds">
     | DynamicRoute<"/name-domains/[name]", { "name": string }>
     | StaticRoute<"/name-domains">
@@ -71,11 +75,15 @@ declare module "nextjs-routes" {
     | StaticRoute<"/output-roots">
     | DynamicRoute<"/pools/[hash]", { "hash": string }>
     | StaticRoute<"/pools">
+    | StaticRoute<"/profile">
     | StaticRoute<"/public-tags/submit">
     | StaticRoute<"/search-results">
+    | StaticRoute<"/sol2uml">
     | StaticRoute<"/sprite">
     | DynamicRoute<"/stats/[id]", { "id": string }>
     | StaticRoute<"/stats">
+    | StaticRoute<"/submit">
+    | StaticRoute<"/tag-address">
     | DynamicRoute<"/token/[hash]", { "hash": string }>
     | DynamicRoute<"/token/[hash]/instance/[id]", { "hash": string; "id": string }>
     | StaticRoute<"/token-transfers">
@@ -86,8 +94,10 @@ declare module "nextjs-routes" {
     | DynamicRoute<"/txs/kettle/[hash]", { "hash": string }>
     | DynamicRoute<"/validators/[id]", { "id": string }>
     | StaticRoute<"/validators">
+    | StaticRoute<"/verified-addresses">
     | StaticRoute<"/verified-contracts">
     | StaticRoute<"/visualize/sol2uml">
+    | StaticRoute<"/watchlist">
     | StaticRoute<"/withdrawals">;
 
   interface StaticRoute<Pathname> {

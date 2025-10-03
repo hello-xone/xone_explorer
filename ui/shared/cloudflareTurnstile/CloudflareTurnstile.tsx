@@ -29,6 +29,8 @@ const CloudflareTurnstileInvisible = ({
   }, [ onInitError ]);
 
   const handleClick = React.useCallback(() => {
+    if (typeof window === 'undefined' || !window.document) return;
+
     const badge = window.document.querySelector('.cf-turnstile');
     if (badge) {
       setIsVisible((prev) => {

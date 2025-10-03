@@ -39,6 +39,8 @@ const HashStringShortenDynamic = ({ hash, fontWeight = '400', noTooltip, tailLen
   ]);
 
   const calculateString = useCallback(() => {
+    if (typeof document === 'undefined') return;
+
     const parent = elementRef?.current?.parentNode as HTMLElement;
     if (!parent || !hash) {
       return;
@@ -82,6 +84,8 @@ const HashStringShortenDynamic = ({ hash, fontWeight = '400', noTooltip, tailLen
   }, [ calculateString, isFontFaceLoaded ]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     const resizeHandler = debounce(calculateString, 100);
     const resizeObserver = new ResizeObserver(resizeHandler);
 

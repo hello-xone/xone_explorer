@@ -17,6 +17,7 @@ export function ScrollDirectionProvider({ children }: Props) {
   const [ scrollDirection, setDirection ] = React.useState<Directions | null>(null);
 
   const handleScroll = React.useCallback(() => {
+    if (typeof window === 'undefined' || !window.document?.body) return;
     const currentScrollPosition = clamp(window.pageYOffset, 0, window.document.body.scrollHeight - window.innerHeight);
     const scrollDiff = currentScrollPosition - prevScrollPosition.current;
 

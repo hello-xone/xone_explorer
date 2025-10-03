@@ -8,6 +8,8 @@ import generate from './generate';
 export default function update<Pathname extends Route['pathname']>(route: RouteParams<Pathname>, apiData: ApiData<Pathname>) {
   const { title, description } = generate(route, apiData);
 
+  if (typeof window === 'undefined') return;
+
   window.document.title = title;
   window.document.querySelector('meta[name="description"]')?.setAttribute('content', description);
 }

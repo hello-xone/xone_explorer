@@ -1,0 +1,81 @@
+# Cloudflare Pages 环境变量配置清单
+
+## 从你的 .env 文件提取的变量：
+
+复制以下内容到 Cloudflare Pages 的 Environment variables 设置中：
+
+---
+
+## 必需的环境变量：
+
+NEXT_PUBLIC_NETWORK_NAME=XOC Testnet
+NEXT_PUBLIC_NETWORK_ID=3721
+NEXT_PUBLIC_NETWORK_RPC_URL=https://rpc-testnet.xone.org
+NEXT_PUBLIC_NETWORK_CURRENCY_NAME=XOC
+NEXT_PUBLIC_NETWORK_CURRENCY_SYMBOL=XOC
+NEXT_PUBLIC_NETWORK_CURRENCY_DECIMALS=18
+NEXT_PUBLIC_IS_TESTNET=true
+
+NEXT_PUBLIC_API_PROTOCOL=http
+NEXT_PUBLIC_API_HOST=47.128.11.165
+NEXT_PUBLIC_API_PORT=80
+NEXT_PUBLIC_API_BASE_PATH=/
+NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL=ws
+
+NEXT_PUBLIC_STATS_API_HOST=http://47.128.11.165:8080
+
+NEXT_PUBLIC_APP_HOST=xonescan.com
+NEXT_PUBLIC_APP_PROTOCOL=https
+
+NEXT_PUBLIC_NETWORK_VERIFICATION_TYPE=validation
+
+NEXT_PUBLIC_FEATURED_NETWORKS=https://raw.githubusercontent.com/blockscout/frontend-configs/main/configs/featured-networks/eth-goerli.json
+
+---
+
+## 可选变量（根据需要添加）：
+
+# Google Analytics
+# NEXT_PUBLIC_GOOGLE_ANALYTICS_PROPERTY_ID=your-ga-id
+
+# 广告配置（如果需要）
+# NEXT_PUBLIC_AD_BANNER_PROVIDER=none
+
+# 其他功能开关
+# NEXT_PUBLIC_NETWORK_LOGO=your-logo-url
+# NEXT_PUBLIC_NETWORK_ICON=your-icon-url
+
+---
+
+## 添加方式：
+
+### 方法 1: 在 Cloudflare Dashboard 手动添加
+1. 进入 Pages 项目
+2. Settings → Environment variables
+3. 点击 "Add variable"
+4. 逐个添加上述变量
+
+### 方法 2: 批量导入（如果支持）
+1. 复制上述所有变量
+2. 在 Environment variables 页面寻找 "Import" 或 "Bulk add" 选项
+3. 粘贴并保存
+
+---
+
+## 注意事项：
+
+1. **不要** 添加 `.env.local` 中的敏感信息到公开环境
+2. **确保** 所有 `NEXT_PUBLIC_` 开头的变量都已添加
+3. **检查** API 地址是否可以从外网访问
+4. **测试** RPC URL 是否正常响应
+
+---
+
+## 验证环境变量：
+
+部署成功后，在浏览器控制台执行：
+```javascript
+console.log(window.__envs);
+```
+
+应该能看到所有配置的环境变量。

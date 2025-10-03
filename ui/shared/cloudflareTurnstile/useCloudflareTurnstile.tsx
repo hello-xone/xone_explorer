@@ -36,6 +36,8 @@ export default function useCloudflareTurnstile() {
       return;
     }
 
+    if (typeof window === 'undefined' || !window.document) return;
+
     const container = window.document.querySelector('div:has(div):has(iframe[title*="turnstile"])');
     container?.addEventListener('click', handleContainerClick);
 

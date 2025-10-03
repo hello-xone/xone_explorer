@@ -11,8 +11,12 @@ const TxSocketAlert = ({ status }: Props) => {
     'Connection is lost. Please click here to update transaction info.' :
     'An error has occurred while fetching transaction info. Please click here to update.';
 
+  const reloadHref = typeof window !== 'undefined' && window.document?.location
+    ? window.document.location.href
+    : '#';
+
   return (
-    <Link href={ window.document.location.href } asChild>
+    <Link href={ reloadHref } asChild>
       <Alert status="warning">{ text }</Alert>
     </Link>
   );

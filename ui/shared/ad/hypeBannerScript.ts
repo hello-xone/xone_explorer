@@ -4,6 +4,11 @@ const PRODUCTION_PROPERTY_SLUG = '127fddd522';
 const HYPE_API_URL = 'https://api.hypelab.com';
 
 export const hypeInit = (() => {
+  // Return empty string on server-side
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
   const feature = config.features.adsBanner;
 
   if (!feature.isEnabled || feature.provider !== 'hype') {

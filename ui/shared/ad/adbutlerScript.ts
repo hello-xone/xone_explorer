@@ -8,6 +8,11 @@ export const ADBUTLER_ACCOUNT = 182226;
 export const connectAdbutler = `if (!window.AdButler){(function(){var s = document.createElement("script"); s.async = true; s.type = "text/javascript";s.src = 'https://servedbyadbutler.com/app.js';var n = document.getElementsByTagName("script")[0]; n.parentNode.insertBefore(s, n);}());}`;
 
 export const placeAd = ((platform: BannerPlatform | undefined) => {
+  // Return empty string on server-side to avoid config access during SSR
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
   const feature = config.features.adsBanner;
 
   if (!('adButler' in feature)) {

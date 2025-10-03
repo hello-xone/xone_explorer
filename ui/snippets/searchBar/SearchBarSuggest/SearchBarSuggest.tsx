@@ -40,6 +40,7 @@ const SearchBarSuggest = ({ query, searchTerm, onItemClick, containerId }: Props
   const [ currentTab, setCurrentTab ] = React.useState<Category | undefined>(undefined);
 
   const handleScroll = React.useCallback(() => {
+    if (typeof document === 'undefined') return;
     const container = document.getElementById(containerId);
     if (!container || !query.data?.length) {
       return;
@@ -66,6 +67,7 @@ const SearchBarSuggest = ({ query, searchTerm, onItemClick, containerId }: Props
   }, [ containerId, query.data ]);
 
   React.useEffect(() => {
+    if (typeof document === 'undefined') return;
     const container = document.getElementById(containerId);
     const throttledHandleScroll = throttle(handleScroll, 300);
     if (container) {

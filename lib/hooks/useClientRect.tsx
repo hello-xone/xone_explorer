@@ -14,6 +14,8 @@ export default function useClientRect<E extends Element>(): [ DOMRect | null, Le
   }, []);
 
   React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.document) return;
+
     const content = window.document.querySelector('main');
     if (!content) {
       return;

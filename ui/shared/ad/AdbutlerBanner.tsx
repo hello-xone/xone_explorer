@@ -35,7 +35,7 @@ const AdbutlerBanner = ({ className, platform }: BannerProps) => {
       return;
     }
 
-    if (isBrowser() && window.AdButler) {
+    if (isBrowser() && window.AdButler && typeof document !== 'undefined') {
       const abkw = window.abkw || '';
       if (!window.AdButler.ads) {
         window.AdButler.ads = [];

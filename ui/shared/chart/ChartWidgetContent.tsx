@@ -54,7 +54,7 @@ const ChartWidgetContent = ({
           textAlign="center"
         >
           { `The data didn${ apos }t load. Please, ` }
-          <Link href={ window.document.location.href }>try to reload the page.</Link>
+          <Link href={ typeof window !== 'undefined' && window.document?.location ? window.document.location.href : '#' }>try to reload the page.</Link>
         </Text>
       </Flex>
     );

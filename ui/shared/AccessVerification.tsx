@@ -102,6 +102,10 @@ const AccessVerification = ({
       return false;
     }
 
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return false;
+    }
+
     const verified = localStorage.getItem('access_verified');
     const timestamp = localStorage.getItem('access_verified_timestamp');
 
@@ -117,6 +121,8 @@ const AccessVerification = ({
 
   // 禁用页面滚动
   React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     // 保存原始overflow样式
     const originalOverflow = document.body.style.overflow;
 
@@ -178,7 +184,7 @@ const AccessVerification = ({
         setIsVerifying(false);
 
         // 设置验证成功的标记到localStorage（如果启用）
-        if (enableLocalStorage) {
+        if (enableLocalStorage && typeof localStorage !== 'undefined') {
           localStorage.setItem('access_verified', 'true');
           localStorage.setItem('access_verified_timestamp', Date.now().toString());
         }

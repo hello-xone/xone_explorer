@@ -21,6 +21,7 @@ export function AddressHighlightProvider({ children }: AddressHighlightProviderP
       hashRef.current = hash;
       timeoutId.current = window.setTimeout(() => {
         // for better performance we update DOM-nodes directly bypassing React reconciliation
+        if (typeof window === 'undefined' || !window.document) return;
         const nodes = window.document.querySelectorAll(`[data-hash="${ hashRef.current }"]`);
         for (const node of nodes) {
           node.classList.add('address-entity_highlighted');
@@ -30,7 +31,7 @@ export function AddressHighlightProvider({ children }: AddressHighlightProviderP
   }, []);
 
   const onMouseLeave = React.useCallback(() => {
-    if (hashRef.current) {
+    if (hashRef.current && typeof window !== 'undefined' && window.document) {
       const nodes = window.document.querySelectorAll(`[data-hash="${ hashRef.current }"]`);
       for (const node of nodes) {
         node.classList.remove('address-entity_highlighted');

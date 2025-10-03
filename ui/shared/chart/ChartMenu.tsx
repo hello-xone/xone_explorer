@@ -74,6 +74,7 @@ const ChartMenu = ({
             },
           })
           .then((dataUrl) => {
+            if (typeof document === 'undefined') return;
             const link = document.createElement('a');
             link.download = `${ title } (Blockscout chart).png`;
             link.href = dataUrl;
