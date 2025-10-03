@@ -35,6 +35,7 @@ export function app(): CspDev.DirectiveDescriptor {
 
     'connect-src': [
       KEY_WORDS.SELF,
+      KEY_WORDS.DATA, // Allow data: URIs for @tokenup/web3kit
       ...MAIN_DOMAINS,
 
       // webpack hmr in safari doesn't recognize localhost as 'self' for some reason
