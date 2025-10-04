@@ -28,6 +28,12 @@ const moduleExports = {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
 
+    // Prevent viem from importing all chain definitions to avoid EMFILE errors
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'viem/chains': false,
+    };
+
     return config;
   },
   // NOTE: all config functions should be static and not depend on any environment variables
