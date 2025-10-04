@@ -32,6 +32,7 @@ const moduleExports = {
     config.resolve.alias = {
       ...config.resolve.alias,
       'viem/chains': false,
+      'viem/_esm': false,
     };
 
     return config;
