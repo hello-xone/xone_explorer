@@ -32,7 +32,6 @@ const moduleExports = {
     config.resolve.alias = {
       ...config.resolve.alias,
       'viem/chains': false,
-      'viem/_esm': false,
     };
 
     return config;
@@ -48,6 +47,7 @@ const moduleExports = {
   productionBrowserSourceMaps: true,
   serverExternalPackages: ["@opentelemetry/sdk-node", "@opentelemetry/auto-instrumentations-node"],
   experimental: {
+    optimizePackageImports: ['viem'],
     staleTimes: {
       dynamic: 30,
       'static': 180,
