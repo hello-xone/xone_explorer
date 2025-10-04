@@ -91,6 +91,9 @@ export function app(): CspDev.DirectiveDescriptor {
 
       // CapybaraRunner
       '\'sha256-5+YTmTcBwCYdJ8Jetbr6kyjGp0Ry/H7ptpoun6CrSwQ=\'',
+
+      // Vercel Speed Insights
+      '\'sha256-WBZuTYe6IRxKrndmGrU6OaLfuAWWcWmHdqDTYPObt7g=\'',
     ],
 
     'style-src': [
