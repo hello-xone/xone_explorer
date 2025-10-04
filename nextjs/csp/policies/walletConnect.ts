@@ -20,10 +20,10 @@ export function walletConnect(): CspDev.DirectiveDescriptor {
       'wss://www.walletlink.org',
     ],
     'frame-ancestors': [
-      '*.walletconnect.org',
-      'secure.walletconnect.org',
-      '*.walletconnect.com',
-      'secure.walletconnect.com',
+      'https://*.walletconnect.org',
+      'https://secure.walletconnect.org',
+      'https://*.walletconnect.com',
+      'https://secure.walletconnect.com',
     ],
     'img-src': [
       KEY_WORDS.BLOB,
