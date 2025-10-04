@@ -67,6 +67,8 @@ Promise<GetServerSidePropsResult<Props<Pathname>>> => {
           publicRPC,
           uuid,
         }),
+      }).catch(() => {
+        // Ignore analytics errors
       });
     }
   }
