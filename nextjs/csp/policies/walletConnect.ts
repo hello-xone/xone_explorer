@@ -19,7 +19,7 @@ export function walletConnect(): CspDev.DirectiveDescriptor {
       'wss://relay.walletconnect.org',
       'wss://www.walletlink.org',
     ],
-    'frame-ancestors': [
+    'frame-src': [
       'https://*.walletconnect.org',
       'https://secure.walletconnect.org',
       'https://*.walletconnect.com',
