@@ -76,6 +76,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   })();
 
   const socketUrl = !config.features.opSuperchain.isEnabled ? getSocketUrl() : undefined;
+  const socketOptions = {
+    heartbeatIntervalMs: 25000,
+  };
 
   return (
     <ChakraProvider>
@@ -89,7 +92,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               <QueryClientProvider client={ queryClient }>
                 <GrowthBookProvider growthbook={ growthBook }>
                   <ScrollDirectionProvider>
-                    <SocketProvider url={ socketUrl }>
+                    <SocketProvider url={ socketUrl } options={ socketOptions }>
                       <RewardsContextProvider>
                         <MarketplaceContextProvider>
                           <SettingsContextProvider>
