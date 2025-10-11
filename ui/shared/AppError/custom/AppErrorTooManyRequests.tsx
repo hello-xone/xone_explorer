@@ -2,8 +2,6 @@ import { Text } from '@chakra-ui/react';
 import React from 'react';
 
 import config from 'configs/app';
-import buildUrl from 'lib/api/buildUrl';
-import useFetch from 'lib/hooks/useFetch';
 import { Button } from 'toolkit/chakra/button';
 import { toaster } from 'toolkit/chakra/toaster';
 import { SECOND } from 'toolkit/utils/consts';
@@ -31,29 +29,16 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
 
   const [ timeLeft, setTimeLeft ] = React.useState(reset ? Math.ceil(Number(reset) / SECOND) : undefined);
 
-  const fetch = useFetch();
   const turnstile = useCloudflareTurnstile();
 
   const handleSubmit = React.useCallback(async() => {
     try {
       const token = await turnstile.executeAsync();
+      console.log('token', token);
 
       if (!token) {
         throw new Error('Turnstile is not solved');
       }
-
-      const url = buildUrl('general:api_v2_key');
-
-      await fetch(url, {
-        method: 'POST',
-        body: { turnstile_response: token },
-        headers: {
-          'cf-turnstile-response': token,
-        },
-        credentials: 'include',
-      }, {
-        resource: 'general:api_v2_key',
-      });
 
       window.location.reload();
 
@@ -64,7 +49,7 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
         type: 'error',
       });
     }
-  }, [ turnstile, fetch ]);
+  }, [ turnstile ]);
 
   React.useEffect(() => {
     if (reset === undefined) {

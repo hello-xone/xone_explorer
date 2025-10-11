@@ -14,7 +14,8 @@ export default function useCloudflareTurnstile() {
   const executeAsync: () => Promise<string | null> = React.useCallback(async() => {
     setIsOpen(true);
 
-    const tokenPromise = (ref.current as any)?.executeAsync() || Promise.reject(new Error('Unable to execute Turnstile'));
+    const tokenPromise = (ref.current as TurnstileInstance).getResponsePromise();
+
     const modalOpenPromise = new Promise<null>((resolve, reject) => {
       rejectCb.current = reject;
     });
