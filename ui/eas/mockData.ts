@@ -1,0 +1,275 @@
+import type { EASItem, EASStats, SchemaItem, SchemaDetail } from './types';
+
+// EAS 统计数据
+export const mockEASStats: EASStats = {
+  totalAttestations: 12811,
+  totalSchemas: 255,
+  uniqueAttestors: 728,
+};
+
+// Schema Mock 数据
+export const mockSchemaData: Array<SchemaItem> = [
+  {
+    number: 255,
+    uid: '0xec49884672d610af4dd0f927620705f1387e0a164041a2fb4d432b6cd8bb2436',
+    schema: 'string credentialType, string entityId, string metadata',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 1,
+  },
+  {
+    number: 254,
+    uid: '0xc740778dae47bd5813d9dfc2681487bbfe8bb55783d61d466dd8202fa47a68cb',
+    schema: 'address street, uint8 block',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 0,
+  },
+  {
+    number: 253,
+    uid: '0xe1c8a4552fa4a50fdcc7442a932ca2697eac9109a76c423e5c1a50efd4585379',
+    schema: 'address hash, uint32 amount, uint24 date',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 0,
+  },
+  {
+    number: 252,
+    uid: '0xbcc545b516ee9f84d2f549215c9b016e07c6bd7b22751de0a80a632f7c540f28',
+    schema: 'string programName, string participantName, uint16 completionYear, uint256 completionTimestamp, string[] attendedCourses, string annotation',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 38,
+  },
+  {
+    number: 179,
+    uid: '0x123456789abcdef123456789abcdef123456789a',
+    schema: 'address witness, string attestationType, bytes32 dataHash',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 156,
+  },
+  {
+    number: 159,
+    uid: '0x987654321fedcba987654321fedcba987654321f',
+    schema: 'address endorser, string endorsementType, uint256 timestamp',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 42,
+  },
+  {
+    number: 100,
+    uid: '0xdddeeefff0001112223334445556667778899900',
+    schema: 'string credentialName, address issuer, bool isActive',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 23,
+  },
+  {
+    number: 89,
+    uid: '0xeeefff00011122233344455566677788899900aa',
+    schema: 'address user, uint256 score, uint256 timestamp',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 67,
+  },
+];
+
+// 特色 Schema 数据
+export const featuredSchemas: Array<SchemaItem> = [
+  {
+    number: 15,
+    uid: '0x080b93a8f7c0e9b7f6e0e3f4f5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3ae73f19',
+    schema: 'bool isAccredited, string verificationDate, address verifier',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 234,
+    title: 'Is an Accredited Investor',
+  },
+  {
+    number: 7,
+    uid: '0x3969bb076df7a8f6e4e6f7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b50ac0822f',
+    schema: 'string message, address recipient, uint256 timestamp',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 1823,
+    title: 'Write a Message',
+  },
+  {
+    number: 8,
+    uid: '0xf58b8b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d91456cafe',
+    schema: 'string statement, bool isPublic, bytes32 statementHash',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 956,
+    title: 'Make a Statement',
+  },
+  {
+    number: 14,
+    uid: '0xc8c8be9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c346ad0127',
+    schema: 'bool passed, string kycProvider, uint256 verificationTimestamp, bytes32 documentHash',
+    resolver: '0x0000000000000000000000000000000000000000',
+    attestations: 478,
+    title: 'Passed KYC',
+  },
+];
+
+// Schema 详情 Mock 数据
+export const mockSchemaDetail: SchemaDetail = {
+  number: 255,
+  uid: '0xec49884672d610af4dd0f927620705f1387e0a164041a2fb4d432b6cd8bb2436',
+  schema: 'string credentialType, string entityId, string metadata',
+  resolver: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // 自定义 Resolver 地址，用于测试警告框
+  attestations: 1,
+  created: Math.floor(Date.now() / 1000) - 54000, // 15 hours ago
+  creator: '0xc92f995F1c3D90fe5529759ECAfBaE5390dEb77B',
+  transactionId: '0x601cbf0834fe366a5d38ca278b51c40e4d2826f4d332ef1af78905dfec49fc8b',
+  revocable: true,
+  onchainAttestations: 1,
+  offchainAttestations: 0,
+  decodedSchema: [
+    { type: 'string', name: 'credentialType' },
+    { type: 'string', name: 'entityId' },
+    { type: 'string', name: 'metadata' },
+  ],
+};
+
+// EAS Mock 数据 - 用于开发和测试
+export const mockEASData: Array<EASItem> = [
+  {
+    uid: '0xfc7440f12d5918358be7d5dda47ec8f985bc8899e2a00a9023e8462ad2734e18',
+    schema: '0xec49884672d610af4dd0f927620705f1387e0a164041a2fb4d432b6cd8bb2436',
+    schemaId: '#255',
+    schemaName: 'VERIFICATION RECORD',
+    from: '0xc92f995F1c3D90fe5529759ECAfBaE5390dEb77B',
+    to: '0x1c2f31afF09E63D3852E71A4e0B0c6B1De5752Ca',
+    type: 'ONCHAIN',
+    time: Math.floor(Date.now() / 1000) - 46800, // 13 hours ago
+    revocable: true,
+    data: '0x',
+  },
+  {
+    uid: '0xdc8e3fc3197b3c27e0078159373bb748620f3f983846059aa6a1f99fa8a94f72',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800, // 2 days ago
+    revocable: false,
+    data: '0x0001',
+  },
+  {
+    uid: '0x02ae57248147bfe81335464b87868f6cb07cfb0ee10bc4c6ebdf562aac40ff5e',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: true,
+    data: '0x123456',
+  },
+  {
+    uid: '0x66ef03d115b0aee29a6b6c53ec18961268a30d22223f29f2ac89b911480eeb39',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: false,
+    data: '0xabcd',
+  },
+  {
+    uid: '0xc8e33a034540b4a0e2790ee5fcbee5cb9dfa32f47d0811b14e5c377f7e54427e',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: true,
+    data: '0xfedcba',
+  },
+  {
+    uid: '0x18b1180f75679ef367a14633e57413701fcc169411f452a729009b6c0f2f60da',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: false,
+    data: '0x',
+  },
+  {
+    uid: '0xdbc9c1ce5c93fd3df99eb989b3103f54943788d400d0f7a76361a8b2b72eb8a4',
+    schema: '0x123456789abcdef123456789abcdef123456789a',
+    schemaId: '#179',
+    schemaName: 'WITNESSED ATTESTATIONS',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: true,
+    refUID: '0xfc7440f12d5918358be7d5dda47ec8f985bc8899e2a00a9023e8462ad2734e18',
+    data: '0x112233',
+  },
+  {
+    uid: '0x782218d738e02646c0da46ec48356a64017ba7b88ddd221382ac9c77f980aee8',
+    schema: '0x987654321fedcba987654321fedcba987654321f',
+    schemaId: '#159',
+    schemaName: 'IDENTITY VERIFICATION',
+    from: '0x1CB34c1eC454708e7C849975E8e545B54417CdFf',
+    to: '0xf8b904F054c7B243db38535067d6E5ac7e9cDFEb',
+    type: 'OFFCHAIN',
+    time: Math.floor(Date.now() / 1000) - 172800,
+    revocable: false,
+    data: '0x445566',
+  },
+  {
+    uid: '0x8888999900001111222233334444555566667777888899990000111122223333',
+    schema: '0xdddeeefff0001112223334445556667778899900',
+    schemaId: '#100',
+    schemaName: 'CREDENTIAL PROOF',
+    from: '0x2222333344445555666677778888999900001111',
+    to: '0x000111222333444555666777888999900aabbcc',
+    type: 'ONCHAIN',
+    time: Math.floor(Date.now() / 1000) - 259200, // 3 days ago
+    revocable: true,
+    data: '0x778899',
+  },
+  {
+    uid: '0x9999000011112222333344445555666677778888999900001111222233334444',
+    schema: '0xeeefff00011122233344455566677788899900aa',
+    schemaId: '#89',
+    schemaName: 'REPUTATION SCORE',
+    from: '0x3333444455556666777788889999000011112222',
+    to: '0x111222333444555666777888999900aabbccddee',
+    type: 'ONCHAIN',
+    time: Math.floor(Date.now() / 1000) - 345600, // 4 days ago
+    revocable: false,
+    revocationTime: Math.floor(Date.now() / 1000) - 3600,
+    data: '0xaabbcc',
+  },
+  {
+    uid: '0xaaaa111122223333444455556666777788889999000011112222333344445555',
+    schema: '0xfff000111222333444555666777888999900aabb',
+    schemaId: '#45',
+    schemaName: 'BADGE AWARD',
+    from: '0x4444555566667777888899990000111122223333',
+    to: '0x222333444555666777888999900aabbccddeeeff',
+    type: 'ONCHAIN',
+    time: Math.floor(Date.now() / 1000) - 432000, // 5 days ago
+    revocable: true,
+    data: '0xddeeff',
+  },
+  {
+    uid: '0xbbbb222233334444555566667777888899990000111122223333444455556666',
+    schema: '0x000111222333444555666777888999900aabbcc',
+    schemaId: '#12',
+    schemaName: 'MEMBERSHIP RECORD',
+    from: '0x5555666677778888999900001111222233334444',
+    to: '0x333444555666777888999900aabbccddeeff0011',
+    type: 'ONCHAIN',
+    time: Math.floor(Date.now() / 1000) - 518400, // 6 days ago
+    revocable: false,
+    refUID: '0x02ae57248147bfe81335464b87868f6cb07cfb0ee10bc4c6ebdf562aac40ff5e',
+    data: '0x001122',
+  },
+];
