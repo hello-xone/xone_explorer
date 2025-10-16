@@ -13,6 +13,8 @@ import useApiFetch from 'lib/api/useApiFetch';
 import getErrorObj from 'lib/errors/getErrorObj';
 import getErrorObjPayload from 'lib/errors/getErrorObjPayload';
 import useIsMobile from 'lib/hooks/useIsMobile';
+import useAccount from 'lib/web3/useAccount';
+import useWeb3Wallet from 'lib/web3/useWallet';
 import { Button } from 'toolkit/chakra/button';
 import { Heading } from 'toolkit/chakra/heading';
 import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
@@ -33,11 +35,13 @@ interface Props {
 }
 
 const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
+  const web3Wallet = useWeb3Wallet({ source: 'Header' });
+
   const isMobile = useIsMobile();
   const router = useRouter();
   const apiFetch = useApiFetch();
   const turnstile = useCloudflareTurnstile();
-
+  const { isConnected, address } = useAccount();
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
     defaultValues: getFormDefaultValues(router.query, userInfo),
@@ -56,39 +60,34 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
   }, [ router ]);
 
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(data) => {
-    const requestsBody = convertFormDataToRequestsBody(data);
+    if (address && isConnected) {
+      const requestsBody = convertFormDataToRequestsBody(data);
 
-    const result = await Promise.all(requestsBody.map(async(body) => {
-      return new Promise<void>((resolve) => resolve())
-        .then(() => {
-          return apiFetch<'metadata:public_tag_application', unknown, { message: string }>('metadata:public_tag_application', {
-            pathParams: { chainId: appConfig.chain.id },
-            fetchParams: {
-              method: 'POST',
-              body: { submission: body },
-            },
+      const result = await Promise.all(requestsBody.map(async(body) => {
+        return new Promise<void>((resolve) => resolve())
+          .then(() => {
+            return apiFetch<'metadata:public_tag_application', unknown, { message: string }>('metadata:public_tag_application', {
+              pathParams: { chainId: appConfig.chain.id },
+              fetchParams: {
+                method: 'POST',
+                body: { submission: body },
+              },
+            });
+          })
+          .then(() => ({ error: null, payload: body }))
+          .catch((error: unknown) => {
+            const errorObj = getErrorObj(error);
+            const messageFromPayload = getErrorObjPayload<{ message?: string }>(errorObj)?.message;
+            const messageFromError = errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined;
+            const message = messageFromPayload || messageFromError || 'Something went wrong.';
+            return { error: message, payload: body };
           });
-        })
-        .then(() => ({ error: null, payload: body }))
-        .catch((error: unknown) => {
-          const errorObj = getErrorObj(error);
-          const messageFromPayload = getErrorObjPayload<{ message?: string }>(errorObj)?.message;
-          const messageFromError = errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined;
-          const message = messageFromPayload || messageFromError || 'Something went wrong.';
-          return { error: message, payload: body };
-        });
-    }));
-    //   return apiFetch<'admin:public_tag_application', FormSubmitResultItem, { message: string }>('admin:public_tag_application', {
-    //     pathParams: { chainId: appConfig.chain.id },
-    //     fetchParams: {
-    //       method: 'POST',
-    //       body: { submission: body },
-    //     },
-    //   });
-    // }));
-    // debugger
-    onSubmitResult(result as FormSubmitResult);
-  }, [ apiFetch, onSubmitResult ]);
+      }));
+      onSubmitResult(result as FormSubmitResult);
+    } else {
+      web3Wallet.openModal();
+    }
+  }, [ apiFetch, onSubmitResult, web3Wallet, address, isConnected ]);
 
   if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;

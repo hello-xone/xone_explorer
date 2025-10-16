@@ -14,8 +14,6 @@ const rewrites = require('./nextjs/rewrites');
 const moduleExports = {
   transpilePackages: [
     'react-syntax-highlighter',
-    'swagger-client',
-    'swagger-ui-react',
   ],
   reactStrictMode: true,
   webpack(config) {
@@ -27,12 +25,6 @@ const moduleExports = {
     );
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
-
-    // Prevent viem from importing all chain definitions to avoid EMFILE errors
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'viem/chains': false,
-    };
 
     return config;
   },
@@ -47,7 +39,6 @@ const moduleExports = {
   productionBrowserSourceMaps: true,
   serverExternalPackages: ["@opentelemetry/sdk-node", "@opentelemetry/auto-instrumentations-node"],
   experimental: {
-    optimizePackageImports: ['viem'],
     staleTimes: {
       dynamic: 30,
       'static': 180,
