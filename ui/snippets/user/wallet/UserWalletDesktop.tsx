@@ -1,5 +1,4 @@
 import { type ButtonProps } from '@chakra-ui/react';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
 import React from 'react';
 
 import { useMarketplaceContext } from 'lib/contexts/marketplace';
@@ -18,8 +17,6 @@ interface Props {
 
 const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const walletMenu = useDisclosure();
-  const { close } = useWeb3Modal();
-
   const web3Wallet = useWeb3Wallet({ source: 'Header' });
   const web3AccountWithDomain = useWeb3AccountWithDomain(web3Wallet.isConnected);
   const { isAutoConnectDisabled } = useMarketplaceContext();
@@ -34,12 +31,7 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
   const handleDisconnectClick = React.useCallback(() => {
     web3Wallet.disconnect();
     walletMenu.onClose();
-    close();
-    localStorage.removeItem('wagmi.store');
-    sessionStorage.removeItem('wagmi.store');
-    localStorage.removeItem('w3m_last_connected');
-    localStorage.removeItem('wagmi.recentConnectorId');
-  }, [ close, web3Wallet, walletMenu ]);
+  }, [ web3Wallet, walletMenu ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
     if (!web3Wallet.isConnected) {
@@ -53,6 +45,7 @@ const UserWalletDesktop = ({ buttonSize, buttonVariant = 'header' }: Props) => {
       walletMenu.onClose();
     }
   }, [ walletMenu, web3Wallet ]);
+
   return (
     <PopoverRoot positioning={{ placement: 'bottom-end' }} lazyMount open={ walletMenu.open } onOpenChange={ handleOpenChange }>
       <PopoverTrigger>
