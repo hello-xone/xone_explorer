@@ -265,15 +265,15 @@ export default function useNavItems(): ReturnType {
         nextRoute: { pathname: '/eas' as const },
         isActive: pathname === '/eas',
       },
+      {
+        text: 'Submit public tag',
+        nextRoute: { pathname: '/public-tags/submit' as const },
+        isActive: pathname.startsWith('/public-tags/submit'),
+      },
       config.features.gasTracker.isEnabled && {
         text: 'Gas tracker',
         nextRoute: { pathname: '/gas-tracker' as const },
         isActive: pathname.startsWith('/gas-tracker'),
-      },
-      config.features.publicTagsSubmission.isEnabled && {
-        text: 'Submit public tag',
-        nextRoute: { pathname: '/public-tags/submit' as const },
-        isActive: pathname.startsWith('/public-tags/submit'),
       },
       rollupFeature.isEnabled && rollupFeature.type === 'arbitrum' && {
         text: 'Txn withdrawals',

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import React from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, FormProvider } from 'react-hook-form';
+import { useSignMessage, useSwitchChain } from 'wagmi';
 
 import type { FormFields, FormSubmitResult } from './types';
 import type { UserInfo } from 'types/api/account';
@@ -17,6 +18,7 @@ import useAccount from 'lib/web3/useAccount';
 import useWeb3Wallet from 'lib/web3/useWallet';
 import { Button } from 'toolkit/chakra/button';
 import { Heading } from 'toolkit/chakra/heading';
+import { toaster } from 'toolkit/chakra/toaster';
 import { FormFieldEmail } from 'toolkit/components/forms/fields/FormFieldEmail';
 import { FormFieldText } from 'toolkit/components/forms/fields/FormFieldText';
 import { FormFieldUrl } from 'toolkit/components/forms/fields/FormFieldUrl';
@@ -42,6 +44,8 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
   const apiFetch = useApiFetch();
   const turnstile = useCloudflareTurnstile();
   const { isConnected, address } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const { switchChainAsync } = useSwitchChain();
   const formApi = useForm<FormFields>({
     mode: 'onBlur',
     defaultValues: getFormDefaultValues(router.query, userInfo),
@@ -61,33 +65,67 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
 
   const onFormSubmit: SubmitHandler<FormFields> = React.useCallback(async(data) => {
     if (address && isConnected) {
-      const requestsBody = convertFormDataToRequestsBody(data);
+      try {
+        // 切换到正确的链
+        await switchChainAsync({ chainId: Number(appConfig.chain.id) });
 
-      const result = await Promise.all(requestsBody.map(async(body) => {
-        return new Promise<void>((resolve) => resolve())
-          .then(() => {
-            return apiFetch<'metadata:public_tag_application', unknown, { message: string }>('metadata:public_tag_application', {
-              pathParams: { chainId: appConfig.chain.id },
-              fetchParams: {
-                method: 'POST',
-                body: { submission: body },
-              },
+        // 生成签名消息
+        const timestamp = new Date().toISOString();
+        const message = [
+          `${ window.location.hostname } wants you to authorize this public tag submission`,
+          '',
+          `Address: ${ address }`,
+          `Chain ID: ${ appConfig.chain.id }`,
+          `Timestamp: ${ timestamp }`,
+          '',
+          'By signing this message, you authorize the submission of public tags.',
+        ].join('\n');
+
+        // 请求用户签名
+        const signature = await signMessageAsync({ message });
+
+        const requestsBody = convertFormDataToRequestsBody(data);
+
+        const result = await Promise.all(requestsBody.map(async(body) => {
+          return new Promise<void>((resolve) => resolve())
+            .then(() => {
+              return apiFetch<'metadata:public_tag_application', unknown, { message: string }>('metadata:public_tag_application', {
+                pathParams: { chainId: appConfig.chain.id },
+                fetchParams: {
+                  method: 'POST',
+                  body: {
+                    submission: body,
+                    signature,
+                    signedMessage: message,
+                  },
+                },
+              });
+            })
+            .then(() => ({ error: null, payload: body }))
+            .catch((error: unknown) => {
+              const errorObj = getErrorObj(error);
+              const messageFromPayload = getErrorObjPayload<{ message?: string }>(errorObj)?.message;
+              const messageFromError = errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined;
+              const message = messageFromPayload || messageFromError || 'Something went wrong.';
+              return { error: message, payload: body };
             });
-          })
-          .then(() => ({ error: null, payload: body }))
-          .catch((error: unknown) => {
-            const errorObj = getErrorObj(error);
-            const messageFromPayload = getErrorObjPayload<{ message?: string }>(errorObj)?.message;
-            const messageFromError = errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined;
-            const message = messageFromPayload || messageFromError || 'Something went wrong.';
-            return { error: message, payload: body };
-          });
-      }));
-      onSubmitResult(result as FormSubmitResult);
+        }));
+        onSubmitResult(result as FormSubmitResult);
+      } catch (error) {
+        // 处理签名错误
+        const errorObj = getErrorObj(error);
+        const shortMessage = errorObj && 'shortMessage' in errorObj && typeof errorObj.shortMessage === 'string' ? errorObj.shortMessage : undefined;
+        const errorMessage = shortMessage || (errorObj && 'message' in errorObj && typeof errorObj.message === 'string' ? errorObj.message : undefined);
+
+        toaster.error({
+          title: '钱包授权失败',
+          description: errorMessage || '用户取消签名或签名过程中出现错误',
+        });
+      }
     } else {
       web3Wallet.openModal();
     }
-  }, [ apiFetch, onSubmitResult, web3Wallet, address, isConnected ]);
+  }, [ apiFetch, onSubmitResult, web3Wallet, address, isConnected, signMessageAsync, switchChainAsync ]);
 
   if (!appConfig.services.cloudflareTurnstile.siteKey) {
     return null;
