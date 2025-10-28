@@ -22,7 +22,7 @@ export const checkGitHubAssetExists = async(url: string): Promise<boolean> => {
       redirect: 'follow',
     });
     return response.ok;
-  } catch (error) {
+  } catch(error) {
     return false;
   }
 };

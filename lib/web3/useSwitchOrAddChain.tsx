@@ -19,7 +19,7 @@ export default function useSwitchOrAddChain() {
 
     try {
       return switchChain();
-    } catch (error) {
+    } catch(error) {
       const errorObj = getErrorObj(error);
       const code = get(errorObj, 'code');
       const originalErrorCode = get(errorObj, 'data.originalError.code');

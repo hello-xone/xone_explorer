@@ -10,7 +10,7 @@ function checkApiUrlTemplate(apiUrlTemplate: string): boolean {
     const testUrl = apiUrlTemplate.replace('{address}', '0x0000000000000000000000000000000000000000');
     new URL(testUrl).toString();
     return true;
-  } catch (error) {
+  } catch(error) {
     return false;
   }
 }

@@ -58,7 +58,7 @@ if (process.env.NEXT_PUBLIC_OG_IMAGE_URL) {
       console.log('Copying placeholder image...');
       copyPlaceholderImage();
     }
-  } catch (error) {
+  } catch(error) {
     console.error('🛑 Failed to generate OG image. Error:', error?.message);
     console.log('Copying placeholder image...');
     copyPlaceholderImage();

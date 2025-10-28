@@ -90,7 +90,7 @@ const AuthModalScreenOtpCode = ({ email, onSuccess, isAuth }: Props) => {
         title: 'Success',
         description: 'Code has been sent to your email',
       });
-    } catch (error) {
+    } catch(error) {
       const apiError = getErrorObjPayload<{ message: string }>(error);
 
       toaster.error({

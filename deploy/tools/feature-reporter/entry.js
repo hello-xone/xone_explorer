@@ -15,7 +15,7 @@ To adjust their configuration, please refer to the documentation - https://githu
         console.log(`    [${ mark }] ${ feature.title }`);
       });
 
-  } catch (error) {
+  } catch(error) {
     console.log('🚨 An error occurred while generating the feature report.');
     process.exit(1);
   }

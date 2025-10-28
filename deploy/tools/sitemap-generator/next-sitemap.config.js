@@ -20,7 +20,7 @@ const fetchResource = async(url, formatter) => {
       console.log('✅ [next-sitemap] Data fetched for resource:', url);
       return formatter(data);
     }
-  } catch (error) {
+  } catch(error) {
     if (error.name === 'AbortError') {
       console.log('🚨 [next-sitemap] Request timeout for resource:', url);
     } else {

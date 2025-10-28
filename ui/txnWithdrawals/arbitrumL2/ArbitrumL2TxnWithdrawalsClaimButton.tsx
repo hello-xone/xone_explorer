@@ -61,7 +61,7 @@ const ArbitrumL2TxnWithdrawalsClaimButton = ({ messageId, txHash, completionTxHa
 
         setClaimTxHash(hash);
       }
-    } catch (error) {
+    } catch(error) {
       const apiError = getErrorObjPayload<{ message: string }>(error);
       const message = capitalizeFirstLetter(apiError?.message || getErrorProp(error, 'shortMessage') || getErrorMessage(error) || 'Something went wrong');
       toaster.error({

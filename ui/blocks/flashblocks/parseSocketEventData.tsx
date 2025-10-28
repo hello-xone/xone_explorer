@@ -13,7 +13,7 @@ export default async function parseSocketEventData(event: MessageEvent) {
       const decompressedData = Buffer.from(await decompress(u8Data)).toString('utf-8');
       return JSON.parse(decompressedData) as FlashblockItemApi;
     }
-  } catch (error) {
+  } catch(error) {
     // eslint-disable-next-line no-console
     console.error(error);
     return;

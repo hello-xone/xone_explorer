@@ -61,7 +61,7 @@ const AddressMultichainButton = ({ item, addressHash, onClick, hasSingleProvider
         { buttonContent }
       </Link>
     );
-  } catch (error) {}
+  } catch(error) {}
 
   return null;
 };

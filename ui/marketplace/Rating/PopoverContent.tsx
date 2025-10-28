@@ -48,7 +48,7 @@ const PopoverContent = ({ appId, userRating, source }: Props) => {
         mixpanel.EventTypes.APP_FEEDBACK,
         { Action: 'Rating', Source: source, AppId: appId, Score: value },
       );
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Ooops! Something went wrong',
         description: 'Please try again later',

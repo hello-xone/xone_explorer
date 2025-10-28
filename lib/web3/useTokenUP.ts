@@ -33,7 +33,7 @@ export default function useTokenUP(): UseTokenUPReturn {
     try {
       const serRes = await connectTokenUPWallet(chainId);
       return serRes;
-    } catch (err) {
+    } catch(err) {
       setError(err instanceof Error ? err : new Error('Failed to connect to TokenUP'));
       throw err;
     } finally {

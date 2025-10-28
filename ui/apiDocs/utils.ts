@@ -12,7 +12,7 @@ const microserviceRequestInterceptorFactory = (api: ApiPropsBase) => (req: Swagg
       url.pathname = (api?.basePath ?? '') + url.pathname;
     }
     req.url = url.toString();
-  } catch (error) {}
+  } catch(error) {}
   return req;
 };
 

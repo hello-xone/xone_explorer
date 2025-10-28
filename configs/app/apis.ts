@@ -115,7 +115,7 @@ const multichainApi = (() => {
       socketEndpoint: `wss://${ url.host }`,
       basePath: stripTrailingSlash(getEnvValue('NEXT_PUBLIC_MULTICHAIN_AGGREGATOR_BASE_PATH') || ''),
     });
-  } catch (error) {
+  } catch(error) {
     return;
   }
 

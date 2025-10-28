@@ -40,7 +40,7 @@ function getPaginationParamsFromQuery(queryString: string | Array<string> | unde
   if (queryString) {
     try {
       return JSON.parse(decodeURIComponent(getQueryParamString(queryString))) as NextPageParams;
-    } catch (error) {}
+    } catch(error) {}
   }
 
   return {};

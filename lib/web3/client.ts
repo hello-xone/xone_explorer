@@ -16,5 +16,5 @@ export const publicClient = (() => {
         multicall: true,
       },
     });
-  } catch (error) {}
+  } catch(error) {}
 })();

@@ -68,7 +68,7 @@ const ContractVerificationForm = ({ method: methodFromQuery, config, hash }: Pro
           setError('address', { message: 'Contract has already been verified' });
           return Promise.resolve();
         }
-      } catch (error) {
+      } catch(error) {
         const statusCode = getErrorObjStatusCode(error);
         const message = statusCode === 404 ? 'Address is not a smart contract' : 'Something went wrong';
         setError('address', { message });
@@ -85,7 +85,7 @@ const ContractVerificationForm = ({ method: methodFromQuery, config, hash }: Pro
           body,
         },
       });
-    } catch (error) {
+    } catch(error) {
       return;
     }
 

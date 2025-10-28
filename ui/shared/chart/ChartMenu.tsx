@@ -112,7 +112,7 @@ const ChartMenu = ({
         text: description,
         url: chartUrl,
       });
-    } catch (error) {}
+    } catch(error) {}
   }, [ title, description, chartUrl ]);
 
   return (

@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { AppProps } from 'next/app';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
 import type { NextPageWithLayout } from 'nextjs/types';
@@ -29,8 +30,13 @@ import AppErrorGlobalContainer from 'ui/shared/AppError/AppErrorGlobalContainer'
 import ClientAccessVerification from 'ui/shared/ClientAccessVerification';
 import GoogleAnalytics from 'ui/shared/GoogleAnalytics';
 import Layout from 'ui/shared/layout/Layout';
-import Web3ModalProvider from 'ui/shared/Web3ModalProvider';
-
+// import Web3ModalProvider from 'ui/shared/Web3ModalProvider';
+const Web3ModalProvider = dynamic(
+  () => import('ui/shared/Web3ModalProvider'),
+  {
+    ssr: false,
+  },
+);
 import 'lib/setLocale';
 // import 'focus-visible/dist/focus-visible';
 import 'nextjs/global.css';

@@ -64,7 +64,7 @@ const urlTest: yup.TestConfig = {
         new URL(value);
         return true;
       }
-    } catch (error) {}
+    } catch(error) {}
 
     return false;
   },

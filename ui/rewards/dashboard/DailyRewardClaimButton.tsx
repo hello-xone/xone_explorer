@@ -25,7 +25,7 @@ const DailyRewardClaimButton = () => {
         balancesQuery.refetch(),
         dailyRewardQuery.refetch(),
       ]);
-    } catch (error) {}
+    } catch(error) {}
     setIsClaiming(false);
   }, [ claim, setIsClaiming, balancesQuery, dailyRewardQuery ]);
 

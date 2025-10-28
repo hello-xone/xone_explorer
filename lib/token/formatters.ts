@@ -65,7 +65,7 @@ export function formatTokenMarketCap(marketCap: string | null): string {
         maximumFractionDigits: 2,
       }) }`;
     }
-  } catch (error) {
+  } catch(error) {
     return '';
   }
 }

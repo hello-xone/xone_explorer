@@ -60,7 +60,7 @@ export default function useLogout() {
       ) {
         router.push({ pathname: '/' }, undefined, { shallow: true });
       }
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Logout failed',
         description: 'Please try again later',

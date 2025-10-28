@@ -25,7 +25,7 @@ async function run() {
     checkDeprecatedEnvs(appEnvs);
     await validateEnvs(appEnvs);
 
-  } catch (error) {
+  } catch(error) {
     process.exit(1);
   }
 }
@@ -52,7 +52,7 @@ async function validateEnvs(appEnvs: Record<string, string>) {
 
     await schema.validate(appEnvs, { stripUnknown: false, abortEarly: false });
     !silent && console.log('👍 All good!');
-  } catch (_error) {
+  } catch(_error) {
     if (typeof _error === 'object' && _error !== null && 'errors' in _error) {
       console.log('🚨 ENVs validation failed with the following errors:');
       (_error as ValidationError).errors.forEach((error) => {
@@ -113,7 +113,7 @@ async function checkPlaceholdersCongruity(envsMap: Record<string, string>) {
     }
 
     !silent && console.log('👍 All good!\n');
-  } catch (error) {
+  } catch(error) {
     console.log('🚨 Congruity check failed.\n');
     throw error;
   }

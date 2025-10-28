@@ -67,7 +67,7 @@ const MyProfileEmail = ({ profileQuery }: Props) => {
         Type: 'Email',
       });
       authModal.onOpen();
-    } catch (error) {
+    } catch(error) {
       const apiError = getErrorObjPayload<{ message: string }>(error);
       toaster.error({
         title: 'Error',

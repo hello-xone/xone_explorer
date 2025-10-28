@@ -37,7 +37,7 @@ export default async function mediaTypeHandler(req: NextApiRequest, res: NextApi
     httpLogger.logger.info({ message: 'API fetch', url, code: response.status, duration });
 
     res.status(200).json({ type: mediaType });
-  } catch (error) {
+  } catch(error) {
     res.status(200).json({ type: undefined });
   }
 }

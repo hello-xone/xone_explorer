@@ -86,7 +86,7 @@ async function getMediaType(data: TokenInstance, field: Params['field']): Promis
     const payload = await response.json() as { type: MediaType | undefined };
 
     return payload.type;
-  } catch (error) {
+  } catch(error) {
     return;
   }
 }

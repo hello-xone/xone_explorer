@@ -57,7 +57,7 @@ const AppErrorTooManyRequests = ({ bypassOptions, reset }: Props) => {
 
       window.location.reload();
 
-    } catch (error) {
+    } catch(error) {
       toaster.create({
         title: 'Error',
         description: 'Unable to get client key.',

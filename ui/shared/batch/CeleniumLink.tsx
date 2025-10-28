@@ -29,7 +29,7 @@ function getCeleniumUrl(props: Props) {
     url.searchParams.set('height', String(props.height));
 
     return url.toString();
-  } catch (error) {}
+  } catch(error) {}
 }
 
 const CeleniumLink = (props: Props) => {

@@ -87,7 +87,7 @@ function useSignInWithWallet({ onSuccess, onError, source = 'Login', isAuth, log
         rewardsNonce: nonceConfig.merits_login_nonce,
         type: 'shared',
       };
-    } catch (error) {
+    } catch(error) {
       const response = await apiFetch('general:auth_siwe_message', { queryParams: { address } }) as { siwe_message: string };
       return {
         message: response.siwe_message,
@@ -133,7 +133,7 @@ function useSignInWithWallet({ onSuccess, onError, source = 'Login', isAuth, log
         throw Error('Something went wrong');
       }
       onSuccess?.({ address, profile: authResponse, rewardsToken: rewardsLoginResponse?.token });
-    } catch (error) {
+    } catch(error) {
       const errorObj = getErrorObj(error);
       const apiErrorMessage = getErrorObjPayload<{ message: string }>(error)?.message;
       const shortMessage = errorObj && 'shortMessage' in errorObj && typeof errorObj.shortMessage === 'string' ? errorObj.shortMessage : undefined;

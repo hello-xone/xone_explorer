@@ -78,7 +78,7 @@ const Footer = () => {
         //   title: 'Success',
         //   description: 'Subscribed',
         // });
-      } catch (error) {
+      } catch(error) {
         toaster.error({
           title: 'Error',
           description: (error as ResourceError<{ message: string }>)?.payload?.message || 'Something went wrong. Try again later.',

@@ -9,5 +9,5 @@ export function makePrettyLink(url: string | undefined): { href: string; domain:
       href: urlObj.href,
       domain: urlObj.hostname,
     };
-  } catch (error) {}
+  } catch(error) {}
 }

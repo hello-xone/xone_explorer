@@ -66,7 +66,7 @@ const ContractVerificationFieldCommit = ({ latestCommitHash }: Props) => {
           trigger('commit_hash');
           return;
         }
-      } catch (error) {}
+      } catch(error) {}
     }
 
     hashErrorRef.current = 'Commit hash not found in the repository';

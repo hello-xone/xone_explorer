@@ -13,7 +13,7 @@ test('average report +@dark-mode +@mobile', async({ render, mockApiResponse, pag
     solidityscanReportMock.solidityscanReportAverage,
     { pathParams: { hash: addressHash } },
   );
-  const component = await render(<SolidityscanReport hash={ addressHash }/>);
+  const component = await render(<SolidityscanReport data={ undefined } isPlaceholderData={ undefined } isError={ false }/>);
   await expect(page).toHaveScreenshot({ clip: { x: 0, y: 0, width: 100, height: 50 } });
 
   await component.getByLabel('SolidityScan score').click();
@@ -29,7 +29,7 @@ test('great report', async({ render, mockApiResponse, page }) => {
   );
 
   const component = await render(
-    <SolidityscanReport hash={ addressHash }/>,
+    <SolidityscanReport data={ undefined } isPlaceholderData={ undefined } isError={ false }/>,
   );
 
   await expect(page).toHaveScreenshot({ clip: { x: 0, y: 0, width: 100, height: 50 } });
@@ -47,7 +47,7 @@ test('low report', async({ render, mockApiResponse, page }) => {
   );
 
   const component = await render(
-    <SolidityscanReport hash={ addressHash }/>,
+    <SolidityscanReport data={ undefined } isPlaceholderData={ undefined } isError={ false }/>,
   );
 
   await expect(page).toHaveScreenshot({ clip: { x: 0, y: 0, width: 100, height: 50 } });

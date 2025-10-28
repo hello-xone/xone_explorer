@@ -51,7 +51,7 @@ export const joinChannel = async(socket: WebSocket, channelName: string) => {
 
           resolve([ payload[0], payload[1], payload[2] ]);
         }
-      } catch (error) {
+      } catch(error) {
         reject(error);
       }
     });

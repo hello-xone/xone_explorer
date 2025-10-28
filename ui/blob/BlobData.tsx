@@ -67,7 +67,7 @@ const BlobData = ({ data, isLoading, hash }: Props) => {
         case 'Image': {
           const bytes = hexToBytes(data);
           const filteredBytes = removeNonSignificantZeroBytes(bytes);
-          return new Blob([ filteredBytes ], { type: guessedType?.mime });
+          return new Blob([ filteredBytes.slice() ], { type: guessedType?.mime });
         }
         case 'UTF-8': {
           return new Blob([ hexToUtf8(data) ], { type: guessedType?.mime ?? 'text/plain' });

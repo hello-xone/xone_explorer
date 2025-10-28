@@ -48,7 +48,7 @@ export default function useCloudflareTurnstile() {
     try {
       const result = await fetcher(token);
       return result;
-    } catch (error) {
+    } catch(error) {
       const statusCode = error instanceof Error ? getErrorCauseStatusCode(error) : getErrorObjStatusCode(error);
       if (statusCode === 429) {
         const token = await executeAsync();

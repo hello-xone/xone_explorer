@@ -16,7 +16,7 @@ const parseKeywordsArray = (keywordsStr: string) => {
       return parsedResult;
     }
     return [];
-  } catch (error) {
+  } catch(error) {
     return [];
   }
 };
