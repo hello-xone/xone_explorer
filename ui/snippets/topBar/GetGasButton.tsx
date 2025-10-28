@@ -51,7 +51,7 @@ const GetGasButton = () => {
           </Link>
         </>
       );
-    } catch (error) {}
+    } catch(error) {}
   }
 
   return null;

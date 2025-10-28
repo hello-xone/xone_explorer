@@ -6,7 +6,7 @@ function getApiUrl(): string | undefined {
   try {
     const envValue = getEnvValue('NEXT_PUBLIC_SAFE_TX_SERVICE_URL');
     return new URL('/api/v1/safes', envValue).toString();
-  } catch (error) {
+  } catch(error) {
     return;
   }
 }

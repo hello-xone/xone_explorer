@@ -58,7 +58,7 @@ async function getExplorerUrls() {
     console.log(`💡 Found ${ data.items.length } chains in cluster.`);
 
     return data.items.map((item: { explorer_url: string }) => item.explorer_url);
-  } catch (error) {
+  } catch(error) {
     return [];
   }
 }
@@ -100,7 +100,7 @@ async function run() {
     writeFileSync(outputPathJs, `window.__multichainConfig = ${ JSON.stringify(config) };`);
 
     console.log('👍 Done!\n');
-  } catch (error) {
+  } catch(error) {
     console.error('🚨 Error generating multichain config:', error);
     console.log('\n');
     process.exit(1);

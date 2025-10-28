@@ -36,7 +36,7 @@ const NetworkMenuLink = ({ title, icon, isActive: isActiveProp, isMobile, url, i
       const currentOrigin = window.location.origin;
 
       return itemOrigin === currentOrigin;
-    } catch (error) {
+    } catch(error) {
       return false;
     }
   })();

@@ -127,7 +127,7 @@ const Chart = () => {
         text: info?.description,
         url: window.location.href,
       });
-    } catch (error) {}
+    } catch(error) {}
   }, [ info, id ]);
 
   if (lineQuery.isError) {

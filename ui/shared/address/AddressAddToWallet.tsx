@@ -98,7 +98,7 @@ const AddressAddToWallet = ({ className, token, tokenId, isLoading, variant = 'i
           Token: token.symbol || '',
         });
       }
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong',

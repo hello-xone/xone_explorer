@@ -42,7 +42,7 @@ export default function useValidateField({ isOptional, argType, argTypeMatchInt 
       const valueBi = (() => {
         try {
           return BigInt(value);
-        } catch (error) {
+        } catch(error) {
           return null;
         }
       })();

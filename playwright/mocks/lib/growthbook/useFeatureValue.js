@@ -5,7 +5,7 @@ const useFeatureValue = (name, fallback) => {
       throw new Error();
     }
     return { isLoading: false, value };
-  } catch (error) {
+  } catch(error) {
     return { isLoading: false, value: fallback };
   }
 };

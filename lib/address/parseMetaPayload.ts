@@ -42,7 +42,7 @@ export default function parseMetaPayload(meta: AddressMetadataTag['meta']): Addr
     }
 
     return result;
-  } catch (error) {
+  } catch(error) {
     return null;
   }
 }

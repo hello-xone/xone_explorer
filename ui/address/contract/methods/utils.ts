@@ -36,7 +36,7 @@ export const enrichWithMethodId = (method: SmartContractMethod): SmartContractMe
       ...method,
       method_id: toFunctionSelector(method),
     };
-  } catch (error) {
+  } catch(error) {
     return {
       ...method,
       is_invalid: true,

@@ -12,7 +12,7 @@ export function toBech32Address(hash: string) {
     try {
       const words = bech32.toWords(hexToBytes(hash));
       return bech32.encode(config.UI.views.address.hashFormat.bech32Prefix, words);
-    } catch (error) {}
+    } catch(error) {}
   }
 
   return hash;
@@ -42,7 +42,7 @@ export function fromBech32Address(hash: string) {
 
       const bytes = bech32.fromWords(words);
       return bytesToHex(bytes);
-    } catch (error) {}
+    } catch(error) {}
   }
 
   return hash;

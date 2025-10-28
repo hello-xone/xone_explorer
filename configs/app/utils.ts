@@ -30,7 +30,7 @@ export const getEnvValue = (envName: string) => {
 export const parseEnvJson = <DataType>(env: string | undefined): DataType | null => {
   try {
     return JSON.parse(env || 'null') as DataType | null;
-  } catch (error) {
+  } catch(error) {
     return null;
   }
 };
@@ -54,7 +54,7 @@ export const buildExternalAssetFilePath = (name: string, value: string) => {
       throw new Error('Cannot get file path');
     }
     return `/assets/configs/${ fileName }.${ fileExtension }`;
-  } catch (error) {
+  } catch(error) {
     return;
   }
 };
@@ -63,7 +63,7 @@ function getAssetFileExtension(value: string) {
   try {
     const url = new URL(value);
     return url.pathname.match(regexp.FILE_EXTENSION)?.[1];
-  } catch (error) {
+  } catch(error) {
     return parseEnvJson(value) ? 'json' : undefined;
   }
 }

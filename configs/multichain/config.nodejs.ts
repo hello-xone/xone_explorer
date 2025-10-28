@@ -18,7 +18,7 @@ function readFileConfig() {
 
     value = JSON.parse(config) as MultichainConfig;
     return value;
-  } catch (error) {
+  } catch(error) {
     return;
   }
 }

@@ -79,7 +79,7 @@ const AddressVerificationStepSignature = ({ address, signingMessage, contractCre
       }
 
       onContinue(response.result.verifiedAddress, signMethod);
-    } catch (error) {
+    } catch(error) {
       setError('root', { type: 'UNKNOWN_STATUS' });
     }
   }, [ address, apiFetch, onContinue, setError, signMethod ]);

@@ -69,7 +69,7 @@ const TokenInstanceMetadataFetcher = ({ hash, id }: Props) => {
         duration: Infinity,
       });
       timeoutId.current = window.setTimeout(handleRefreshError, 2 * MINUTE);
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         id: TOAST_ID,
         title: 'Error',

@@ -3,7 +3,7 @@ import * as regexp from 'toolkit/utils/regexp';
 export default function urlParser(maybeUrl: string): URL | undefined {
   try {
     return constructUrl(maybeUrl);
-  } catch (error) {}
+  } catch(error) {}
 }
 
 function constructUrl(maybeUrl: string) {

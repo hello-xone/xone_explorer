@@ -6,7 +6,7 @@ export function urlValidator(value: string | undefined) {
   try {
     new URL(value);
     return true;
-  } catch (error) {
+  } catch(error) {
     return 'Incorrect URL';
   }
 }
@@ -23,7 +23,7 @@ export function domainValidator(value: string | undefined) {
     try {
       const url = new URL(`https://${ value }`);
       return url.hostname;
-    } catch (error) {
+    } catch(error) {
       return;
     }
   })();

@@ -13,7 +13,7 @@ export function usernameApi(): CspDev.DirectiveDescriptor {
     try {
       const url = new URL(feature.apiUrlTemplate);
       return url.origin;
-    } catch (error) {
+    } catch(error) {
       return '';
     }
   })();

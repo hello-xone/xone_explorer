@@ -111,7 +111,7 @@ const PublicTagsSubmitForm = ({ config, userInfo, onSubmitResult }: Props) => {
             });
         }));
         onSubmitResult(result as FormSubmitResult);
-      } catch (error) {
+      } catch(error) {
         // 处理签名错误
         const errorObj = getErrorObj(error);
         const shortMessage = errorObj && 'shortMessage' in errorObj && typeof errorObj.shortMessage === 'string' ? errorObj.shortMessage : undefined;

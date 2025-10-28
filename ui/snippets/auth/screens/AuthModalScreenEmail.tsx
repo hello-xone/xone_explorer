@@ -66,7 +66,7 @@ const AuthModalScreenEmail = ({ onSubmit, isAuth, mixpanelConfig }: Props) => {
         });
       }
       onSubmit({ type: 'otp_code', email: formData.email, isAuth });
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Error',
         description: getErrorObjPayload<{ message: string }>(error)?.message || getErrorMessage(error) || 'Something went wrong',

@@ -41,7 +41,7 @@ export default function decodeJWT(token: string): { header: JWTHeader; payload: 
     const payload = JSON.parse(payloadJson) as JWTPayload;
 
     return { header, payload, signature };
-  } catch (error) {
+  } catch(error) {
     return null;
   }
 }

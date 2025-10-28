@@ -21,7 +21,7 @@ const externalFontsDomains = (() => {
       .filter(Boolean)
       .map((urlString) => new URL(urlString))
       .map((url) => url.hostname);
-  } catch (error) {}
+  } catch(error) {}
 })();
 
 export function app(): CspDev.DirectiveDescriptor {

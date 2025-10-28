@@ -63,6 +63,8 @@ export const PAGE_TYPE_DICT: Record<Route['pathname'], string> = {
   '/operations': 'Operations',
   '/operation/[id]': 'Operation details',
   '/add-token-info': 'Add token info',
+  '/eas/detail': 'EAS details',
+  '/eas': 'EAS Search',
 
   // multichain routes
   '/chain/[chain-slug]/accounts/label/[slug]': 'Chain addresses search by label',

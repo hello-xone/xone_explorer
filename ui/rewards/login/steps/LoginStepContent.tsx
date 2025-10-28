@@ -69,7 +69,7 @@ const LoginStepContent = ({ goNext, closeModal, openAuthModal }: Props) => {
           router.push({ pathname: '/account/merits' }, undefined, { shallow: true });
         }
       }
-    } catch (error) {}
+    } catch(error) {}
     setIsLoading(false);
   }, [ login, goNext, router, closeModal, refCode, isRefCodeUsed, isSignUp ]);
 

@@ -373,7 +373,7 @@ export function getGitHubOwnerAndRepo(repositoryUrl: string) {
     }
     const [ owner, repo, ...rest ] = stripLeadingSlash(urlObj.pathname).split('/');
     return { owner, repo, rest, url: urlObj };
-  } catch (error) {
+  } catch(error) {
     return;
   }
 }

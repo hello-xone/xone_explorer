@@ -127,7 +127,7 @@ function getUpdatedNpmModules(changedFiles) {
     const updatedProps = getPackageJsonUpdatedProps(packageJsonFile);
 
     return updatedProps.filter((prop) => usedNpmModules.includes(prop));
-  } catch (error) {}
+  } catch(error) {}
 }
 
 async function run() {

@@ -25,7 +25,7 @@ async function run() {
     checkDeprecatedEnvs(appEnvs);
     await validateEnvs(appEnvs);
 
-  } catch (error) {
+  } catch(error) {
     process.exit(1);
   }
 }
@@ -113,7 +113,7 @@ async function checkPlaceholdersCongruity(envsMap: Record<string, string>) {
     }
 
     !silent && console.log('👍 All good!\n');
-  } catch (error) {
+  } catch(error) {
     console.log('🚨 Congruity check failed.\n');
     throw error;
   }

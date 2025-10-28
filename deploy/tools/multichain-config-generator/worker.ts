@@ -39,7 +39,7 @@ async function computeConfig() {
 
     // 4. Send config back to main thread
     parentPort?.postMessage(appConfig);
-  } catch (error) {
+  } catch(error) {
     console.error('   ❌ Worker error:', error);
     process.exit(1);
   }

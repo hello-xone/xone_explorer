@@ -41,7 +41,7 @@ const TokenVerifiedInfo = ({ verifiedInfoQuery }: Props) => {
             { url.host }
           </Link>
         );
-      } catch (error) {
+      } catch(error) {
         return null;
       }
     })();

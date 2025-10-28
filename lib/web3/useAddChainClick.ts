@@ -31,7 +31,7 @@ export default function useAddChainClick() {
         Wallet: wallet,
       });
 
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong',

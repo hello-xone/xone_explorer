@@ -63,7 +63,7 @@ export const getServerSideProps: GetServerSideProps<Props<typeof pathname>> = as
             if (appList && Array.isArray(appList)) {
               return appList.find(app => app.id === getQueryParamString(ctx.query.id));
             }
-          } catch (error) {} finally {
+          } catch(error) {} finally {
             clearTimeout(timeout);
           }
         } else {

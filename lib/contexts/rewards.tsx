@@ -232,7 +232,7 @@ export function RewardsContextProvider({ children }: Props) {
         isNewUser: loginResponse.created,
         reward: checkCodeResponse.reward,
       };
-    } catch (_error) {
+    } catch(_error) {
       errorToast(_error);
       throw _error;
     }
@@ -247,7 +247,7 @@ export function RewardsContextProvider({ children }: Props) {
           ...fetchParams,
         },
       }) as rewards.DailyRewardClaimResponse;
-    } catch (_error) {
+    } catch(_error) {
       errorToast(_error);
       throw _error;
     }

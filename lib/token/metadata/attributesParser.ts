@@ -32,7 +32,7 @@ function formatValue(value: string | number, display: string | undefined, trait:
           };
         }
         throw new Error();
-      } catch (error) {
+      } catch(error) {
         return {
           value: String(value),
         };

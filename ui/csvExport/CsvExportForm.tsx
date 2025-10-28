@@ -85,7 +85,7 @@ const CsvExportForm = ({ hash, resource, filterType, filterValue, fileNameTempla
         `${ chainText }${ fileNameTemplate }_${ hash }_${ data.from }_${ data.to }${ filterType && filterValue ? '_with_filter_type_' + filterType + '_value_' + filterValue : '' }.csv`;
       downloadBlob(blob, fileName);
 
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong. Try again later.',

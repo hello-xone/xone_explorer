@@ -65,5 +65,5 @@ function saveExperimentInStorage(key: string) {
   const newItems = [ key, ...items ].slice(0, STORAGE_LIMIT);
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-  } catch (error) {}
+  } catch(error) {}
 }

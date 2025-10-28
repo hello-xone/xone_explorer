@@ -57,7 +57,7 @@ const ExportCSV = ({ filters }: Props) => {
       const fileName = `${ chainText }export-filtered-txs-${ dayjs().format('YYYY-MM-DD-HH-mm-ss') }.csv`;
       downloadBlob(blob, fileName);
 
-    } catch (error) {
+    } catch(error) {
       toaster.error({
         title: 'Error',
         description: (error as Error)?.message || 'Something went wrong. Try again later.',
