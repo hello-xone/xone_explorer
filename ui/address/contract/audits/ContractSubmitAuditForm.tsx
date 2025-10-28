@@ -64,7 +64,7 @@ const ContractSubmitAuditForm = ({ address, onSuccess }: Props) => {
 
       onSuccess();
 
-    } catch (_error) {
+    } catch(_error) {
       const error = _error as ResourceError<AuditSubmissionErrors>;
       // add scroll to the error field
       const errorMap = error?.payload?.errors;

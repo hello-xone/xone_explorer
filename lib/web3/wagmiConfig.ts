@@ -8,10 +8,12 @@ import appConfig from 'configs/app';
 import multichainConfig from 'configs/multichain';
 import { currentChain, parentChain, clusterChains } from 'lib/web3/chains';
 
+import { createTokenUpConnector } from './tokenUpConnector';
+
 const feature = appConfig.features.blockchainInteraction;
 
 const chains = [ currentChain, parentChain, ...(clusterChains ?? []) ].filter(Boolean);
-
+const isSSR = typeof window === 'undefined';
 const getChainTransportFromConfig = (config: typeof appConfig, readOnly?: boolean): Record<string, Transport> => {
   if (!config.chain.id) {
     return {};
@@ -49,12 +51,17 @@ const wagmi = (() => {
   if (!feature.isEnabled) {
     const wagmiConfig = createConfig({
       chains: chains as [Chain, ...Array<Chain>],
+      connectors: !isSSR ? (
+        () => {
+          return [ createTokenUpConnector() ];
+        }
+      )() : [],
       transports: {
         ...getChainTransportFromConfig(appConfig, true),
         ...(parentChain ? { [parentChain.id]: http(parentChain.rpcUrls.default.http[0]) } : {}),
         ...reduceClusterChainsToTransportConfig(true),
       },
-      ssr: true,
+      ssr: false,
       batch: { multicall: { wait: 100 } },
     });
 
@@ -69,8 +76,13 @@ const wagmi = (() => {
       ...(parentChain ? { [parentChain.id]: http() } : {}),
       ...reduceClusterChainsToTransportConfig(false),
     },
+    connectors: !isSSR ? (
+      () => {
+        return [ createTokenUpConnector() ];
+      }
+    )() : [],
     projectId: feature.walletConnect.projectId,
-    ssr: true,
+    ssr: false,
     batch: { multicall: { wait: 100 } },
     syncConnectedChain: false,
   });

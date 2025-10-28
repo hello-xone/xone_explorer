@@ -65,7 +65,7 @@ const AddressVerificationStepAddress = ({ defaultAddress, onContinue }: Props) =
       }
 
       onContinue({ ...response.result, address: data.address });
-    } catch (_error) {
+    } catch(_error) {
       const error = _error as ResourceError<AddressVerificationResponseError>;
       setError('root', { type: 'manual', message: error.payload?.message || 'Oops! Something went wrong' });
     }

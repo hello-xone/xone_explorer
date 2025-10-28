@@ -8,21 +8,25 @@ export type IConnectRes = Array<string>;
  * @returns 连接的账户地址数组
  */
 export async function connectTokenUP(chainId: string): Promise<IConnectRes> {
-  if (typeof window === 'undefined') {
-    throw new Error('TokenUP wallet is not installed');
+  if (typeof window === 'undefined' || !Web3Kit || !ChainType) {
+    throw new Error('TokenUP wallet is not available in this environment');
   }
 
-  const web3Kit = new Web3Kit();
-  const serRes: IConnectRes = await web3Kit.request({
-    chainType: ChainType.EVM,
-    methodName: 'eth_requestAccounts',
-    params: [
-      {
-        chainId: chainId, // Specify the chainId of the connection
-      },
-    ],
-  });
-  return serRes;
+  try {
+    const web3Kit = new Web3Kit();
+    const serRes: IConnectRes = await web3Kit.request({
+      chainType: ChainType.EVM,
+      methodName: 'eth_requestAccounts',
+      params: [
+        {
+          chainId: chainId, // Specify the chainId of the connection
+        },
+      ],
+    });
+    return serRes;
+  } catch(error) {
+    throw new Error('Failed to connect to TokenUP wallet');
+  }
 }
 
 /**
@@ -30,8 +34,15 @@ export async function connectTokenUP(chainId: string): Promise<IConnectRes> {
  * @returns 是否安装
  */
 export function isTokenUPInstalled(): boolean {
-  const web3Kit = new Web3Kit();
-  return Boolean(web3Kit);
+  if (typeof window === 'undefined' || !Web3Kit) {
+    return false;
+  }
+  try {
+    const web3Kit = new Web3Kit();
+    return Boolean(web3Kit);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -39,6 +50,9 @@ export function isTokenUPInstalled(): boolean {
  * @returns 账户地址
  */
 export async function getTokenUPAccount(): Promise<string | null> {
+  if (typeof window === 'undefined' || !Web3Kit || !ChainType) {
+    return null;
+  }
   if (!isTokenUPInstalled()) return null;
 
   try {

@@ -80,5 +80,4 @@ const Web3ModalProvider = ({ children }: Props) => {
 };
 
 const Provider = feature.isEnabled ? Web3ModalProvider : DefaultProvider;
-
 export default Provider;
