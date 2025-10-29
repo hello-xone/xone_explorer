@@ -80,7 +80,7 @@ const AddressSolidityScanWidgets = ({ isLoading, data, isError }: Props) => {
               <Flex alignItems="center" gap={ 1 } mt={ 1 }>
                 <Text textStyle="sm">SolidityScan</Text>
                 <Hint
-                  label="SolidityScan"
+                  label="Contract analyzed for 240+ vulnerability patterns by"
                   tooltipProps={{ positioning: { placement: 'bottom' } }}
                 />
               </Flex>
