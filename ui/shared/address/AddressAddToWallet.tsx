@@ -1,3 +1,4 @@
+'use client';
 import { Box, chakra } from '@chakra-ui/react';
 import React from 'react';
 import type { WatchAssetParams } from 'viem';
