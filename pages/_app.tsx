@@ -2,6 +2,7 @@ import type { HTMLChakraProps } from '@chakra-ui/react';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
@@ -113,6 +114,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 </GrowthBookProvider>
                 <ReactQueryDevtools buttonPosition="bottom-left" position="left"/>
                 <GoogleAnalytics/>
+                <Analytics></Analytics>
                 <SpeedInsights/>
               </QueryClientProvider>
             </AppContextProvider>
