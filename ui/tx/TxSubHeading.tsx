@@ -1,4 +1,5 @@
 import { Box, Flex } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
 import type { AddressParam } from 'types/api/addressParams';
@@ -9,7 +10,6 @@ import { useMultichainContext } from 'lib/contexts/multichain';
 import { NOVES_TRANSLATE } from 'stubs/noves/NovesTranslate';
 import { TX_INTERPRETATION } from 'stubs/txInterpretation';
 import { Link } from 'toolkit/chakra/link';
-import AccountActionsMenu from 'ui/shared/AccountActionsMenu/AccountActionsMenu';
 import AppActionButton from 'ui/shared/AppActionButton/AppActionButton';
 import useAppActionData from 'ui/shared/AppActionButton/useAppActionData';
 import { TX_ACTIONS_BLOCK_ID } from 'ui/shared/DetailedInfo/DetailedInfoActionsWrapper';
@@ -19,7 +19,12 @@ import TxInterpretation from 'ui/shared/tx/interpretation/TxInterpretation';
 
 import { createNovesSummaryObject } from './assetFlows/utils/createNovesSummaryObject';
 import type { TxQuery } from './useTxQuery';
-
+const AccountActionsMenu = dynamic(
+  () => import('ui/shared/AccountActionsMenu/AccountActionsMenu'),
+  {
+    ssr: false,
+  },
+);
 type Props = {
   hash: string;
   hasTag: boolean;

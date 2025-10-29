@@ -1,5 +1,6 @@
 import { Flex, useToken } from '@chakra-ui/react';
 import type { UseQueryResult } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
 import type { Address } from 'types/api/address';
@@ -18,7 +19,6 @@ import useAccount from 'lib/web3/useAccount';
 import { Tooltip } from 'toolkit/chakra/tooltip';
 import AddressMetadataAlert from 'ui/address/details/AddressMetadataAlert';
 import AddressQrCode from 'ui/address/details/AddressQrCode';
-import AccountActionsMenu from 'ui/shared/AccountActionsMenu/AccountActionsMenu';
 import AddressAddToWallet from 'ui/shared/address/AddressAddToWallet';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 import * as TokenEntity from 'ui/shared/entities/token/TokenEntity';
@@ -30,7 +30,12 @@ import NetworkExplorers from 'ui/shared/NetworkExplorers';
 import PageTitle from 'ui/shared/Page/PageTitle';
 
 import TokenVerifiedInfo from './TokenVerifiedInfo';
-
+const AccountActionsMenu = dynamic(
+  () => import('ui/shared/AccountActionsMenu/AccountActionsMenu'),
+  {
+    ssr: false,
+  },
+);
 const PREDEFINED_TAG_PRIORITY = 100;
 
 interface Props {

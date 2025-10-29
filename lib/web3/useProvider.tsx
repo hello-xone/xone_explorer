@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 
 import { getFeaturePayload } from 'configs/app/features/types';

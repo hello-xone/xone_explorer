@@ -1,4 +1,5 @@
 import { Flex } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
 import type { TokenInfo, TokenInstance } from 'types/api/token';
@@ -9,11 +10,15 @@ import { Link } from 'toolkit/chakra/link';
 import { Tag } from 'toolkit/chakra/tag';
 import * as regexp from 'toolkit/utils/regexp';
 import AddressQrCode from 'ui/address/details/AddressQrCode';
-import AccountActionsMenu from 'ui/shared/AccountActionsMenu/AccountActionsMenu';
 import AddressAddToWallet from 'ui/shared/address/AddressAddToWallet';
 import TokenEntity from 'ui/shared/entities/token/TokenEntity';
 import PageTitle from 'ui/shared/Page/PageTitle';
-
+const AccountActionsMenu = dynamic(
+  () => import('ui/shared/AccountActionsMenu/AccountActionsMenu'),
+  {
+    ssr: false,
+  },
+);
 interface Props {
   isLoading: boolean;
   token: TokenInfo | undefined;
