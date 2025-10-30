@@ -11,8 +11,8 @@ truncate -s 0 $output_file;
 # Check if the .env file exists and load ENVs from it
 # Skip loading .env file in Vercel environment to preserve Vercel's environment variables
 if [ -f .env ]; then
-    source .env
-    export $(cut -d= -f1 .env)
+    source .env-test
+    export $(cut -d= -f1 ..env-test)
 fi
 
 echo "window.__envs = {" >> $output_file;
