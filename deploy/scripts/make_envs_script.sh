@@ -9,7 +9,8 @@ touch $output_file;
 truncate -s 0 $output_file;
 
 # Check if the .env file exists and load ENVs from it
-if [ -f .env ]; then
+# Skip loading .env file in Vercel environment to preserve Vercel's environment variables
+if [ -f .env ] && [ -z "$VERCEL" ]; then
     source .env
     export $(cut -d= -f1 .env)
 fi
