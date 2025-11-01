@@ -17,6 +17,7 @@ import getQueryParamString from 'lib/router/getQueryParamString';
 import useEtherscanRedirects from 'lib/router/useEtherscanRedirects';
 import useSocketChannel from 'lib/socket/useSocketChannel';
 import useSocketMessage from 'lib/socket/useSocketMessage';
+import useFetchReport from 'lib/solidityScan/useFetchReport';
 import useAccount from 'lib/web3/useAccount';
 import useFetchXStarScore from 'lib/xStarScore/useFetchXStarScore';
 import { ADDRESS_TABS_COUNTERS } from 'stubs/address';
@@ -34,6 +35,7 @@ import AddressEpochRewards from 'ui/address/AddressEpochRewards';
 import AddressInternalTxs from 'ui/address/AddressInternalTxs';
 import AddressLogs from 'ui/address/AddressLogs';
 import AddressMud from 'ui/address/AddressMud';
+import AddressSolidityScanWidgets from 'ui/address/AddressSolidityScanWidgets';
 import AddressTokens from 'ui/address/AddressTokens';
 import AddressTokenTransfers from 'ui/address/AddressTokenTransfers';
 import AddressTxs from 'ui/address/AddressTxs';
@@ -126,6 +128,7 @@ const AddressPageContent = () => {
   const addressesForMetadataQuery = React.useMemo(() => ([ hash ].filter(Boolean)), [ hash ]);
   const addressMetadataQuery = useAddressMetadataInfoQuery(addressesForMetadataQuery, areQueriesEnabled);
   const userPropfileApiQuery = useAddressProfileApiQuery(hash, addressProfileAPIFeature.isEnabled && areQueriesEnabled);
+  const reportQuery = useFetchReport({ hash });
 
   const addressEnsDomainsQuery = useApiQuery('bens:addresses_lookup', {
     pathParams: { chainId: config.chain.id },
@@ -184,7 +187,7 @@ const AddressPageContent = () => {
       {
         id: 'index',
         title: 'Details',
-        component: <AddressDetails addressQuery={ addressQuery } countersQuery={ countersQuery } isLoading={ isTabsLoading }/>,
+        component: <AddressDetails reportQuery={ reportQuery } addressQuery={ addressQuery } countersQuery={ countersQuery } isLoading={ isTabsLoading }/>,
       },
       addressQuery.data?.is_contract ? {
         id: 'contract',
@@ -314,6 +317,17 @@ const AddressPageContent = () => {
           />
         ),
       } : undefined,
+      (config.UI.views.address.solidityscanEnabled) ? {
+        id: 'widgets',
+        title: 'Widgets',
+        component: (
+          <AddressSolidityScanWidgets
+            data={ reportQuery.data }
+            isLoading={ reportQuery.isLoading }
+            isError={ reportQuery.isError }
+          />
+        ),
+      } : undefined,
     ].filter(Boolean);
   }, [
     addressQuery,
@@ -325,6 +339,7 @@ const AddressPageContent = () => {
     mudTablesCountQuery.data,
     address3rdPartyWidgets,
     addressType,
+    reportQuery,
   ]);
 
   const usernameApiTag = userPropfileApiQuery.data?.user_profile?.username;
@@ -446,7 +461,7 @@ const AddressPageContent = () => {
       <AccountActionsMenu isLoading={ isLoading }/>
       <HStack ml="auto" gap={ 2 }/>
       { !isLoading && addressQuery.data?.is_contract && addressQuery.data?.is_verified && config.UI.views.address.solidityscanEnabled &&
-        <SolidityscanReport hash={ hash }/> }
+        <SolidityscanReport data={ reportQuery.data } isPlaceholderData={ reportQuery.isPlaceholderData } isError={ reportQuery.isError }/> }
       { !isLoading && addressEnsDomainsQuery.data && config.features.nameService.isEnabled &&
         <AddressEnsDomains query={ addressEnsDomainsQuery } addressHash={ hash } mainDomainName={ addressQuery.data?.ens_domain_name }/> }
       <NetworkExplorers type="address" pathParam={ hash }/>

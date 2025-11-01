@@ -1,8 +1,10 @@
 import { Box, Text } from '@chakra-ui/react';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import React from 'react';
 
 import config from 'configs/app';
+import type { ResourceError } from 'lib/api/resources';
 import throwOnResourceLoadError from 'lib/errors/throwOnResourceLoadError';
 import getNetworkValidationActionText from 'lib/networks/getNetworkValidationActionText';
 import getNetworkValidatorTitle from 'lib/networks/getNetworkValidatorTitle';
@@ -21,6 +23,7 @@ import ContractCreationStatus from 'ui/shared/statusTag/ContractCreationStatus';
 
 import Address3rdPartyWidgets from './Address3rdPartyWidgets';
 import useAddress3rdPartyWidgets from './address3rdPartyWidgets/useAddress3rdPartyWidgets';
+import AddressSolidityScanWidgets from './AddressSolidityScanWidgets';
 import AddressAlternativeFormat from './details/AddressAlternativeFormat';
 import AddressBalance from './details/AddressBalance';
 import AddressImplementations from './details/AddressImplementations';
@@ -36,9 +39,27 @@ interface Props {
   addressQuery: AddressQuery;
   countersQuery: AddressCountersQuery;
   isLoading?: boolean;
+  reportQuery?: UseQueryResult<{
+    scan_report: {
+      scan_summary: {
+        score_v2: string;
+        issue_severity_distribution: {
+          medium: number;
+          critical: number;
+          gas: number;
+          high: number;
+          informational: number;
+          low: number;
+        };
+      };
+      contractname: string;
+      scan_status: string;
+      scanner_reference_url: string;
+    };
+  }, ResourceError<unknown>>;
 }
 
-const AddressDetails = ({ addressQuery, countersQuery, isLoading }: Props) => {
+const AddressDetails = ({ addressQuery, countersQuery, isLoading, reportQuery }: Props) => {
   const router = useRouter();
 
   const addressHash = getQueryParamString(router.query.hash);
@@ -320,6 +341,23 @@ const AddressDetails = ({ addressQuery, countersQuery, isLoading }: Props) => {
               <Address3rdPartyWidgets
                 addressType={ addressType }
                 isLoading={ addressQuery.isPlaceholderData }
+              />
+            </DetailedInfo.ItemValue>
+          </>
+        ) }
+        { (config.UI.views.address.solidityscanEnabled && reportQuery) && (
+          <>
+            <DetailedInfo.ItemLabel
+              hint="Metrics provided by third party partners"
+              isLoading={ reportQuery.isPlaceholderData }
+            >
+              Widgets
+            </DetailedInfo.ItemLabel>
+            <DetailedInfo.ItemValue>
+              <AddressSolidityScanWidgets
+                data={ reportQuery.data }
+                isLoading={ reportQuery.isLoading }
+                isError={ reportQuery.isError }
               />
             </DetailedInfo.ItemValue>
           </>

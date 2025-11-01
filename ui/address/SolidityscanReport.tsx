@@ -5,7 +5,6 @@ import React from 'react';
 // Probably because of the gradient
 // eslint-disable-next-line no-restricted-imports
 import solidityScanIcon from 'icons/brands/solidity_scan.svg';
-import useFetchReport from 'lib/solidityScan/useFetchReport';
 import { Link } from 'toolkit/chakra/link';
 import { PopoverBody, PopoverContent, PopoverRoot } from 'toolkit/chakra/popover';
 import SolidityscanReportButton from 'ui/shared/solidityscanReport/SolidityscanReportButton';
@@ -13,12 +12,29 @@ import SolidityscanReportDetails from 'ui/shared/solidityscanReport/Solidityscan
 import SolidityscanReportScore from 'ui/shared/solidityscanReport/SolidityscanReportScore';
 
 interface Props {
-  hash: string;
+  data: {
+    scan_report: {
+      scan_summary: {
+        score_v2: string;
+        issue_severity_distribution: {
+          critical: number;
+          gas: number;
+          high: number;
+          informational: number;
+          low: number;
+          medium: number;
+        };
+      };
+      contractname: string;
+      scan_status: string;
+      scanner_reference_url: string;
+    };
+  } | undefined;
+  isPlaceholderData?: boolean;
+  isError: Boolean;
 }
 
-const SolidityscanReport = ({ hash }: Props) => {
-
-  const { data, isPlaceholderData, isError } = useFetchReport({ hash });
+const SolidityscanReport = ({ data, isPlaceholderData, isError }: Props) => {
 
   if (isError || !data) {
     return null;
