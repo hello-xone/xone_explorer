@@ -6,6 +6,8 @@ import { BENS_API_RESOURCES } from './services/bens';
 import type { BensApiResourceName, BensApiResourcePayload, BensApiPaginationFilters, BensApiPaginationSorting } from './services/bens';
 import { CONTRACT_INFO_API_RESOURCES } from './services/contractInfo';
 import type { ContractInfoApiPaginationFilters, ContractInfoApiResourceName, ContractInfoApiResourcePayload } from './services/contractInfo';
+import type { EasApiResourceName, EasApiResourcePayload } from './services/eas';
+import { EAS_API_RESOURCES } from './services/eas';
 import { GENERAL_API_RESOURCES } from './services/general';
 import type { GeneralApiResourceName, GeneralApiResourcePayload, GeneralApiPaginationFilters, GeneralApiPaginationSorting } from './services/general';
 import type { MetadataApiResourceName, MetadataApiResourcePayload } from './services/metadata';
@@ -35,6 +37,7 @@ export const RESOURCES = {
   admin: ADMIN_API_RESOURCES,
   bens: BENS_API_RESOURCES,
   contractInfo: CONTRACT_INFO_API_RESOURCES,
+  eas: EAS_API_RESOURCES,
   general: GENERAL_API_RESOURCES,
   metadata: METADATA_API_RESOURCES,
   multichain: MULTICHAIN_API_RESOURCES,
@@ -60,6 +63,7 @@ export type ResourcePayload<R extends ResourceName> =
 R extends AdminApiResourceName ? AdminApiResourcePayload<R> :
 R extends BensApiResourceName ? BensApiResourcePayload<R> :
 R extends ContractInfoApiResourceName ? ContractInfoApiResourcePayload<R> :
+R extends EasApiResourceName ? EasApiResourcePayload<R> :
 R extends GeneralApiResourceName ? GeneralApiResourcePayload<R> :
 R extends MetadataApiResourceName ? MetadataApiResourcePayload<R> :
 R extends MultichainApiResourceName ? MultichainApiResourcePayload<R> :

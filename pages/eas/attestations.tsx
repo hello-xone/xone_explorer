@@ -4,12 +4,12 @@ import React from 'react';
 
 import PageNextJs from 'nextjs/PageNextJs';
 
-const EASDetail = dynamic(() => import('ui/pages/EASDetail'), { ssr: false });
+const EASAttestations = dynamic(() => import('ui/pages/EASAttestations'), { ssr: false });
 
 const Page: NextPage = () => {
   return (
-    <PageNextJs pathname="/eas/detail">
-      <EASDetail/>
+    <PageNextJs pathname="/eas/attestations">
+      <EASAttestations/>
     </PageNextJs>
   );
 };

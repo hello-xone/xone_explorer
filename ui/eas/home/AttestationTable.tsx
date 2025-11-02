@@ -1,7 +1,7 @@
-import { HStack } from '@chakra-ui/react';
+import { Box, HStack } from '@chakra-ui/react';
 import React from 'react';
 
-import type { EASItem } from './types';
+import type { EASItem } from '../types';
 
 import { Badge } from 'toolkit/chakra/badge';
 import { Link } from 'toolkit/chakra/link';
@@ -15,48 +15,54 @@ interface Props {
   data: Array<EASItem>;
   isLoading?: boolean;
   top: number;
+  isSchemaAttestationList?: boolean;
+  isRevokedStatus?: boolean;
 }
 
-const EASTable = ({ data, isLoading, top }: Props) => {
+const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = false, isRevokedStatus = false }: Props) => {
   return (
     <TableRoot minW="1100px">
       <TableHeaderSticky top={ top }>
         <TableRow>
-          <TableColumnHeader w="15%">UID</TableColumnHeader>
-          <TableColumnHeader w="20%">Schema</TableColumnHeader>
-          <TableColumnHeader w="15%">From</TableColumnHeader>
-          <TableColumnHeader w="15%">To</TableColumnHeader>
-          <TableColumnHeader w="12%">Type</TableColumnHeader>
-          <TableColumnHeader w="6%">Age</TableColumnHeader>
+          <TableColumnHeader w={ isSchemaAttestationList ? '26%' : (isRevokedStatus ? '24%' : '29%') }>UID</TableColumnHeader>
+          <TableColumnHeader w={ isRevokedStatus ? '11%' : '8%' }>Schema</TableColumnHeader>
+          <TableColumnHeader w="100px">From</TableColumnHeader>
+          <TableColumnHeader w="100px">To</TableColumnHeader>
+          {
+            isRevokedStatus && (
+              <TableColumnHeader w="5%">Status</TableColumnHeader>
+            )
+          }
+          <TableColumnHeader w="4%">Age</TableColumnHeader>
         </TableRow>
       </TableHeaderSticky>
       <TableBody>
         { data.map((item, index) => (
           <TableRow key={ item.uid || index }>
-            <TableCell>
+            <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block" maxW="100%">
                 <Tooltip content={ item.uid }>
-                  <Link
-                    href={ `https://easscan.org/attestation/view/${ item.uid }` }
-                    target="_blank"
-                    fontFamily="mono"
-                    fontSize="sm"
-                    display="block"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    whiteSpace="nowrap"
-                  >
-                    { item.uid }
-                  </Link>
+                  <Box pr={ 4 }>
+                    <Link
+                      href={ `/eas/attestationDetail/${ item.uid }` }
+                      fontFamily="mono"
+                      fontSize="sm"
+                      display="block"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      whiteSpace="nowrap"
+                    >
+                      { item.uid }
+                    </Link>
+                  </Box>
                 </Tooltip>
               </Skeleton>
             </TableCell>
-            <TableCell>
+            <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
                 <HStack gap={ 2 } flexWrap="wrap">
                   <Link
-                    href={ `https://easscan.org/schema/view/${ item.schema }` }
-                    target="_blank"
+                    href={ `/eas/schemaDetail/${ item.schemaId.replace('#', '') }` }
                     _hover={{ textDecoration: 'none' }}
                   >
                     <Badge
@@ -69,7 +75,7 @@ const EASTable = ({ data, isLoading, top }: Props) => {
                       { item.schemaId }
                     </Badge>
                   </Link>
-                  { item.schemaName && item.schemaName.split(' ').map((word, idx) => (
+                  { item.schemaName && item.schemaName.split(', ').map((word, idx) => (
                     <Badge
                       key={ idx }
                       colorPalette="yellow"
@@ -84,34 +90,41 @@ const EASTable = ({ data, isLoading, top }: Props) => {
                 </HStack>
               </Skeleton>
             </TableCell>
-            <TableCell>
+            <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.from }}
-                  truncation="constant"
+                  truncation="dynamic"
                 />
               </Skeleton>
             </TableCell>
-            <TableCell>
+            <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.to }}
-                  truncation="constant"
+                  truncation="dynamic"
                 />
               </Skeleton>
             </TableCell>
-            <TableCell>
-              <Skeleton loading={ isLoading } display="inline-block">
-                <Badge
-                  colorPalette={ item.type === 'ONCHAIN' ? 'blue' : 'purple' }
-                  variant="subtle"
-                  fontSize="xs"
-                >
-                  { item.type }
-                </Badge>
-              </Skeleton>
-            </TableCell>
-            <TableCell>
+            {
+              isRevokedStatus && (
+                <TableCell verticalAlign="middle">
+                  <Skeleton loading={ isLoading } fontSize="sm">
+                    { item.revoked && (
+                      <Badge colorPalette="red" variant="solid" fontSize="xs" px={ 2 } py={ 1 }>
+                        Revoked
+                      </Badge>
+                    ) }
+                    { !item.revoked && (
+                      <Badge colorPalette="green" variant="solid" fontSize="xs" px={ 2 } py={ 1 }>
+                        Active
+                      </Badge>
+                    ) }
+                  </Skeleton>
+                </TableCell>
+              )
+            }
+            <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } fontSize="sm">
                 { item.time ? (
                   <TimeWithTooltip
@@ -129,4 +142,4 @@ const EASTable = ({ data, isLoading, top }: Props) => {
   );
 };
 
-export default EASTable;
+export default AttestationTable;

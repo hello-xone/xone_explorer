@@ -1,7 +1,7 @@
 import { Box, Flex, HStack } from '@chakra-ui/react';
 import React from 'react';
 
-import type { EASItem } from './types';
+import type { EASItem } from '../types';
 
 import { Badge } from 'toolkit/chakra/badge';
 import { Link } from 'toolkit/chakra/link';
@@ -15,7 +15,7 @@ interface Props {
   isLoading?: boolean;
 }
 
-const EASList = ({ data, isLoading }: Props) => {
+const AttestationList = ({ data, isLoading }: Props) => {
   return (
     <Box>
       { data.map((item, index) => (
@@ -31,15 +31,6 @@ const EASList = ({ data, isLoading }: Props) => {
                 { item.uid?.slice(0, 10) }...{ item.uid?.slice(-8) }
               </Link>
             </Skeleton>
-            <Skeleton loading={ isLoading } ml={ 2 }>
-              <Badge
-                colorPalette={ item.type === 'ONCHAIN' ? 'blue' : 'purple' }
-                variant="subtle"
-                fontSize="xs"
-              >
-                { item.type }
-              </Badge>
-            </Skeleton>
           </Flex>
 
           <HStack gap={ 2 } alignItems="center">
@@ -48,8 +39,7 @@ const EASList = ({ data, isLoading }: Props) => {
             </Skeleton>
             <Skeleton loading={ isLoading }>
               <Link
-                href={ `https://easscan.org/schema/view/${ item.schema }` }
-                target="_blank"
+                href={ `/eas/schemaDetail/${ item.schemaId.replace('#', '') }` }
                 _hover={{ textDecoration: 'none' }}
               >
                 <HStack gap={ 2 } flexWrap="wrap">
@@ -62,7 +52,7 @@ const EASList = ({ data, isLoading }: Props) => {
                   >
                     { item.schemaId }
                   </Badge>
-                  { item.schemaName && item.schemaName.split(' ').map((word, idx) => (
+                  { item.schemaName && item.schemaName.split(', ').map((word, idx) => (
                     <Badge
                       key={ idx }
                       colorPalette="yellow"
@@ -86,7 +76,7 @@ const EASList = ({ data, isLoading }: Props) => {
             <Skeleton loading={ isLoading } fontSize="sm">
               <AddressEntity
                 address={{ hash: item.from }}
-                truncation="none"
+                truncation="constant"
               />
             </Skeleton>
           </Box>
@@ -98,8 +88,26 @@ const EASList = ({ data, isLoading }: Props) => {
             <Skeleton loading={ isLoading } fontSize="sm">
               <AddressEntity
                 address={{ hash: item.to }}
-                truncation="none"
+                truncation="constant"
               />
+            </Skeleton>
+          </Box>
+
+          <Box>
+            <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary" fontWeight={ 500 } mb={ 1 }>
+              Status:
+            </Skeleton>
+            <Skeleton loading={ isLoading } fontSize="sm">
+              { item.revoked && (
+                <Badge colorPalette="red" variant="solid" fontSize="xs" px={ 2 } py={ 1 }>
+                  Revoked
+                </Badge>
+              ) }
+              { !item.revoked && (
+                <Badge colorPalette="green" variant="solid" fontSize="xs" px={ 2 } py={ 1 }>
+                  Active
+                </Badge>
+              ) }
             </Skeleton>
           </Box>
 
@@ -118,4 +126,4 @@ const EASList = ({ data, isLoading }: Props) => {
   );
 };
 
-export default EASList;
+export default AttestationList;

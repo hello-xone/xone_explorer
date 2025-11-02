@@ -261,11 +261,6 @@ export default function useNavItems(): ReturnType {
         isActive: pathname.startsWith('/contract-verification'),
       },
       {
-        text: 'EAS',
-        nextRoute: { pathname: '/eas' as const },
-        isActive: pathname === '/eas',
-      },
-      {
         text: 'Submit public tag',
         nextRoute: { pathname: '/public-tags/submit' as const },
         isActive: pathname.startsWith('/public-tags/submit'),
@@ -320,6 +315,12 @@ export default function useNavItems(): ReturnType {
         icon: 'gear',
         isActive: otherNavItems.flat().some(item => isInternalItem(item) && item.isActive),
         subItems: otherNavItems,
+      },
+      {
+        text: 'EAS',
+        nextRoute: { pathname: '/eas' as const },
+        isActive: pathname === '/eas',
+        icon: 'verified',
       },
     ].filter(Boolean);
 
