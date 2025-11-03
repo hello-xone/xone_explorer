@@ -56,7 +56,7 @@ const defaultStatsResponseInterceptor: StatsResponseInterceptor = async(data, fe
           tvl: chartRes.data.transactions_today.toString(),
         };
       }
-    } catch(error) {
+    } catch (error) {
       return data;
     }
   }

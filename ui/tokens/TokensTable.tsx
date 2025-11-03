@@ -27,7 +27,6 @@ type Props = {
 };
 
 const TokensTable = ({ items, page, isLoading, sorting, setSorting, top }: Props) => {
-
   const sort = React.useCallback((field: TokensSortingField) => {
     const value = getNextSortValue(field)(sorting);
     setSorting(value);
