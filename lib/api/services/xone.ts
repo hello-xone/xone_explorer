@@ -6,6 +6,7 @@ import type { TokensResponse, TokensFilters, TokensSorting } from 'types/api/tok
 // XONE API 返回的原始数据结构
 export interface XoneTokenInfo {
   address: string;
+  address_hash: string;
   circulating_market_cap: string | null;
   decimals: string;
   exchange_rate: string | null;
@@ -37,8 +38,8 @@ export interface XoneTokensRawResponse {
 // 字段映射函数：将 XONE API 的字段名转换为项目期望的字段名
 function transformXoneTokenInfo(xoneToken: XoneTokenInfo): TokenInfo {
   return {
-    address_hash: xoneToken.address,
-    address: xoneToken.address,
+    address_hash: xoneToken.address_hash || xoneToken.address,
+    address: xoneToken.address || xoneToken.address_hash,
     type: xoneToken.type,
     symbol: xoneToken.symbol,
     name: xoneToken.name,

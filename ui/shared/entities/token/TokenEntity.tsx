@@ -103,10 +103,10 @@ const Content = chakra((props: ContentProps) => {
     props.onlySymbol && (props.token.symbol ?? props.token.name ?? 'Unnamed token'),
     props.token.symbol && props.jointSymbol && !props.onlySymbol && `(${ props.token.symbol })`,
   ].filter(Boolean).join(' ');
-
   return (
     <EntityBase.Content
       { ...props }
+      // address={ props.token.address || props.token.address_hash || '' }
       text={ nameString }
       truncation="tail"
     />
@@ -171,7 +171,6 @@ export interface EntityProps extends EntityBase.EntityBaseProps {
 const TokenEntity = (props: EntityProps) => {
   const multichainContext = useMultichainContext();
   const partsProps = distributeEntityProps(props, multichainContext);
-
   const content = <Content { ...partsProps.content }/>;
   return (
     <Container w="100%" { ...partsProps.container }>
