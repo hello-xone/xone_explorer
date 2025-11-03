@@ -19,6 +19,7 @@ test.beforeEach(async({ mockTextAd, mockAssetResponse }) => {
 function convertToXoneFormat(tokenInfo: TokenInfo): XoneTokenInfo {
   return {
     address: tokenInfo.address_hash,
+    address_hash: tokenInfo.address_hash,
     circulating_market_cap: tokenInfo.circulating_market_cap,
     decimals: tokenInfo.decimals || '18',
     exchange_rate: tokenInfo.exchange_rate,
