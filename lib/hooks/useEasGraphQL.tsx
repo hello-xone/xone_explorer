@@ -56,7 +56,7 @@ export default function useEasGraphQL<T = unknown>({
     try {
       const documentNode = parse(query);
       return print(documentNode);
-    } catch (err) {
+    } catch(err) {
       return query;
     }
   }, [ query ]);
@@ -84,6 +84,7 @@ export default function useEasGraphQL<T = unknown>({
 
       const requestBody = {
         query: parsedQuery,
+        // @ts-ignore
         ...(parsedVariables && { variables: parsedVariables }),
       };
 
@@ -137,7 +138,7 @@ export default function useEasGraphQL<T = unknown>({
       } else {
         setData(null);
       }
-    } catch (err) {
+    } catch(err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
       setError(error);
       onErrorRef.current?.(error);

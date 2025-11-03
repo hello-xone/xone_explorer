@@ -350,7 +350,7 @@ async function analyzeMissingRevertDataError(error: Error & { code?: string }, p
     const network = await provider.getNetwork();
     console.error('   Connected Chain ID:', network.chainId);
 
-    if (network.chainId !== BigInt(EAS_CONFIG.chainId)) {
+    if (network.chainId !== BigInt(EAS_CONFIG.chainId as string)) {
       console.error('   ❌ Chain ID mismatch detected!');
       console.error(`   Expected: ${ EAS_CONFIG.chainId }, Got: ${ network.chainId }`);
     } else {
@@ -692,7 +692,7 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
       const network = await provider.getNetwork();
       console.log('   Current Network Chain ID:', network.chainId);
       console.log('   Configured Chain ID:', EAS_CONFIG.chainId);
-      if (network.chainId !== BigInt(EAS_CONFIG.chainId)) {
+      if (network.chainId !== BigInt(EAS_CONFIG.chainId as string)) {
         toaster.create({
           title: '❌ Network Mismatch',
           description: `Wallet connected to Chain ID ${ network.chainId }, but configuration requires ${ EAS_CONFIG.chainId }`,
