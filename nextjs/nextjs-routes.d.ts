@@ -54,8 +54,13 @@ declare module "nextjs-routes" {
     | StaticRoute<"/csv-export">
     | StaticRoute<"/deposits">
     | StaticRoute<"/dispute-games">
-    | StaticRoute<"/eas/detail">
+    | StaticRoute<"/eas/attestationCreate">
+    | DynamicRoute<"/eas/attestationDetail/[uid]", { "uid": string }>
+    | StaticRoute<"/eas/attestations">
     | StaticRoute<"/eas">
+    | DynamicRoute<"/eas/schemAttestationList/[index]", { "index": string }>
+    | DynamicRoute<"/eas/schemaDetail/[index]", { "index": string }>
+    | StaticRoute<"/eas/schemas">
     | DynamicRoute<"/epochs/[number]", { "number": string }>
     | StaticRoute<"/epochs">
     | StaticRoute<"/gas-tracker">

@@ -1,11 +1,11 @@
-import { Box, Flex, HStack, Text } from '@chakra-ui/react';
+import { Box, Flex, HStack } from '@chakra-ui/react';
 import React from 'react';
 
-import type { SchemaItem } from './types';
+import type { SchemaItem } from '../types';
 
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
-import AddressEntity from 'ui/shared/entities/address/AddressEntity';
+import SchemaFieldBadges from 'ui/eas/SchemaFieldBadges';
 import ListItemMobile from 'ui/shared/ListItemMobile/ListItemMobile';
 
 interface Props {
@@ -21,8 +21,7 @@ const SchemaList = ({ data, isLoading }: Props) => {
           <Flex justifyContent="space-between" alignItems="flex-start">
             <Skeleton loading={ isLoading } fontWeight={ 700 }>
               <Link
-                href={ `https://easscan.org/schema/view/${ item.uid }` }
-                target="_blank"
+                href={ `/eas/schemaDetail/${ item.number }` }
                 fontSize="lg"
                 fontWeight={ 700 }
                 color="link"
@@ -38,8 +37,7 @@ const SchemaList = ({ data, isLoading }: Props) => {
             </Skeleton>
             <Skeleton loading={ isLoading } fontSize="sm">
               <Link
-                href={ `https://easscan.org/schema/view/${ item.uid }` }
-                target="_blank"
+                href={ `/eas/schemaDetail/${ item.number }` }
                 fontFamily="mono"
                 fontSize="sm"
               >
@@ -52,15 +50,10 @@ const SchemaList = ({ data, isLoading }: Props) => {
             <Skeleton loading={ isLoading } fontSize="sm" color="text_secondary" fontWeight={ 500 } mb={ 1 }>
               Schema:
             </Skeleton>
-            <Skeleton loading={ isLoading } fontSize="sm">
-              <Text
-                fontFamily="mono"
-                fontSize="sm"
-                wordBreak="break-word"
-              >
-                { item.schema }
-              </Text>
-            </Skeleton>
+            <SchemaFieldBadges
+              schema={ item.schema }
+              isLoading={ isLoading }
+            />
           </Box>
 
           <Box>
@@ -68,10 +61,7 @@ const SchemaList = ({ data, isLoading }: Props) => {
               Resolver:
             </Skeleton>
             <Skeleton loading={ isLoading } fontSize="sm">
-              <AddressEntity
-                address={{ hash: item.resolver }}
-                truncation="none"
-              />
+              { item.resolver }
             </Skeleton>
           </Box>
 
@@ -81,8 +71,7 @@ const SchemaList = ({ data, isLoading }: Props) => {
             </Skeleton>
             <Skeleton loading={ isLoading } fontSize="sm">
               <Link
-                href={ `https://easscan.org/attestations/forSchema/${ item.uid }` }
-                target="_blank"
+                href={ `/eas/schemAttestationList/${ item?.uid }` }
                 fontWeight={ 600 }
                 color="link"
               >

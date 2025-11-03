@@ -66,7 +66,12 @@ const TEMPLATE_MAP: Record<Route['pathname'], string> = {
   '/operation/[id]': '%network_name% operation %id%',
   '/add-token-info': '%network_name% add token info',
   '/eas': 'EAS Attestations - %network_name% explorer',
-  '/eas/detail': 'EAS Attestation details',
+  '/eas/schemas': 'EAS Schemas - %network_name% explorer',
+  '/eas/schemaDetail/[index]': 'EAS Schema %index% - %network_name% explorer',
+  '/eas/attestations': 'EAS Attestations - %network_name% explorer',
+  '/eas/attestationDetail/[uid]': 'EAS Attestation %uid% - %network_name% explorer',
+  '/eas/attestationCreate': 'Create EAS Attestation - %network_name% explorer',
+  '/eas/schemAttestationList/[index]': 'EAS Schema %index% Attestations - %network_name% explorer',
 
   // multichain routes
   '/chain/[chain-slug]/accounts/label/[slug]': '%network_name% addresses search by label',

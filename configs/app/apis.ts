@@ -115,7 +115,7 @@ const multichainApi = (() => {
       socketEndpoint: `wss://${ url.host }`,
       basePath: stripTrailingSlash(getEnvValue('NEXT_PUBLIC_MULTICHAIN_AGGREGATOR_BASE_PATH') || ''),
     });
-  } catch(error) {
+  } catch (error) {
     return;
   }
 
@@ -189,6 +189,17 @@ const xoneApi = (() => {
   });
 })();
 
+const easApi = (() => {
+  const apiHost = getEnvValue('NEXT_PUBLIC_EAS_API_HOST');
+  if (!apiHost) {
+    return;
+  }
+
+  return Object.freeze({
+    endpoint: apiHost,
+  });
+})();
+
 export type Apis = {
   general: ApiPropsFull;
 } & Partial<Record<Exclude<ApiName, 'general'>, ApiPropsBase>>;
@@ -207,6 +218,7 @@ const apis: Apis = Object.freeze({
   visualize: visualizeApi,
   xonePublic: xonePublicApi,
   xone: xoneApi,
+  eas: easApi,
 });
 
 export default apis;

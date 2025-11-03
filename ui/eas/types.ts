@@ -5,8 +5,8 @@ export interface EASItem {
   schemaName?: string; // Schema 名称，如 "WITNESSED ATTESTATIONS"
   from: string; // attester
   to: string; // recipient
-  type: 'ONCHAIN' | 'OFFCHAIN';
   time?: number;
+  revoked?: boolean;
   revocationTime?: number;
   refUID?: string;
   revocable?: boolean;

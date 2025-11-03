@@ -4,12 +4,12 @@ import React from 'react';
 
 import PageNextJs from 'nextjs/PageNextJs';
 
-const EAS = dynamic(() => import('ui/pages/EAS'), { ssr: false });
+const EASSchemas = dynamic(() => import('ui/pages/EASSchemas'), { ssr: false });
 
 const Page: NextPage = () => {
   return (
-    <PageNextJs pathname="/">
-      <EAS/>
+    <PageNextJs pathname="/eas/schemas">
+      <EASSchemas/>
     </PageNextJs>
   );
 };

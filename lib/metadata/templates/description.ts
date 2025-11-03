@@ -69,7 +69,12 @@ const TEMPLATE_MAP: Record<Route['pathname'], string> = {
   '/operation/[id]': DEFAULT_TEMPLATE,
   '/add-token-info': DEFAULT_TEMPLATE,
   '/eas': 'Explore Ethereum Attestation Service (EAS) on %network_title%. View attestations, schemas, and verify on-chain and off-chain data with the EAS protocol.',
-  '/eas/detail': 'View EAS attestation details. Check attestation data, schema information, and verification status.',
+  '/eas/schemas': 'Browse all EAS schemas on %network_title%. Explore schema structures, creators, and attestation counts for the Ethereum Attestation Service.',
+  '/eas/schemaDetail/[index]': 'View details for EAS Schema %index% on %network_title%. See schema structure, attestations, creator, and resolver contract information.',
+  '/eas/attestations': 'Browse all EAS attestations on %network_title%. View on-chain and off-chain attestations with the Ethereum Attestation Service.',
+  '/eas/attestationDetail/[uid]': 'View details for EAS Attestation %uid% on %network_title%. See attestation data, schema, attester, recipient, and verification status.',
+  '/eas/attestationCreate': 'Create a new EAS attestation on %network_title%. Choose a schema and make an on-chain or off-chain attestation with the Ethereum Attestation Service.',
+  '/eas/schemAttestationList/[index]': 'View all attestations for EAS Schema %index% on %network_title%. Browse attestations, attesters, and recipients for this schema.',
 
   // multichain routes
   '/chain/[chain-slug]/accounts/label/[slug]': DEFAULT_TEMPLATE,
