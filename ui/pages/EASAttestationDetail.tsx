@@ -9,6 +9,7 @@ import { Badge } from 'toolkit/chakra/badge';
 import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
+import { EAS_CONFIG } from 'ui/eas/constants';
 import RevokeAttestationModal from 'ui/eas/RevokeAttestationModal';
 import CopyToClipboard from 'ui/shared/CopyToClipboard';
 import DataListDisplay from 'ui/shared/DataListDisplay';
@@ -96,33 +97,125 @@ const EASAttestationDetail = () => {
     }
   }, [ attestation?.decodedDataJson ]);
 
+  // 动态解析 schema 生成 types
+  const schemaTypes = React.useMemo(() => {
+    if (!attestation?.schema?.schema) {
+      return [];
+    }
+
+    try {
+      // 解析 schema 字符串，格式如: "uint256 eventId, string name"
+      const fieldParts = attestation.schema.schema.split(',').map(part => part.trim());
+      const types: Array<{ name: string; type: string }> = [];
+
+      for (const part of fieldParts) {
+        // 匹配格式: "type name" 或 "type[] name"
+        const match = part.match(/^(\w+(?:\[\])?)\s+(\w+)$/);
+        if (match) {
+          const type = match[1];
+          const name = match[2];
+          types.push({ name, type });
+        }
+      }
+
+      return types;
+    } catch {
+      return [];
+    }
+  }, [ attestation?.schema?.schema ]);
+
   // 解析 raw data
   const rawData = React.useMemo(() => {
     if (!attestation) return {};
+
+    // 构建 Attest 类型定义（基础字段 + schema 字段）
+    const attestTypes = [
+      {
+        name: 'version',
+        type: 'uint16',
+      },
+      {
+        name: 'schema',
+        type: 'bytes32',
+      },
+      {
+        name: 'recipient',
+        type: 'address',
+      },
+      {
+        name: 'time',
+        type: 'uint64',
+      },
+      {
+        name: 'expirationTime',
+        type: 'uint64',
+      },
+      {
+        name: 'revocable',
+        type: 'bool',
+      },
+      {
+        name: 'refUID',
+        type: 'bytes32',
+      },
+      {
+        name: 'data',
+        type: 'bytes',
+      },
+      {
+        name: 'salt',
+        type: 'bytes32',
+      },
+    ];
+
+    // 构建完整的 types 对象
+    const types: Record<string, Array<{ name: string; type: string }>> = {
+      Attest: attestTypes,
+    };
+
+    // 如果有 schema 类型，添加到 types 中
+    if (schemaTypes.length > 0) {
+      types.Schema = schemaTypes;
+    }
 
     return {
       sig: {
         version: 2,
         uid: attestation.id,
         domain: {
-          name: 'EAS Attestation',
-          version: '1.0.1',
-          chainId: '1',
+          name: 'EAS',
+          version: '0.26',
+          chainId: String(EAS_CONFIG.chainId),
+          verifyingContract: EAS_CONFIG.contractAddress || '',
+        },
+        primaryType: 'Attest',
+        message: {
+          version: 2,
+          schema: attestation.schemaId,
+          recipient: attestation.recipient,
+          time: String(attestation.time),
+          expirationTime: String(attestation.expirationTime || 0),
+          revocationTime: String(attestation.revocationTime || 0),
+          nonce: '0',
+          revocable: attestation.revocable,
+          refUID: attestation.refUID || '0x0000000000000000000000000000000000000000000000000000000000000000',
+          data: attestation.data,
+          salt: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        },
+        types,
+        signature: {
+          v: 0,
+          r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          s: '0x0000000000000000000000000000000000000000000000000000000000000000',
         },
       },
-      version: 2,
-      schema: attestation.schemaId,
-      recipient: attestation.recipient,
-      time: attestation.time,
-      revocationTime: attestation.revocationTime,
-      refUID: attestation.refUID,
-      data: attestation.data,
+      signer: attestation.attester,
     };
-  }, [ attestation ]);
+  }, [ attestation, schemaTypes ]);
 
   // 下载 attestation 数据
   const handleDownload = React.useCallback(() => {
-    if (!rawData.data) return;
+    if (!rawData.sig?.uid) return;
 
     const blob = new Blob([ JSON.stringify(rawData, null, 2) ], {
       type: 'application/json',
@@ -130,7 +223,7 @@ const EASAttestationDetail = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `attestation-${ rawData.sig?.uid.slice(0, 10) }.json`;
+    link.download = `attestation-${ rawData.sig.uid.slice(0, 10) }.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -165,16 +258,29 @@ const EASAttestationDetail = () => {
               Offchain Attestation
             </Text>
           </Skeleton>
+          {
+            attestation?.revocationTime ? (
+              <Badge mt={ 1 } ml={ 2 } colorPalette="red" variant="solid" fontSize="xs" px={ 2 } py={ 1 }>
+                Revoked
+              </Badge>
+            ) :
+              null
+          }
         </HStack>
-        <Button
-          variant="solid"
-          size="sm"
-          colorScheme="blue"
-          onClick={ handleOpenRevokeModal }
-          disabled={ loading || !attestation }
-        >
-          Revoke Attestation
-        </Button>
+        {
+          !attestation?.revocationTime ? (
+            <Button
+              variant="solid"
+              size="sm"
+              colorScheme="blue"
+              onClick={ handleOpenRevokeModal }
+              disabled={ loading || !attestation }
+            >
+              Revoke Attestation
+            </Button>
+          ) :
+            null
+        }
       </Flex>
 
       { /* UID */ }
@@ -309,6 +415,16 @@ const EASAttestationDetail = () => {
                 ) }
               </Skeleton>
             </Box>
+
+            { /* Transactions ID */ }
+            <Box>
+              <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 2 } textTransform="uppercase">
+                Transaction ID:
+              </Text>
+              <Skeleton loading={ loading }>
+                { attestation?.txid && <TxEntity hash={ attestation.txid } truncation="dynamic"/> }
+              </Skeleton>
+            </Box>
           </VStack>
         </GridItem>
 
@@ -328,6 +444,40 @@ const EASAttestationDetail = () => {
               </Skeleton>
             </Box>
 
+            { /* EXPIRATION TIME */ }
+            {
+              attestation?.expirationTime ? (
+                <Box>
+                  <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 2 } textTransform="uppercase">
+                    Expiration Time:
+                  </Text>
+                  <Skeleton loading={ loading }>
+                    <Text fontSize="sm">
+                      { attestation?.expirationTime ? dayjs(attestation.expirationTime * 1000).format('YYYY-M-D HH:mm:ss') : '-' }
+                    </Text>
+                  </Skeleton>
+                </Box>
+              ) :
+                null
+            }
+
+            { /* REVOCATION TIME */ }
+            {
+              attestation?.revocationTime ? (
+                <Box>
+                  <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 2 } textTransform="uppercase">
+                    Revocation Time:
+                  </Text>
+                  <Skeleton loading={ loading }>
+                    <Text fontSize="sm">
+                      { attestation?.revocationTime ? dayjs(attestation.revocationTime * 1000).format('YYYY-M-D HH:mm:ss') : '-' }
+                    </Text>
+                  </Skeleton>
+                </Box>
+              ) :
+                null
+            }
+
             { /* REVOKED */ }
             <Box>
               <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 2 } textTransform="uppercase">
@@ -337,16 +487,6 @@ const EASAttestationDetail = () => {
                 <Text fontSize="sm">
                   { attestation?.revocationTime && attestation.revocationTime > 0 ? 'Yes' : 'No' }
                 </Text>
-              </Skeleton>
-            </Box>
-
-            { /* Transactions ID */ }
-            <Box>
-              <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 2 } textTransform="uppercase">
-                Transaction ID:
-              </Text>
-              <Skeleton loading={ loading }>
-                { attestation?.txid && <TxEntity hash={ attestation.txid } truncation="dynamic"/> }
               </Skeleton>
             </Box>
           </VStack>

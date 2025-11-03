@@ -5,7 +5,7 @@ import React from 'react';
 import type { EASItem } from 'ui/eas/types';
 
 import dayjs from 'lib/date/dayjs';
-import { GET_SCHEMA_DETAIL } from 'lib/graphql/easQueries';
+import { GET_SCHEMA_DETAIL, GET_ATTESTATION_COUNTS } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
 import { Badge } from 'toolkit/chakra/badge';
 import { Button } from 'toolkit/chakra/button';
@@ -48,12 +48,10 @@ interface Schema {
 
 interface SchemaDetailResponse {
   schemata: Array<Schema>;
+}
+
+interface AttestationCountsResponse {
   totalAttestations: {
-    _count: {
-      _all: number;
-    };
-  };
-  onchainAttestations: {
     _count: {
       _all: number;
     };
@@ -70,19 +68,24 @@ const EASSchemaDetail = () => {
   const index = router.query.index as string;
   const [ isCreateAttestationModalOpen, setIsCreateAttestationModalOpen ] = React.useState(false);
 
-  const queryVariables = React.useMemo(() => ({
-    index,
-    schemaId: index,
-  }), [ index ]);
-
-  // 查询 schema 详情
-  const { data, loading, error } = useEasGraphQL<SchemaDetailResponse>({
+  // 第一次查询：获取 schema 详情
+  const { data, loading: schemaLoading, error } = useEasGraphQL<SchemaDetailResponse>({
     query: GET_SCHEMA_DETAIL,
-    variables: queryVariables,
+    variables: { index },
     enabled: Boolean(index),
   });
 
   const schema = data?.schemata?.[0];
+
+  // 第二次查询：在获取到 schema.id 后查询 attestation 统计
+  const { data: countsData, loading: countsLoading } = useEasGraphQL<AttestationCountsResponse>({
+    query: GET_ATTESTATION_COUNTS,
+    variables: { schemaId: schema?.id || '' },
+    enabled: Boolean(schema?.id),
+  });
+
+  // 综合 loading 状态
+  const loading = schemaLoading || countsLoading;
 
   // 解析 schema 字段
   const decodedSchema = React.useMemo(() => {
@@ -115,16 +118,17 @@ const EASSchemaDetail = () => {
   // 计算 attestation 统计数据
   const attestationCounts = React.useMemo(() => {
     // 使用聚合查询的结果获取准确的统计数据
-    const totalCount = data?.totalAttestations?._count?._all || 0;
-    const revokedCount = data?.revokedAttestations?._count?._all || 0;
+    const totalCount = countsData?.totalAttestations?._count?._all || schema?._count?.attestations || 0;
+    const revokedCount = countsData?.revokedAttestations?._count?._all || 0;
 
     return {
       total: totalCount,
       revoked: revokedCount,
     };
   }, [
-    data?.totalAttestations?._count?._all,
-    data?.revokedAttestations?._count?._all,
+    countsData?.totalAttestations?._count?._all,
+    countsData?.revokedAttestations?._count?._all,
+    schema?._count?.attestations,
   ]);
 
   // 处理打开 CreateAttestationModal

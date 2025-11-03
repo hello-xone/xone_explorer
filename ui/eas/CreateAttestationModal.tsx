@@ -1,12 +1,17 @@
 import { Box, Flex, Input, Stack, Text } from '@chakra-ui/react';
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { ethers } from 'ethers';
 import React from 'react';
 
+import useEthersSigner from 'lib/web3/useEthersSigner';
 import { Button } from 'toolkit/chakra/button';
 import { Checkbox } from 'toolkit/chakra/checkbox';
 import { DialogBody, DialogContent, DialogHeader, DialogRoot } from 'toolkit/chakra/dialog';
 import { Textarea } from 'toolkit/chakra/textarea';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
+
+import { EAS_CONFIG } from './constants';
 
 interface Schema {
   uid: string;
@@ -18,6 +23,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   schema: Schema;
+  onAttestationComplete?: (uid: string) => void;
+  onAttestationError?: (error: Error) => void;
 }
 
 // 数组 Bool Checkbox
@@ -71,22 +78,33 @@ const SingleBoolCheckbox = ({
   );
 };
 
-const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
+const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete, onAttestationError }: Props) => {
   const [ recipientAddress, setRecipientAddress ] = React.useState('');
   const [ fieldValues, setFieldValues ] = React.useState<Record<number, string | Array<string>>>({});
+  const [ expirationTime, setExpirationTime ] = React.useState('');
+  const [ isLoading, setIsLoading ] = React.useState(false);
+  const [ loadingStatus, setLoadingStatus ] = React.useState('');
+
+  // 获取 signer
+  const signer = useEthersSigner();
 
   // 初始化字段值（使用索引作为 key）
   React.useEffect(() => {
     if (isOpen && schema.fields) {
       const initialValues: Record<number, string | Array<string>> = {};
       schema.fields.forEach((field, index) => {
-        // 对于数组类型，初始化为包含一个空字符串的数组
-        // 对于 bool 类型，初始化为 'false'
         if (field.isArray) {
-          initialValues[index] = [ '' ];
+          // 对于 bool 数组，初始化为 ['false']，其他数组类型初始化为 ['']
+          if (field.type === 'bool') {
+            initialValues[index] = [ 'false' ];
+          } else {
+            initialValues[index] = [ '' ];
+          }
         } else if (field.type === 'bool') {
+          // 单个 bool 字段，初始化为 'false'
           initialValues[index] = 'false';
         } else {
+          // 其他单个字段，初始化为空字符串
           initialValues[index] = '';
         }
       });
@@ -97,6 +115,11 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
   // 更新 Recipient Address
   const handleRecipientAddressChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipientAddress(e.target.value);
+  }, []);
+
+  // 更新 Expiration Time
+  const handleExpirationTimeChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setExpirationTime(e.target.value);
   }, []);
 
   // 更新字段值（普通输入框）
@@ -139,13 +162,16 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
     return () => {
       setFieldValues(prev => {
         const currentArray = Array.isArray(prev[fieldIndex]) ? prev[fieldIndex] as Array<string> : [ '' ];
+        // 根据字段类型决定新增项的默认值：bool 类型为 'false'，其他类型为空字符串
+        const field = schema.fields[fieldIndex];
+        const defaultValue = field?.type === 'bool' ? 'false' : '';
         return {
           ...prev,
-          [fieldIndex]: [ ...currentArray, '' ],
+          [fieldIndex]: [ ...currentArray, defaultValue ],
         };
       });
     };
-  }, []);
+  }, [ schema.fields ]);
 
   // 删除数组项
   const handleRemoveArrayItem = React.useCallback((fieldIndex: number, itemIndex: number) => {
@@ -164,6 +190,23 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
     };
   }, []);
 
+  // 获取字段的默认值
+  const getDefaultValue = React.useCallback((type: string) => {
+    if (type === 'bool') {
+      return false;
+    }
+    if (type.startsWith('uint') || type.startsWith('int')) {
+      return 0;
+    }
+    if (type === 'address') {
+      return '0x0000000000000000000000000000000000000000';
+    }
+    if (type === 'bytes' || type.startsWith('bytes')) {
+      return '0x';
+    }
+    return '';
+  }, []);
+
   // 表单验证
   const validateForm = React.useCallback(() => {
     // 检查 Recipient Address 格式
@@ -175,6 +218,47 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
         duration: 3000,
       });
       return false;
+    }
+
+    // 验证过期时间格式
+    if (expirationTime) {
+      const dateFormatRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/;
+      if (!dateFormatRegex.test(expirationTime)) {
+        toaster.create({
+          title: 'Validation Failed',
+          description: 'Invalid expiration time format. Use: YYYY-MM-DD HH:mm (e.g., 2025-12-31 23:59)',
+          type: 'error',
+          duration: 5000,
+        });
+        return false;
+      }
+
+      // 验证日期是否有效
+      const match = expirationTime.match(dateFormatRegex);
+      if (match) {
+        const [ , year, month, day, hour, minute ] = match;
+        const testDate = new Date(`${ year }-${ month }-${ day }T${ hour }:${ minute }:00`);
+        if (isNaN(testDate.getTime())) {
+          toaster.create({
+            title: 'Validation Failed',
+            description: 'Invalid date/time value',
+            type: 'error',
+            duration: 3000,
+          });
+          return false;
+        }
+
+        // 检查日期是否在未来
+        if (testDate <= new Date()) {
+          toaster.create({
+            title: 'Validation Failed',
+            description: 'Expiration time must be in the future',
+            type: 'error',
+            duration: 3000,
+          });
+          return false;
+        }
+      }
     }
 
     // 检查是否所有必填字段都有值
@@ -206,33 +290,301 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
     }
 
     return true;
-  }, [ recipientAddress, fieldValues, schema.fields ]);
+  }, [ recipientAddress, expirationTime, fieldValues, schema.fields ]);
 
   // 创建 Attestation
-  const handleCreateAttestation = React.useCallback(() => {
+  const handleCreateAttestation = React.useCallback(async() => {
     if (!validateForm()) {
       return;
     }
 
-    // Schema UID: schema.uid
-    // Recipient: recipientAddress || '0x0000000000000000000000000000000000000000'
-    // Data: fieldValues
+    try {
+      setIsLoading(true);
+      setLoadingStatus('Validating...');
 
-    // 显示成功提示
-    toaster.create({
-      title: 'Attestation Created Successfully',
-      description: `Attestation created for Schema ${ schema.uid.slice(0, 10) }...`,
-      type: 'success',
-      duration: 5000,
-    });
+      /* eslint-disable no-console */
+      console.log('\n=== 🚀 Starting Attestation Creation ===');
+      console.log('Schema ID:', schema.uid);
+      console.log('Schema Format:', schema.schema);
+      console.log('Field Values:', fieldValues);
 
-    // 关闭弹窗
-    onClose();
+      // 0. 检查 schema
+      if (!schema.schema) {
+        toaster.create({
+          title: '❌ Failed to Load Schema',
+          description: 'Unable to retrieve schema format. Please refresh and try again.',
+          type: 'error',
+        });
+        return;
+      }
 
-    // 重置表单
-    setRecipientAddress('');
-    setFieldValues({});
-  }, [ schema.uid, onClose, validateForm ]);
+      // 1. 检查 signer
+      if (!signer) {
+        toaster.create({
+          title: '❌ Wallet Not Connected',
+          description: 'Please connect your wallet before creating attestation',
+          type: 'error',
+        });
+        return;
+      }
+
+      // 2. 验证 recipient 地址格式（如果不为空且不是零地址）
+      const recipient = recipientAddress || '0x0000000000000000000000000000000000000000';
+      const zeroAddress = '0x0000000000000000000000000000000000000000';
+      if (recipient && recipient !== zeroAddress) {
+        if (!ethers.isAddress(recipient)) {
+          toaster.create({
+            title: '❌ Invalid Recipient Address',
+            description: 'Please enter a valid Ethereum address (42 hex characters starting with 0x)',
+            type: 'error',
+          });
+          return;
+        }
+      }
+
+      // 3. 验证所有 address 类型字段的格式
+      const invalidAddressFields: Array<string> = [];
+      schema.fields.forEach((field, index) => {
+        if (field.type === 'address') {
+          const value = fieldValues[index];
+          if (field.isArray) {
+            const arrayValue = Array.isArray(value) ? value : [ value || '' ];
+            arrayValue.forEach((v, i) => {
+              const strValue = String(v || '').trim();
+              if (strValue && !ethers.isAddress(strValue)) {
+                invalidAddressFields.push(`${ field.name }[${ i }]`);
+              }
+            });
+          } else {
+            const strValue = String(value || '').trim();
+            if (strValue && !ethers.isAddress(strValue)) {
+              invalidAddressFields.push(field.name);
+            }
+          }
+        }
+      });
+
+      if (invalidAddressFields.length > 0) {
+        toaster.create({
+          title: '❌ Invalid Address Format',
+          description: `Invalid addresses in: ${ invalidAddressFields.join(', ') }. ` +
+            'Ethereum addresses must be 42 characters starting with "0x" (e.g., 0x1234...abcd). ' +
+            'Leave empty to use zero address, or remove the item if not needed.',
+          type: 'error',
+          duration: 8000,
+        });
+        return;
+      }
+
+      console.log('✅ All validations passed');
+
+      // 初始化 EAS
+      setLoadingStatus('Initializing EAS...');
+      console.log('\n🔍 Step 1: Initialize EAS');
+
+      if (!EAS_CONFIG.contractAddress) {
+        toaster.create({
+          title: '❌ Configuration Error',
+          description: 'EAS contract address is not configured',
+          type: 'error',
+        });
+        return;
+      }
+
+      const eas = new EAS(EAS_CONFIG.contractAddress);
+      eas.connect(signer);
+      console.log('✅ EAS connected');
+
+      // 动态构建 encoder 基于实际 schema
+      setLoadingStatus('Encoding data...');
+      console.log('\n🔍 Step 2: Encode attestation data');
+      console.log('Using Schema Format:', schema.schema);
+      console.log('Parsed Schema Fields:', schema.fields);
+
+      const schemaEncoder = new SchemaEncoder(schema.schema);
+
+      // 构建编码数据
+      console.log('\n📦 Encoding data for each field:');
+      const encodeDataItems = schema.fields.map((field, index) => {
+        const value = fieldValues[index];
+        let processedValue;
+        console.log(`   Field "${ field.name }" (${ field.type }${ field.isArray ? '[]' : '' }):`, value);
+
+        // 处理数组类型
+        if (field.isArray) {
+          const arrayValue = Array.isArray(value) ? value : [ value || '' ];
+          // 根据类型转换数组中的每个值
+          if (field.type === 'bool') {
+            // bool 类型：只有明确的 'true' 才是 true，其他都是 false（包括空字符串）
+            processedValue = arrayValue.map(v => {
+              const strValue = String(v || '').trim();
+              const boolValue = strValue === 'true';
+              return boolValue;
+            });
+          } else if (field.type === 'address') {
+            // 验证并处理 address 类型数组
+            processedValue = arrayValue.map(v => {
+              const strValue = String(v || '').trim();
+              // 如果是空值或无效地址，使用零地址
+              if (!strValue || !ethers.isAddress(strValue)) {
+                return '0x0000000000000000000000000000000000000000';
+              }
+              return strValue;
+            });
+          } else if (field.type.startsWith('uint') || field.type.startsWith('int')) {
+            processedValue = arrayValue.map(v => v || '0');
+          } else {
+            processedValue = arrayValue;
+          }
+        } else {
+          // 处理单个值
+          if (field.type === 'bool') {
+            // bool 类型：只有明确的 'true' 才是 true，其他都是 false（包括空值、'false'、空字符串等）
+            const strValue = String(value || '').trim();
+            processedValue = strValue === 'true';
+            console.log(`     → bool value: "${ strValue }" → ${ processedValue } (default: false if empty)`);
+          } else if (field.type === 'address') {
+            // 验证并处理 address 类型
+            const strValue = String(value || '').trim();
+            // 如果是空值或无效地址，使用零地址
+            if (!strValue || !ethers.isAddress(strValue)) {
+              processedValue = '0x0000000000000000000000000000000000000000';
+            } else {
+              processedValue = strValue;
+            }
+          } else {
+            processedValue = value || getDefaultValue(field.type);
+          }
+        }
+
+        return {
+          name: field.name,
+          value: processedValue,
+          type: field.isArray ? `${ field.type }[]` : field.type,
+        };
+      });
+
+      const encodedData = schemaEncoder.encodeData(encodeDataItems);
+      console.log('✅ Data encoding complete');
+
+      setLoadingStatus('Sending transaction...');
+      console.log('\n📝 Step 3: Create on-chain attestation');
+      console.log('Sending transaction...');
+
+      // 处理过期时间：将日期时间转换为 Unix 时间戳（秒）
+      let expirationTimestamp = BigInt(0); // 默认：永不过期
+      if (expirationTime) {
+        try {
+          // 支持格式: YYYY-MM-DD HH:mm 或标准 ISO 格式
+          let date: Date;
+
+          // 尝试解析 "YYYY-MM-DD HH:mm" 格式
+          const customFormatMatch = expirationTime.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
+          if (customFormatMatch) {
+            const [ , year, month, day, hour, minute ] = customFormatMatch;
+            date = new Date(`${ year }-${ month }-${ day }T${ hour }:${ minute }:00`);
+          } else {
+            // 尝试标准日期格式
+            date = new Date(expirationTime);
+          }
+
+          if (!isNaN(date.getTime())) {
+            expirationTimestamp = BigInt(Math.floor(date.getTime() / 1000));
+            console.log(`   Expiration Time: ${ expirationTime } → Unix: ${ expirationTimestamp }`);
+          } else {
+            console.warn('   Invalid expiration time format, using 0 (never expires)');
+          }
+        } catch(e) {
+          console.warn('   Invalid expiration time, using 0 (never expires):', e);
+        }
+      } else {
+        console.log('   Expiration Time: Not set (never expires)');
+      }
+
+      // 创建链上 attestation
+      const tx = await eas.attest({
+        schema: schema.uid,
+        data: {
+          recipient: recipient,
+          expirationTime: expirationTimestamp,
+          revocable: true,
+          data: encodedData,
+        },
+      });
+
+      console.log('✅ Transaction sent');
+
+      setLoadingStatus('Waiting for confirmation...');
+      console.log('\n⏳ Step 4: Waiting for transaction confirmation');
+
+      const newAttestationUID = await tx.wait();
+
+      console.log('✅ Transaction confirmed');
+      console.log('\n🎉 Attestation created successfully!');
+      console.log('   UID:', newAttestationUID);
+
+      const uidShort = `${ newAttestationUID.slice(0, 10) }...${ newAttestationUID.slice(-8) }`;
+      const refreshMsg = `Please refresh after ${ EAS_CONFIG.refreshTime } seconds to see the record.`;
+      toaster.create({
+        title: '✅ Attestation Created Successfully',
+        description: `UID: ${ uidShort }. ${ refreshMsg }`,
+        type: 'success',
+      });
+
+      console.log('=== ✅ Attestation creation flow completed ===\n');
+      /* eslint-enable no-console */
+
+      onAttestationComplete?.(newAttestationUID);
+
+      // 关闭弹窗
+      onClose();
+
+      // 重置表单
+      setRecipientAddress('');
+      setExpirationTime('');
+      setFieldValues({});
+    } catch(error) {
+      /* eslint-disable no-console */
+      console.error('\n=== ❌ Attestation Creation Failed ===');
+      console.error('Full error:', error);
+      console.error('Error code:', (error as { code?: string })?.code);
+      console.error('Error reason:', (error as { reason?: string })?.reason);
+      /* eslint-enable no-console */
+
+      const err = error as { code?: string; reason?: string; message?: string };
+      let errorTitle = '❌ Failed to Create Attestation';
+      let errorDescription = '';
+
+      if (err?.code === 'ACTION_REJECTED') {
+        errorTitle = '❌ Transaction Rejected';
+        errorDescription = 'You cancelled the transaction signature';
+      } else if (err?.code === 'INSUFFICIENT_FUNDS') {
+        errorTitle = '❌ Insufficient Funds';
+        errorDescription = 'Account doesn\'t have enough gas fees';
+      } else if (err?.code === 'CALL_EXCEPTION') {
+        errorTitle = '❌ Contract Call Failed';
+        errorDescription = 'Possible causes: Schema format mismatch, incorrect EAS contract address, ' +
+          'network configuration error, or schema doesn\'t exist';
+      } else if (err?.code === 'NETWORK_ERROR') {
+        errorTitle = '❌ Network Error';
+        errorDescription = 'Unable to connect to RPC node';
+      } else if (err?.message) {
+        errorDescription = err.message;
+      } else {
+        errorDescription = 'Unknown error, please check console logs';
+      }
+
+      toaster.create({
+        title: errorTitle,
+        description: errorDescription,
+        type: 'error',
+      });
+
+      onAttestationError?.(error as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ schema, recipientAddress, expirationTime, fieldValues, validateForm, signer, getDefaultValue, onAttestationComplete, onAttestationError, onClose ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
     if (!open) {
@@ -313,7 +665,7 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
                   placeholder={ `Enter ${ field.name } item ${ index + 1 }...` }
                   value={ value }
                   onChange={ handleArrayItemChange(fieldIndex, index) }
-                  size="lg"
+                  size="md"
                   type={ isNumberType(field.type) ? 'number' : 'text' }
                   fontFamily={ field.type === 'address' || isBytesType(field.type) ? 'mono' : 'inherit' }
                 />
@@ -450,6 +802,24 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
               </Text>
             </Box>
 
+            { /* Expiration Time */ }
+            <Box>
+              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
+                Expiration Time (Optional)
+              </Text>
+              <Input
+                type="text"
+                placeholder="YYYY-MM-DD HH:mm (e.g., 2025-12-31 23:59)"
+                value={ expirationTime }
+                onChange={ handleExpirationTimeChange }
+                size="lg"
+                fontFamily="mono"
+              />
+              <Text fontSize="xs" color="fg.muted" mt={ 1 }>
+                💡 Format: YYYY-MM-DD HH:mm (24-hour). Leave empty for no expiration.
+              </Text>
+            </Box>
+
             { /* 动态字段 */ }
             { schema.fields.map((field, index) => {
               const fieldLabel = `${ field.name } (${ field.isArray ? `${ field.type }[]` : field.type })`;
@@ -460,9 +830,22 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
                     { fieldLabel }
                   </Text>
                   { renderFieldInput(field, index) }
+                  { /* 为 address 类型添加提示 */ }
+                  { field.type === 'address' && (
+                    <Text fontSize="xs" color="fg.muted" mt={ 1 }>
+                      💡 Must be a valid Ethereum address (42 chars, starting with 0x). Leave empty for zero address.
+                    </Text>
+                  ) }
                 </Box>
               );
             }) }
+
+            { /* Loading Status */ }
+            { isLoading && loadingStatus && (
+              <Box mt={ 4 } textAlign="center">
+                <Text fontSize="sm" color="fg.muted">{ loadingStatus }</Text>
+              </Box>
+            ) }
 
             { /* 按钮组 */ }
             <Flex gap={ 3 } mt={ 4 } justify="flex-end">
@@ -471,6 +854,7 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
                 size="lg"
                 onClick={ onClose }
                 minW="140px"
+                disabled={ isLoading }
               >
                 Cancel
               </Button>
@@ -479,8 +863,10 @@ const CreateAttestationModal = ({ isOpen, onClose, schema }: Props) => {
                 size="lg"
                 onClick={ handleCreateAttestation }
                 minW="180px"
+                disabled={ isLoading }
+                loading={ isLoading }
               >
-                Create Attestation
+                { isLoading ? 'Creating...' : 'Create Attestation' }
               </Button>
             </Flex>
           </Stack>

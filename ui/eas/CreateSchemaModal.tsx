@@ -1,6 +1,11 @@
 import { Box, Flex, Input, Stack, Text } from '@chakra-ui/react';
+import { SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
+import { ethers } from 'ethers';
 import React from 'react';
 
+import buildUrl from 'lib/api/buildUrl';
+import { GET_SCHEMAS_BY_RESOLVER } from 'lib/graphql/easQueries';
+import useEthersSigner from 'lib/web3/useEthersSigner';
 import { Button } from 'toolkit/chakra/button';
 import { Checkbox } from 'toolkit/chakra/checkbox';
 import { DialogBody, DialogContent, DialogHeader, DialogRoot } from 'toolkit/chakra/dialog';
@@ -9,7 +14,7 @@ import { PopoverBody, PopoverContent, PopoverRoot, PopoverTrigger } from 'toolki
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
 
-import { SOLIDITY_TYPES } from './constants';
+import { EAS_CONFIG, SOLIDITY_TYPES } from './constants';
 import type { SolidityType } from './constants';
 
 interface SchemaField {
@@ -22,6 +27,8 @@ interface SchemaField {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onSchemaCreated?: (schemaId: string) => void;
+  onSchemaCreationError?: (error: Error) => void;
 }
 
 interface FieldRowProps {
@@ -328,7 +335,50 @@ const FieldRow = React.memo(({
   );
 });
 
-const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
+/* eslint-disable no-console */
+async function analyzeMissingRevertDataError(error: Error & { code?: string }, provider: ethers.JsonRpcProvider) {
+  console.error('\n🔍 Starting error analysis...');
+  console.error('Error code:', error.code);
+  console.error('Error message:', error.message);
+
+  try {
+    console.error('\n📊 System environment check:');
+    console.error('   Schema Registry Address:', EAS_CONFIG.schemaRegistryAddress);
+    console.error('   RPC Provider:', EAS_CONFIG.rpcProvider);
+    console.error('   Expected Chain ID:', EAS_CONFIG.chainId);
+
+    const network = await provider.getNetwork();
+    console.error('   Connected Chain ID:', network.chainId);
+
+    if (network.chainId !== BigInt(EAS_CONFIG.chainId)) {
+      console.error('   ❌ Chain ID mismatch detected!');
+      console.error(`   Expected: ${ EAS_CONFIG.chainId }, Got: ${ network.chainId }`);
+    } else {
+      console.error('   ✅ Chain ID matched');
+    }
+
+    if (EAS_CONFIG.schemaRegistryAddress) {
+      const code = await provider.getCode(EAS_CONFIG.schemaRegistryAddress);
+      if (code === '0x') {
+        console.error('   ❌ Schema Registry contract not deployed at configured address');
+      } else {
+        console.error('   ✅ Contract exists');
+        console.error('   Code size:', (code.length - 2) / 2, 'bytes');
+      }
+    }
+  } catch(analysisError) {
+    console.error('Error during analysis:', analysisError);
+  }
+
+  console.error('\n💡 Suggestions:');
+  console.error('   1. Verify Schema Registry address is correct');
+  console.error('   2. Ensure you\'re connected to the correct network');
+  console.error('   3. Check if EAS contracts have been deployed on XONE Chain');
+  console.error('   4. Verify wallet is connected to the same network as RPC provider');
+}
+/* eslint-enable no-console */
+
+const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationError }: Props) => {
   const [ fields, setFields ] = React.useState<Array<SchemaField>>([
     { id: '1', name: '', type: '', isArray: false },
   ]);
@@ -336,6 +386,11 @@ const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
   const [ isRevocable, setIsRevocable ] = React.useState(true);
   const [ typeSearchQuery, setTypeSearchQuery ] = React.useState<Record<string, string>>({});
   const [ draggedIndex, setDraggedIndex ] = React.useState<number | null>(null);
+  const [ isLoading, setIsLoading ] = React.useState(false);
+  const [ loadingStatus, setLoadingStatus ] = React.useState('');
+
+  // 获取 signer
+  const signer = useEthersSigner();
 
   // 拖拽处理
   const handleDragStart = React.useCallback((index: number) => {
@@ -459,52 +514,341 @@ const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
     }
 
     // 检查 Resolver Address 格式（如果填写了）
-    if (resolverAddress && !/^0x[a-fA-F0-9]{40}$/.test(resolverAddress)) {
-      toaster.create({
-        title: 'Validation Failed',
-        description: 'Invalid Resolver Address format',
-        type: 'error',
-        duration: 3000,
-      });
-      return false;
+    // 零地址被视为"无 Resolver"，是有效的
+    const zeroAddress = '0x0000000000000000000000000000000000000000';
+    if (resolverAddress && resolverAddress.trim() !== '' && resolverAddress !== zeroAddress) {
+      if (!/^0x[a-fA-F0-9]{40}$/.test(resolverAddress)) {
+        toaster.create({
+          title: 'Validation Failed',
+          description: 'Invalid Resolver Address format',
+          type: 'error',
+          duration: 3000,
+        });
+        return false;
+      }
     }
 
     return true;
   }, [ fields, resolverAddress ]);
 
   // 创建 Schema
-  const handleCreateSchema = React.useCallback(() => {
+  const handleCreateSchema = React.useCallback(async() => {
     if (!validateForm()) {
       return;
     }
 
-    // 构建 schema 字符串
-    const schemaString = fields.map(field => {
-      const typeStr = field.isArray ? `${ field.type }[]` : field.type;
-      return `${ typeStr } ${ field.name }`;
-    }).join(', ');
+    try {
+      setIsLoading(true);
+      setLoadingStatus('Validating...');
 
-    // Schema string: schemaString
-    // Resolver address: resolverAddress || 'None'
-    // Is revocable: isRevocable
+      /* eslint-disable no-console */
+      console.log('\n=== 🚀 Starting Schema Creation ===');
+      console.log('📋 Configuration:');
+      console.log('   Chain ID:', EAS_CONFIG.chainId);
+      console.log('   RPC:', EAS_CONFIG.rpcProvider);
 
-    // 显示成功提示
-    toaster.create({
-      title: 'Schema Created Successfully',
-      description: `Schema created with ${ fields.length } field(s): ${ schemaString }`,
-      type: 'success',
-      duration: 5000,
-    });
+      // 构建 schema 字符串
+      const schemaString = fields.map(field => {
+        const typeStr = field.isArray ? `${ field.type }[]` : field.type;
+        return `${ typeStr } ${ field.name }`;
+      }).join(', ');
 
-    // 关闭弹窗
-    onClose();
+      console.log('   Schema Definition:', schemaString);
+      console.log('   Resolver Address:', resolverAddress || '0x0000000000000000000000000000000000000000');
+      console.log('   Revocable:', isRevocable);
 
-    // 重置表单
-    setFields([ { id: Date.now().toString(), name: '', type: '', isArray: false } ]);
-    setResolverAddress('');
-    setIsRevocable(true);
-    setTypeSearchQuery({});
-  }, [ fields, onClose, validateForm ]);
+      // 0. 检查 Resolver 和 Schema 组合是否已存在
+      const finalResolverAddress = resolverAddress;
+
+      // 验证地址格式（如果不是零地址）
+      if (finalResolverAddress) {
+        if (!ethers.isAddress(finalResolverAddress)) {
+          toaster.create({
+            title: '❌ Invalid Address Format',
+            description: 'Resolver address format is incorrect. Please enter a valid Ethereum address',
+            type: 'error',
+          });
+          return;
+        }
+
+        console.log('🔍 Checking if Resolver and Schema combination already exists...');
+        setLoadingStatus('Checking for existing schema...');
+
+        try {
+          const graphqlUrl = buildUrl('eas:graphql');
+          const response = await fetch(graphqlUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              query: GET_SCHEMAS_BY_RESOLVER,
+              variables: {
+                where: {
+                  resolver: {
+                    equals: finalResolverAddress,
+                  },
+                  schema: {
+                    equals: schemaString,
+                  },
+                },
+              },
+            }),
+          });
+
+          if (response.ok) {
+            const result = await response.json() as {
+              data?: {
+                schemata?: Array<{ id: string; schema: string; resolver: string }>;
+              };
+            };
+            if (result.data?.schemata && result.data.schemata.length > 0) {
+              const existingSchema = result.data.schemata[0];
+              console.log('❌ Existing schema found:', existingSchema);
+              const schemaIdShort = `${ existingSchema.id.slice(0, 8) }...`;
+              toaster.create({
+                title: '⚠️ Schema Already Exists',
+                description: `The same Resolver and Schema definition already exists (ID: ${ schemaIdShort }). ` +
+                  'Database constraint: the same Resolver cannot define the same Schema repeatedly.',
+                type: 'error',
+              });
+              return;
+            }
+            console.log('✅ No existing schema found, proceeding...');
+          }
+        } catch(checkError) {
+          console.warn('⚠️ Failed to check existing schema, proceeding anyway:', checkError);
+        }
+      }
+
+      // 1. 检查 signer
+      if (!signer) {
+        toaster.create({
+          title: '❌ Wallet Not Connected',
+          description: 'Please connect your wallet before creating schema',
+          type: 'error',
+        });
+        return;
+      }
+
+      // 获取 signer 地址
+      let signerAddress = 'Unknown';
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (typeof (signer as any).getAddress === 'function') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          signerAddress = await (signer as any).getAddress();
+        }
+      } catch(e) {
+        console.warn('Unable to get signer address:', e);
+      }
+
+      console.log('\n✅ Signer Info:');
+      console.log('   Address:', signerAddress);
+
+      // 2. 创建 provider 进行预检
+      setLoadingStatus('Validating contract...');
+
+      if (!EAS_CONFIG.rpcProvider) {
+        toaster.create({
+          title: '❌ Configuration Error',
+          description: 'RPC provider is not configured',
+          type: 'error',
+        });
+        return;
+      }
+
+      const provider = new ethers.JsonRpcProvider(EAS_CONFIG.rpcProvider);
+
+      // 3. 预检：验证合约存在
+      console.log('\n🔍 Step 2: Validate Schema Registry Contract');
+      console.log('   Address:', EAS_CONFIG.schemaRegistryAddress);
+
+      if (!EAS_CONFIG.schemaRegistryAddress) {
+        toaster.create({
+          title: '❌ Configuration Error',
+          description: 'Schema Registry address is not configured',
+          type: 'error',
+        });
+        return;
+      }
+
+      const registryCode = await provider.getCode(EAS_CONFIG.schemaRegistryAddress);
+      if (registryCode === '0x') {
+        console.error('❌ Schema Registry contract doesn\'t exist!');
+        toaster.create({
+          title: '❌ Schema Registry Contract Not Deployed',
+          description: `Contract not found at address ${ EAS_CONFIG.schemaRegistryAddress.slice(0, 10) }...${ EAS_CONFIG.schemaRegistryAddress.slice(-8) }`,
+          type: 'error',
+        });
+        return;
+      }
+      console.log('✅ Contract deployed');
+      console.log('   Code size:', (registryCode.length - 2) / 2, 'bytes');
+
+      // 4. 验证网络匹配
+      console.log('\n🔍 Step 3: Validate Network');
+      const network = await provider.getNetwork();
+      console.log('   Current Network Chain ID:', network.chainId);
+      console.log('   Configured Chain ID:', EAS_CONFIG.chainId);
+      if (network.chainId !== BigInt(EAS_CONFIG.chainId)) {
+        toaster.create({
+          title: '❌ Network Mismatch',
+          description: `Wallet connected to Chain ID ${ network.chainId }, but configuration requires ${ EAS_CONFIG.chainId }`,
+          type: 'error',
+        });
+        return;
+      }
+      console.log('✅ Network matched');
+
+      // 5. 初始化 Schema Registry 并提交到链上
+      console.log('\n🔍 Step 4: Initialize Schema Registry');
+      const schemaRegistry = new SchemaRegistry(EAS_CONFIG.schemaRegistryAddress);
+      schemaRegistry.connect(signer);
+      console.log('✅ Schema Registry connected');
+
+      console.log('\n📝 Step 5: Register Schema On-chain');
+      console.log('   Starting transaction...');
+      setLoadingStatus('Sending transaction...');
+
+      // 创建 schema 并提交到链上
+      const transaction = await schemaRegistry.register({
+        schema: schemaString,
+        resolverAddress: finalResolverAddress,
+        revocable: isRevocable,
+      });
+
+      console.log('✅ Transaction sent');
+      console.log('   Transaction hash:', transaction);
+
+      console.log('\n⏳ Step 6: Waiting for transaction confirmation...');
+      setLoadingStatus('Waiting for confirmation...');
+
+      // 添加超时机制和进度提示
+      const TIMEOUT = 120000; // 120 秒超时
+      let elapsedTime = 0;
+
+      // 进度计时器 - 每 10 秒提醒一次
+      const progressInterval = setInterval(() => {
+        elapsedTime += 10000;
+        const seconds = elapsedTime / 1000;
+        console.log(`   ⏰ Waited ${ seconds } seconds...`);
+        setLoadingStatus(`Waiting for confirmation (${ seconds }s)...`);
+      }, 10000);
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          reject(new Error(`Transaction confirmation timeout (waited ${ TIMEOUT / 1000 } seconds)`));
+        }, TIMEOUT);
+      });
+
+      // 等待交易确认，带超时和进度提示
+      let schemaId: string;
+      try {
+        schemaId = await Promise.race([
+          transaction.wait(),
+          timeoutPromise,
+        ]) as string;
+
+        clearInterval(progressInterval);
+        console.log(`   ✅ Transaction confirmed! Total time: ${ elapsedTime / 1000 } seconds`);
+      } catch(timeoutError) {
+        clearInterval(progressInterval);
+        throw timeoutError;
+      }
+
+      console.log('\n🎉 Schema created successfully!');
+      console.log('   Schema ID:', schemaId);
+
+      const schemaIdShort = `${ schemaId.slice(0, 10) }...${ schemaId.slice(-8) }`;
+      const refreshMsg = `Please refresh after ${ EAS_CONFIG.refreshTime } seconds to see the record.`;
+      toaster.create({
+        title: '✅ Schema Created Successfully',
+        description: `Schema ID: ${ schemaIdShort }. ${ refreshMsg }`,
+        type: 'success',
+      });
+
+      // 触发回调
+      onSchemaCreated?.(schemaId);
+
+      // 关闭弹窗
+      onClose();
+
+      // 重置表单
+      setFields([ { id: Date.now().toString(), name: '', type: '', isArray: false } ]);
+      setResolverAddress('');
+      setIsRevocable(true);
+      setTypeSearchQuery({});
+
+      console.log('=== ✅ Schema creation flow completed ===\n');
+    } catch(error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = error as Error & { code?: string; transaction?: any; message?: string };
+
+      console.error('\n=== ❌ Schema Creation Failed ===');
+      console.error('Error type:', err?.code || 'Unknown');
+      console.error('Error message:', err?.message || 'No message');
+
+      if (err?.transaction) {
+        console.error('Transaction info:', err.transaction);
+      }
+
+      let errorTitle = '❌ Failed to Create Schema';
+      let errorDescription = '';
+
+      // 详细错误分析
+      if (err?.message?.includes('timeout') || err?.message?.includes('超时')) {
+        errorTitle = '⚠️ Transaction Confirmation Timeout';
+        errorDescription = 'Transaction may still be processing. Please check your wallet to confirm transaction status.';
+        console.warn('\n⚠️  Note: Timeout doesn\'t mean transaction failed!');
+      } else if (err?.code === 'CALL_EXCEPTION' || err?.message?.includes('missing revert data')) {
+        console.error('\n🔍 Detected CALL_EXCEPTION error, starting analysis...');
+
+        try {
+          const provider = new ethers.JsonRpcProvider(EAS_CONFIG.rpcProvider);
+          await analyzeMissingRevertDataError(err, provider);
+        } catch(analysisError) {
+          console.error('Error analysis failed:', analysisError);
+        }
+
+        errorTitle = '❌ Contract Call Failed';
+        errorDescription = 'Possible causes: Schema Registry contract not properly deployed or ' +
+          'network configuration mismatch. Please check console for details.';
+      } else if (err?.code === 'ACTION_REJECTED') {
+        errorTitle = '❌ Transaction Rejected';
+        errorDescription = 'You cancelled the transaction signature';
+      } else if (err?.code === 'INSUFFICIENT_FUNDS') {
+        errorTitle = '❌ Insufficient Funds';
+        errorDescription = 'Account doesn\'t have enough gas fees';
+      } else if (err?.code === 'NETWORK_ERROR') {
+        errorTitle = '❌ Network Error';
+        errorDescription = 'Unable to connect to RPC node';
+      } else if (err?.message) {
+        errorDescription = err.message;
+      } else {
+        errorDescription = 'Unknown error, please check console logs';
+      }
+
+      console.error('\nUser-friendly error message:');
+      console.error('Title:', errorTitle);
+      console.error('Details:', errorDescription);
+      console.error('\nFull error object:', err);
+
+      toaster.create({
+        title: errorTitle,
+        description: errorDescription,
+        type: 'error',
+      });
+
+      onSchemaCreationError?.(err as Error);
+      console.error('=== ❌ Schema creation flow ended ===\n');
+      /* eslint-enable no-console */
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ fields, resolverAddress, isRevocable, validateForm, signer, onSchemaCreated, onSchemaCreationError, onClose ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
     if (!open) {
@@ -572,7 +916,7 @@ const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
                 (Can be used to verify, limit, act upon any attestation)
               </Text>
               <Input
-                placeholder="ex: 0x00000000000000000000000000000000000000000"
+                placeholder="ex: 0x0000000000000000000000000000000000000000"
                 value={ resolverAddress }
                 onChange={ handleResolverAddressChange }
                 size="lg"
@@ -632,6 +976,13 @@ const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
               </Flex>
             </Box>
 
+            { /* Loading Status */ }
+            { isLoading && loadingStatus && (
+              <Box mt={ 4 } textAlign="center">
+                <Text fontSize="sm" color="fg.muted">{ loadingStatus }</Text>
+              </Box>
+            ) }
+
             { /* Create Schema 按钮 */ }
             <Button
               mt={ 6 }
@@ -639,8 +990,10 @@ const CreateSchemaModal = ({ isOpen, onClose }: Props) => {
               size="lg"
               w="100%"
               onClick={ handleCreateSchema }
+              disabled={ isLoading }
+              loading={ isLoading }
             >
-              Create Schema
+              { isLoading ? 'Creating...' : 'Create Schema' }
             </Button>
           </Stack>
         </DialogBody>

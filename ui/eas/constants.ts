@@ -1,3 +1,5 @@
+import { getEnvValue } from 'configs/app/utils';
+
 // Solidity 数据类型定义
 export interface SolidityType {
   name: string;
@@ -282,3 +284,15 @@ export const SOLIDITY_TYPES: Array<SolidityType> = [
     description: 'A int256 is a integer value between -57896044618658097711785492504343953926634992332820282019728792003956564819968 and 57896044618658097711785492504343953926634992332820282019728792003956564819968',
   },
 ];
+
+const isTestnet = getEnvValue('NEXT_PUBLIC_IS_TESTNET') === 'true';
+
+export const EAS_CONFIG = {
+  chainId: getEnvValue('NEXT_PUBLIC_NETWORK_ID'),
+  chainName: isTestnet ? 'testnet' : 'mainnet',
+  contractAddress: isTestnet ? getEnvValue('NEXT_PUBLIC_EAS_TESTNET_EAS') : getEnvValue('NEXT_PUBLIC_EAS_MAINNET_EAS'),
+  schemaRegistryAddress: isTestnet ? getEnvValue('NEXT_PUBLIC_EAS_TESTNET_SCHEMA_REGISTRY') : getEnvValue('NEXT_PUBLIC_EAS_MAINNET_SCHEMA_REGISTRY'),
+  rpcProvider: getEnvValue('NEXT_PUBLIC_NETWORK_RPC_URL'),
+  graphqlEndpoint: getEnvValue('NEXT_PUBLIC_EAS_API_HOST'),
+  refreshTime: getEnvValue('NEXT_PUBLIC_EAS_REFRESH_TIME') || 0,
+};

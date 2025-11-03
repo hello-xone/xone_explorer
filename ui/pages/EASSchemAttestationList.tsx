@@ -30,6 +30,7 @@ interface Attestation {
   timeCreated: number;
   schemaId: string;
   schema: SchemaInfo;
+  revoked: boolean;
 }
 
 interface Schema {
@@ -131,6 +132,7 @@ const EASSchemAttestationList = () => {
         from: att.attester,
         to: att.recipient,
         time: att.time,
+        revoked: att.revoked,
       };
     });
   }, [ data?.attestations, schema?.index ]);
@@ -200,7 +202,7 @@ const EASSchemAttestationList = () => {
         emptyText="No attestations found for this schema."
       >
         <Box hideBelow="lg">
-          <AttestationTable data={ attestations } isLoading={ loading } isSchemaAttestationList top={ 80 }/>
+          <AttestationTable data={ attestations } isLoading={ loading } isSchemaAttestationList isRevokedStatus top={ 80 }/>
         </Box>
 
         <Box hideFrom="lg">

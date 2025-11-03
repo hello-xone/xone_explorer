@@ -112,7 +112,7 @@ export const GET_PAGE_SCHEMAS = `
 
 // 根据index获取schema详情
 export const GET_SCHEMA_DETAIL = `
-  query GetSchemaDetail($index: String!, $schemaId: String!) {
+  query GetSchemaDetail($index: String!) {
     schemata(where: { index: { equals: $index } }) {
       id
       schema
@@ -135,6 +135,12 @@ export const GET_SCHEMA_DETAIL = `
         attestations
       }
     }
+  }
+`;
+
+// 根据schema id获取attestation统计信息
+export const GET_ATTESTATION_COUNTS = `
+  query GetAttestationCounts($schemaId: String!) {
     totalAttestations: aggregateAttestation(where: { schemaId: { equals: $schemaId } }) {
       _count {
         _all
@@ -167,6 +173,7 @@ export const GET_ATTESTATIONS_BY_SCHEMA_ID = `
       time
       timeCreated
       schemaId
+      revoked
       schema {
         id
         index
@@ -192,6 +199,7 @@ export const GET_ATTESTATION_DETAIL = `
       refUID
       revocable
       revocationTime
+      expirationTime
       time
       timeCreated
       txid
@@ -232,6 +240,21 @@ export const GET_SCHEMA_BY_INDEX_UID = `
       id
       index
       schema
+    }
+  }
+`;
+
+// 约束每个解析器只能有一个模式
+export const GET_SCHEMAS_BY_RESOLVER = `
+  query GetSchemasByResolver($where: SchemaWhereInput) {
+    schemata(where: $where, take: 1) {
+      id
+      schema
+      creator
+      resolver
+      revocable
+      index
+      time
     }
   }
 `;
