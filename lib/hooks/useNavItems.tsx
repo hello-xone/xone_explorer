@@ -23,29 +23,63 @@ export const useExtraNavItems = (): Array<NavItem> => {
   const router = useRouter();
   const pathname = router.pathname;
 
-  return React.useMemo(() => [
-    {
-      text: 'EAS',
-      nextRoute: { pathname: '/eas' as const },
-      iconComponent: ({ size = 30, className }: { size?: number; className?: string }) => {
-        return (
-          <svg
-            width={ size }
-            height={ size }
-            viewBox="0 0 22 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={ className }
-          >
-            <path d="M12.3514 1H9.10811L1 22.9388V26H21V23.449L12.3514 1Z" fill="currentColor" fillOpacity="0.3"/>
-            <path d="M11.9459 6H9.67568L4 21.7959V24H18V22.1633L11.9459 6Z" fill="currentColor" fillOpacity="0.6"/>
-            <path d="M11.5405 11H10.2432L7 20.6531V22H15V20.8776L11.5405 11Z" fill="currentColor"/>
-          </svg>
-        );
+  return React.useMemo(() => {
+    const isActive = pathname === '/eas';
+
+    return [
+      {
+        text: 'EAS',
+        nextRoute: { pathname: '/eas' as const },
+        iconComponent: ({ size = 30, className }: { size?: number; className?: string }) => {
+          return (
+            <span className={ className } style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
+              { /* 默认图标 (灰色) */ }
+              <svg
+                width={ size }
+                height={ size }
+                viewBox="0 0 22 26"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  opacity: isActive ? 0 : 1,
+                  transition: 'opacity 0.2s ease',
+                }}
+                className="icon-default"
+              >
+                <path d="M12.3514 1H9.10811L1 22.9388V26H21V23.449L12.3514 1Z" fill="#262626"/>
+                <path d="M11.9459 6H9.67568L4 21.7959V24H18V22.1633L11.9459 6Z" fill="white" fillOpacity="0.46"/>
+                <path d="M11.5405 11H10.2432L7 20.6531V22H15V20.8776L11.5405 11Z" fill="white" fillOpacity="0.9"/>
+              </svg>
+              { /* Hover/Active 图标 (红色) */ }
+              <svg
+                width={ size }
+                height={ size }
+                viewBox="0 0 22 26"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  opacity: isActive ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                }}
+                className="icon-hover"
+              >
+                <path d="M12.3514 1H9.10811L1 22.9388V26H21V23.449L12.3514 1Z" fill="#FE0420"/>
+                <path d="M11.9459 6H9.67568L4 21.7959V24H18V22.1633L11.9459 6Z" fill="white" fillOpacity="0.46"/>
+                <path d="M11.5405 11H10.2432L7 20.6531V22H15V20.8776L11.5405 11Z" fill="white" fillOpacity="0.9"/>
+              </svg>
+            </span>
+          );
+        },
+        isActive,
       },
-      isActive: pathname === '/eas',
-    },
-  ], [ pathname ]);
+    ];
+  }, [ pathname ]);
 };
 
 export default function useNavItems(): ReturnType {
