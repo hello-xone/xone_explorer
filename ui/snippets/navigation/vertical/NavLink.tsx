@@ -20,9 +20,10 @@ type Props = {
   onClick?: (e: React.MouseEvent) => void;
   isCollapsed?: boolean;
   isDisabled?: boolean;
+  isExtra?: boolean;
 };
 
-const NavLink = ({ item, onClick, isCollapsed, isDisabled }: Props) => {
+const NavLink = ({ item, onClick, isCollapsed, isDisabled, isExtra }: Props) => {
   const isMobile = useIsMobile();
   const isInternalLink = isInternalItem(item);
 
@@ -68,6 +69,7 @@ const NavLink = ({ item, onClick, isCollapsed, isDisabled }: Props) => {
             <chakra.span
               { ...styleProps.textProps }
               ml={ 3 }
+              mt={ isExtra ? 1 : 0 }
               display={{ base: 'inline', lg: isExpanded ? 'inline' : 'none', xl: isCollapsed ? 'none' : 'inline' }}
             >
               <span>{ item.text }</span>

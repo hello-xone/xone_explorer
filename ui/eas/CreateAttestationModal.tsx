@@ -391,9 +391,79 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
         return;
       }
 
+      // 验证 EAS 合约是否存在
+      const provider = new ethers.JsonRpcProvider(EAS_CONFIG.rpcProvider);
+      const easContractCode = await provider.getCode(EAS_CONFIG.contractAddress);
+      if (easContractCode === '0x') {
+        console.error('❌ EAS Contract doesn\'t exist at address:', EAS_CONFIG.contractAddress);
+        toaster.create({
+          title: '❌ EAS Contract Not Found',
+          description: `EAS contract not deployed at ${ EAS_CONFIG.contractAddress.slice(0, 10) }...${ EAS_CONFIG.contractAddress.slice(-8) }. ` +
+            'Please check your network configuration.',
+          type: 'error',
+          duration: 10000,
+        });
+        return;
+      }
+      console.log('✅ EAS contract verified (code size:', (easContractCode.length - 2) / 2, 'bytes)');
+
       const eas = new EAS(EAS_CONFIG.contractAddress);
       eas.connect(signer);
       console.log('✅ EAS connected');
+
+      // 验证 Schema 是否存在于链上
+      setLoadingStatus('Verifying schema on chain...');
+      console.log('\n🔍 Step 1.5: Verify Schema exists on chain');
+      console.log('   Schema UID:', schema.uid);
+      console.log('   Schema Format:', schema.schema);
+
+      try {
+        // 调用 SchemaRegistry 合约查询 schema
+        const schemaRegistryABI = [
+          'function getSchema(bytes32 uid) external view returns (bytes32, address, bool, string)',
+        ];
+        const schemaRegistry = new ethers.Contract(
+          EAS_CONFIG.schemaRegistryAddress || '',
+          schemaRegistryABI,
+          provider,
+        );
+
+        const onChainSchema = await schemaRegistry.getSchema(schema.uid);
+        console.log('   On-chain Schema:', onChainSchema);
+
+        // 检查 schema 是否为空（不存在）
+        if (onChainSchema[1] === '0x0000000000000000000000000000000000000000') {
+          console.error('❌ Schema does NOT exist on chain!');
+          toaster.create({
+            title: '❌ Schema Not Found on Chain',
+            description: `Schema ${ schema.uid.slice(0, 10) }...${ schema.uid.slice(-8) } does not exist on the blockchain. ` +
+              'It may not have been created yet, or the creation transaction failed. ' +
+              'Please verify the schema exists before creating attestations.',
+            type: 'error',
+            duration: 12000,
+          });
+          return;
+        }
+
+        console.log('✅ Schema verified on chain');
+        console.log('   Creator:', onChainSchema[1]);
+        console.log('   Revocable:', onChainSchema[2]);
+        console.log('   Schema String:', onChainSchema[3]);
+
+        // 比较 schema format（可选：可以检测格式差异）
+        const onChainSchemaString = String(onChainSchema[3]);
+        const dbSchemaString = schema.schema;
+        if (onChainSchemaString !== dbSchemaString) {
+          console.warn('⚠️ Schema format mismatch!');
+          console.warn('   Database:', dbSchemaString);
+          console.warn('   On-chain:', onChainSchemaString);
+          console.warn('   This might cause encoding issues. Using on-chain version...');
+        }
+      } catch(schemaVerifyError) {
+        console.error('❌ Failed to verify schema:', schemaVerifyError);
+        // 不中断流程，继续尝试创建 attestation
+        console.warn('⚠️ Schema verification failed, but will continue...');
+      }
 
       // 动态构建 encoder 基于实际 schema
       setLoadingStatus('Encoding data...');

@@ -58,6 +58,7 @@ const SchemaTable = ({ data, isLoading, top = 0 }: Props) => {
             sortValue={ sort }
             onSortToggle={ handleSortToggle }
             indicatorPosition="left"
+            style={{ paddingRight: '25px' }}
           >
             Attestations
           </TableColumnHeaderSortable>
@@ -72,6 +73,7 @@ const SchemaTable = ({ data, isLoading, top = 0 }: Props) => {
                   href={ `/eas/schemaDetail/${ item.number }` }
                   fontWeight={ 600 }
                   color="link"
+                  mb="7px"
                 >
                   #{ item.number }
                 </Link>
