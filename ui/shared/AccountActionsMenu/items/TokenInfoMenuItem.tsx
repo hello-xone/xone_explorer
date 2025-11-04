@@ -42,9 +42,10 @@ const TokenInfoMenuItem = ({ hash, type }: ItemProps) => {
   const {
     data: ownerAddress,
   } = useReadContract({
-    address: '0x71f1a866Da4640Fac9d6aEa22DF23Ebcf2699999',
+    address: hash as `0x${ string }`,
     abi: ownableAbi,
     functionName: 'owner',
+    chainId: Number(config.chain.id),
   });
   const verifiedAddressesQuery = useApiQuery(
     'contractInfo:verified_addresses',
