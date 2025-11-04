@@ -268,7 +268,7 @@ const EASAttestationDetail = () => {
           }
         </HStack>
         {
-          !attestation?.revocationTime ? (
+          !attestation?.revocationTime && data && data.attestations?.[0]?.schema?.revocable ? (
             <Button
               variant="solid"
               size="sm"

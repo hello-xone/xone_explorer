@@ -557,7 +557,31 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
       console.log('   Resolver Address:', resolverAddress || '0x0000000000000000000000000000000000000000');
       console.log('   Revocable:', isRevocable);
 
-      // 0. 检查 Resolver 和 Schema 组合是否已存在
+      // 0. 验证 Schema 格式：检查参数名和类型名是否冲突 (Solidity/ABI/ethers.js 规范要求)
+      console.log('\n🔍 Step 0: Validate Schema Format (Solidity/ABI Compliance)');
+      const conflictingFields = fields.filter(field => {
+        const normalizedType = field.type.toLowerCase();
+        const normalizedName = field.name.toLowerCase();
+        return normalizedType === normalizedName;
+      });
+
+      if (conflictingFields.length > 0) {
+        const conflictList = conflictingFields.map(f => `"${ f.type } ${ f.name }"`).join(', ');
+        toaster.create({
+          title: '❌ Invalid Schema Format',
+          description: `Parameter name cannot be the same as type name. ` +
+            `Conflicting fields: ${ conflictList }. ` +
+            `This violates Solidity/ABI standards and will prevent Attestation creation. ` +
+            `Example: use "address recipient" instead of "address address", ` +
+            `"uint256 tokenId" instead of "uint256 uint256".`,
+          type: 'error',
+          duration: 12000,
+        });
+        return;
+      }
+      console.log('✅ Schema format validated (no type/name conflicts)');
+
+      // 1. 检查 Resolver 和 Schema 组合是否已存在
       const finalResolverAddress = resolverAddress;
 
       // 验证地址格式（如果不是零地址）

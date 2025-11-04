@@ -66,6 +66,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'https://api.web3modal.org',
       'https://www.smartwallet.dev',
       'https://pulse.walletconnect.org',
+      'https://eas.xonetest.plus',
       // chain RPC server
       ...config.chain.rpcUrls,
       'https://infragrid.v.network', // RPC providers

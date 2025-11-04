@@ -10,6 +10,7 @@ import useIsAuth from 'ui/snippets/auth/useIsAuth';
 import NetworkLogo from 'ui/snippets/networkMenu/NetworkLogo';
 import NetworkMenu from 'ui/snippets/topBar/NetworkMenu';
 
+import ExtraNavItems from '../ExtraNavItems';
 import NavigationPromoBanner from '../promoBanner/NavigationPromoBanner';
 import RollupStageBadge from '../RollupStageBadge';
 import TestnetBadge from '../TestnetBadge';
@@ -100,6 +101,7 @@ const NavigationDesktop = () => {
             }
           }) }
         </VStack>
+        <ExtraNavItems isCollapsed={ isCollapsed }/>
       </Box>
       { isAuth && (
         <Box as="nav" borderTopWidth="1px" borderColor="border.divider" w="100%" mt={ 3 } pt={ 3 }>

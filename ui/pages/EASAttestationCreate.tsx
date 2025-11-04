@@ -105,6 +105,8 @@ const EASAttestationCreate = () => {
     const trimmedInput = searchInput.trim();
     if (trimmedInput) {
       setSearchQuery(trimmedInput);
+    } else {
+      setSearchQuery('');
     }
   }, [ searchInput ]);
 
@@ -382,7 +384,7 @@ const EASAttestationCreate = () => {
         </Box>
 
         { /* 特色 Schemas */ }
-        <Box pt={{ base: 2, md: 4 }}>
+        <Box pt={{ base: 2, md: 4 }} hidden={ displayedSchemas?.length === 0 }>
           <Box textAlign="center" mb={{ base: 4, md: 6 }}>
             <Text
               fontSize="xs"
