@@ -1,4 +1,4 @@
-import { VStack } from '@chakra-ui/react';
+import { VStack, Box } from '@chakra-ui/react';
 
 import { useExtraNavItems } from 'lib/hooks/useNavItems';
 
@@ -15,13 +15,25 @@ export default function ExtraNavItems({ isCollapsed, onClick = () => {} }: Props
     <VStack as="ul" gap="1" alignItems="flex-start" mt={ 6 } pt={ 4 } borderTopWidth="1px" borderColor="border.divider">
       { extraNavItems.map((item) => {
         return (
-          <NavLink
+          <Box
             key={ item.text }
-            item={ item }
-            isCollapsed={ isCollapsed }
-            isExtra
-            onClick={ onClick }
-          />
+            w="100%"
+            css={{
+              '&:hover .icon-default': {
+                opacity: '0 !important',
+              },
+              '&:hover .icon-hover': {
+                opacity: '1 !important',
+              },
+            }}
+          >
+            <NavLink
+              item={ item }
+              isCollapsed={ isCollapsed }
+              isExtra
+              onClick={ onClick }
+            />
+          </Box>
         );
       }) }
     </VStack>
