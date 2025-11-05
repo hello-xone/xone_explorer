@@ -15,33 +15,20 @@ interface Props {
   data: Array<SchemaItem>;
   isLoading?: boolean;
   top?: number;
+  sort?: SortValue;
+  onSortChange?: (sort: SortValue) => void;
 }
 
-const SchemaTable = ({ data, isLoading, top = 0 }: Props) => {
-  // 默认按 attestations 降序排序
-  const [ sort, setSort ] = React.useState<SortValue>('attestations-desc');
-
+const SchemaTable = ({ data, isLoading, top = 0, sort = 'attestations-desc', onSortChange }: Props) => {
   // 排序处理函数 - 只在降序和升序之间切换
   const handleSortToggle = React.useCallback((field: string) => {
     // field 参数用于满足 TableColumnHeaderSortable 的接口要求
-    if (field === 'attestations') {
-      setSort((currentSort) => {
-        // 在降序和升序之间切换
-        return currentSort === 'attestations-desc' ? 'attestations-asc' : 'attestations-desc';
-      });
+    if (field === 'attestations' && onSortChange) {
+      // 在降序和升序之间切换
+      const newSort: SortValue = sort === 'attestations-desc' ? 'attestations-asc' : 'attestations-desc';
+      onSortChange(newSort);
     }
-  }, []);
-
-  // 排序后的数据
-  const sortedData = React.useMemo(() => {
-    const dataCopy = [ ...data ];
-
-    if (sort === 'attestations-desc') {
-      return dataCopy.sort((a, b) => a.attestations - b.attestations);
-    } else {
-      return dataCopy.sort((a, b) => b.attestations - a.attestations);
-    }
-  }, [ data, sort ]);
+  }, [ sort, onSortChange ]);
 
   return (
     <TableRoot minW="1100px">
@@ -65,7 +52,7 @@ const SchemaTable = ({ data, isLoading, top = 0 }: Props) => {
         </TableRow>
       </TableHeaderSticky>
       <TableBody>
-        { sortedData.map((item, index) => (
+        { data.map((item, index) => (
           <TableRow key={ item.uid || index }>
             <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading }>

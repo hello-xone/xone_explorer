@@ -121,6 +121,11 @@ const FieldRow = React.memo(({
     onDragEnd();
   }, [ onDragEnd ]);
 
+  // 防止输入框内的拖拽触发整行拖拽
+  const handleInputDragStart = React.useCallback((e: React.DragEvent) => {
+    e.stopPropagation();
+  }, []);
+
   return (
     <Flex
       key={ field.id }
@@ -131,16 +136,21 @@ const FieldRow = React.memo(({
       borderRadius="lg"
       borderWidth="1px"
       borderColor="border"
-      draggable
-      onDragStart={ handleDragStart }
       onDragOver={ handleDragOver }
-      onDragEnd={ handleDragEnd }
       opacity={ isDragging ? 0.5 : 1 }
-      cursor={ isDragging ? 'grabbing' : 'default' }
+      cursor="default"
       transition="all 0.2s"
     >
       { /* 拖拽图标 */ }
-      <Box cursor="grab" color="fg.muted" _hover={{ color: 'fg' }} _active={{ cursor: 'grabbing' }}>
+      <Box
+        draggable
+        onDragStart={ handleDragStart }
+        onDragEnd={ handleDragEnd }
+        cursor="grab"
+        color="fg.muted"
+        _hover={{ color: 'fg' }}
+        _active={{ cursor: 'grabbing' }}
+      >
         <IconSvg name="dots" boxSize={ 5 }/>
       </Box>
 
@@ -149,6 +159,7 @@ const FieldRow = React.memo(({
         placeholder="Field name"
         value={ field.name }
         onChange={ onNameChange }
+        onDragStart={ handleInputDragStart }
         flex={ 1 }
         borderRadius="md"
         borderWidth="1px"

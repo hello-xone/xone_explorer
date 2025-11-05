@@ -25,6 +25,7 @@ interface AttestationSchema {
   uid: string;
   schema: string;
   fields: Array<AttestationSchemaField>;
+  revocable: boolean;
 }
 
 // 解析 schema 字符串（用于显示）
@@ -61,6 +62,7 @@ interface Schema {
   id: string;
   index: string;
   schema: string;
+  revocable: boolean;
 }
 
 interface LatestSchemasResponse {
@@ -136,6 +138,7 @@ const EASAttestationCreate = () => {
         uid: schema.id,
         schema: schema.schema,
         fields,
+        revocable: schema.revocable,
       });
       setIsModalOpen(true);
     };

@@ -463,6 +463,7 @@ const EASSchemaDetail = () => {
             uid: schema.id,
             schema: schema.schema,
             fields: decodedSchema,
+            revocable: schema.revocable,
           }}
         />
       ) }
