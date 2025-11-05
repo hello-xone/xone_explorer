@@ -5,8 +5,10 @@ import type { SchemaItem } from '../types';
 
 import { GET_HOME_SCHEMAS } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
+import useWeb3Wallet from 'lib/web3/useWallet';
 import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
+import { toaster } from 'toolkit/chakra/toaster';
 import CreateSchemaModal from 'ui/eas/CreateSchemaModal';
 import HomeSchemaList from 'ui/eas/home/SchemaList';
 import HomeSchemaTable from 'ui/eas/home/SchemaTable';
@@ -26,17 +28,31 @@ interface Schema {
   time: number;
   txid: string;
   attestations: Array<Attestation>;
+  _count?: {
+    attestations: number;
+  };
 }
 
 interface SchemasResponse {
   schemata: Array<Schema>;
 }
 
+type SortValue = 'attestations-asc' | 'attestations-desc';
+
 const HomeSchema = () => {
   const [ isSchemaModalOpen, setIsSchemaModalOpen ] = React.useState(false);
+  const [ sort, setSort ] = React.useState<SortValue>('attestations-desc'); // 默认倒序
+  const web3Wallet = useWeb3Wallet({ source: 'Smart contracts' });
+
+  const sortOrder = React.useMemo(() => {
+    return sort === 'attestations-desc' ? 'asc' : 'desc';
+  }, [ sort ]);
 
   const { data, loading, error } = useEasGraphQL<SchemasResponse>({
     query: GET_HOME_SCHEMAS,
+    variables: {
+      sortOrder, // 传递排序参数到 GraphQL 查询
+    },
     enabled: true,
   });
 
@@ -54,18 +70,40 @@ const HomeSchema = () => {
   }, [ data ]);
 
   const handleOpenModal = React.useCallback(() => {
+    // 检查钱包是否已连接
+    if (!web3Wallet.isConnected) {
+      toaster.create({
+        title: 'Please connect your wallet',
+        description: 'To create a Schema, you need to connect your wallet first',
+        type: 'warning',
+        duration: 3000,
+      });
+      web3Wallet.openModal();
+      return;
+    }
+
     setIsSchemaModalOpen(true);
-  }, []);
+  }, [ web3Wallet ]);
 
   const handleCloseModal = React.useCallback(() => {
     setIsSchemaModalOpen(false);
+  }, []);
+
+  const handleSortChange = React.useCallback((newSort: SortValue) => {
+    setSort(newSort);
   }, []);
 
   const content = schemas.length > 0 ? (
     <Box>
       { /* 桌面端表格视图 */ }
       <Box hideBelow="lg">
-        <HomeSchemaTable data={ schemas } isLoading={ loading } top={ 0 }/>
+        <HomeSchemaTable
+          data={ schemas }
+          isLoading={ loading }
+          top={ 0 }
+          sort={ sort }
+          onSortChange={ handleSortChange }
+        />
       </Box>
 
       { /* 移动端列表视图 */ }

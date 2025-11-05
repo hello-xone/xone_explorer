@@ -76,6 +76,190 @@ const EASAttestationDetail = () => {
     setIsRevokeModalOpen(false);
   }, []);
 
+  // 将 hex 转换为有符号或无符号的十进制字符串
+  const hexToDecimal = React.useCallback((hexStr: string, isSigned: boolean = false): string => {
+    try {
+      // 处理可能的负号前缀（虽然这不是标准的十六进制格式）
+      let isNegative = false;
+      let cleanHex = hexStr;
+
+      if (hexStr.startsWith('-')) {
+        isNegative = true;
+        cleanHex = hexStr.slice(1);
+      }
+
+      // 确保以 0x 开头
+      const hex = cleanHex.startsWith('0x') ? cleanHex : `0x${ cleanHex }`;
+
+      let value: bigint;
+      try {
+        value = BigInt(hex);
+      } catch(parseErr) {
+        if (/^-?\d+$/.test(hexStr)) {
+          return hexStr;
+        }
+        return hexStr;
+      }
+
+      // 如果输入就带负号，直接返回负数
+      if (isNegative) {
+        return `-${ value.toString() }`;
+      }
+
+      // 如果是无符号整数，直接返回
+      if (!isSigned) {
+        return value.toString();
+      }
+
+      // 对于有符号整数，需要处理负数（二补数表示法）
+      // int256 的范围：-2^255 到 2^255-1
+      // 如果值 >= 2^255，说明是负数（二补数表示）
+      const maxPositive = BigInt(1) << BigInt(255); // 2^255
+      const maxValue = BigInt(1) << BigInt(256); // 2^256
+
+      if (value >= maxPositive) {
+        // 转换为负数：value - 2^256
+        const negativeValue = value - maxValue;
+        return negativeValue.toString();
+      }
+
+      return value.toString();
+    } catch(err) {
+      // 如果是已经是十进制数字字符串，直接返回
+      if (/^-?\d+$/.test(hexStr)) {
+        return hexStr;
+      }
+      return hexStr;
+    }
+  }, []);
+
+  // 提取对象中的实际值（专门处理 BigNumber 和其他复杂对象）
+  const extractValue = React.useCallback((value: unknown, type?: string): unknown => {
+    // 处理 null/undefined
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    // 如果是基本类型，直接返回
+    if (typeof value !== 'object') {
+      return value;
+    }
+
+    // 如果是数组，递归处理每个元素
+    if (Array.isArray(value)) {
+      return value.map(item => extractValue(item, type));
+    }
+
+    const obj = value as Record<string, unknown>;
+
+    // 判断是否为有符号整数类型
+    const baseType = type?.replace('[]', '') || '';
+    const isSigned = /^int\d*$/.test(baseType);
+
+    // ethers v6 BigNumber 对象：{ type: 'BigNumber', hex: '0x...' }
+    if (obj.type === 'BigNumber' && typeof obj.hex === 'string') {
+      return hexToDecimal(obj.hex, isSigned);
+    }
+
+    // ethers v5 BigNumber 对象：{ _hex: '0x...', _isBigNumber: true }
+    if (obj._hex && typeof obj._hex === 'string') {
+      return hexToDecimal(obj._hex, isSigned);
+    }
+
+    // 递归检查 value 属性（可能是嵌套结构）
+    if ('value' in obj && obj.value !== value) { // 避免无限循环
+      return extractValue(obj.value, type);
+    }
+
+    // 尝试使用 toString() 方法
+    if (typeof obj.toString === 'function') {
+      try {
+        const str = obj.toString();
+        if (str !== '[object Object]') {
+          return str;
+        }
+      } catch(err) {
+        /* eslint-disable no-console */
+        console.error('  → toString() failed:', err);
+        /* eslint-enable no-console */
+      }
+    }
+
+    // 如果对象只有一个属性，可能是包装对象
+    const keys = Object.keys(obj);
+    if (keys.length === 1) {
+      /* eslint-disable no-console */
+      console.log('  → Single key object, extracting key:', keys[0]);
+      /* eslint-enable no-console */
+      return extractValue(obj[keys[0]], type);
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }, [ hexToDecimal ]);
+
+  // 格式化不同类型的值
+  const formatValue = React.useCallback((value: unknown, type: string): string => {
+    // 先提取对象中的实际值（传递类型信息用于正确处理有符号整数）
+    const extractedValue = extractValue(value, type);
+
+    // 处理 null/undefined
+    if (extractedValue === null || extractedValue === undefined) {
+      return '-';
+    }
+
+    // 去除数组标记以获取基础类型
+    const baseType = type.replace('[]', '');
+    const isArray = type.endsWith('[]');
+
+    // 如果是数组类型
+    if (isArray && Array.isArray(extractedValue)) {
+      const formattedItems = extractedValue.map(item => formatValue(item, baseType));
+      return `[${ formattedItems.join(', ') }]`;
+    }
+
+    // bool 类型
+    if (baseType === 'bool') {
+      return String(extractedValue) === 'true' || extractedValue === true ? 'true' : 'false';
+    }
+
+    // address 类型
+    if (baseType === 'address') {
+      const addr = String(extractedValue);
+      // 确保以 0x 开头
+      return addr.startsWith('0x') ? addr : `0x${ addr }`;
+    }
+
+    // bytes 类型（bytes, bytes1-bytes32）
+    if (baseType === 'bytes' || /^bytes\d+$/.test(baseType)) {
+      const bytes = String(extractedValue);
+      // 确保以 0x 开头
+      return bytes.startsWith('0x') ? bytes : `0x${ bytes }`;
+    }
+
+    // uint 类型（uint8-uint256）
+    if (/^uint\d*$/.test(baseType)) {
+      // 对于大数字，保持字符串格式
+      return String(extractedValue);
+    }
+
+    // int 类型（int8-int256）
+    if (/^int\d*$/.test(baseType)) {
+      return String(extractedValue);
+    }
+
+    // string 类型
+    if (baseType === 'string') {
+      return String(extractedValue);
+    }
+
+    // 其他类型，默认转换为字符串
+    return String(extractedValue);
+  }, [ extractValue ]);
+
   // 解码 data 字段
   const decodedData = React.useMemo(() => {
     if (!attestation?.decodedDataJson) return [];
@@ -84,18 +268,27 @@ const EASAttestationDetail = () => {
       const parsed = JSON.parse(attestation.decodedDataJson) as Array<{
         name: string;
         type: string;
-        value: { value: string | number | boolean };
+        value: { value: unknown } | { value: Array<unknown> };
       }>;
 
-      return parsed.map((item) => ({
-        name: item.name,
-        type: item.type,
-        value: item.value.value.toString(),
-      }));
-    } catch {
+      return parsed.map((item) => {
+        const rawValue = item.value.value;
+
+        const formattedValue = formatValue(rawValue, item.type);
+
+        return {
+          name: item.name,
+          type: item.type,
+          value: formattedValue,
+        };
+      });
+    } catch(error) {
+      /* eslint-disable no-console */
+      console.error('Failed to parse decodedDataJson:', error);
+      /* eslint-enable no-console */
       return [];
     }
-  }, [ attestation?.decodedDataJson ]);
+  }, [ attestation?.decodedDataJson, formatValue ]);
 
   // 动态解析 schema 生成 types
   const schemaTypes = React.useMemo(() => {

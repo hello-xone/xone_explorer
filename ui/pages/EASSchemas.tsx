@@ -16,6 +16,8 @@ import SchemaTable from '../eas/home/SchemaTable';
 
 const PAGE_SIZE = 10;
 
+type SortValue = 'attestations-asc' | 'attestations-desc';
+
 interface Attestation {
   id: string;
 }
@@ -30,6 +32,9 @@ interface Schema {
   time: number;
   txid: string;
   attestations: Array<Attestation>;
+  _count?: {
+    attestations: number;
+  };
 }
 
 interface SchemasResponse {
@@ -44,6 +49,7 @@ interface SchemasResponse {
 const EASSchemas = () => {
   const router = useRouter();
   const [ currentPage, setCurrentPage ] = React.useState(1);
+  const [ sort, setSort ] = React.useState<SortValue>('attestations-desc'); // 默认倒序
 
   // 从 URL 获取页码
   React.useEffect(() => {
@@ -51,14 +57,20 @@ const EASSchemas = () => {
     setCurrentPage(pageFromUrl);
   }, [ router.query.page ]);
 
+  // 将 SortValue 转换为 GraphQL 的 sortOrder 参数
+  const sortOrder = React.useMemo(() => {
+    return sort === 'attestations-desc' ? 'asc' : 'desc';
+  }, [ sort ]);
+
   // 计算 skip 值并使用 useMemo 缓存 variables
   const variables = React.useMemo(() => {
     const vars = {
       skip: (currentPage - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
+      sortOrder, // 添加排序参数
     };
     return vars;
-  }, [ currentPage ]);
+  }, [ currentPage, sortOrder ]);
 
   // 获取数据
   const { data, loading, error } = useEasGraphQL<SchemasResponse>({
@@ -127,6 +139,16 @@ const EASSchemas = () => {
     }, undefined, { shallow: true });
   }, [ router ]);
 
+  const handleSortChange = React.useCallback((newSort: SortValue) => {
+    setSort(newSort);
+    // 排序改变时重置到第一页
+    setCurrentPage(1);
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, page: undefined },
+    }, undefined, { shallow: true });
+  }, [ router ]);
+
   return (
     <DataListDisplay
       isError={ Boolean(error) }
@@ -145,7 +167,13 @@ const EASSchemas = () => {
 
       <Box mt={ 8 }>
         <Box hideBelow="lg">
-          <SchemaTable data={ schemas } isLoading={ loading } top={ 0 }/>
+          <SchemaTable
+            data={ schemas }
+            isLoading={ loading }
+            top={ 0 }
+            sort={ sort }
+            onSortChange={ handleSortChange }
+          />
         </Box>
 
         <Box hideFrom="lg">

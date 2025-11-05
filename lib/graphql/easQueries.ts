@@ -37,8 +37,8 @@ export const GET_HOME_ATTESTATIONS = `
 
 // 首页获取最新的8条schema数据
 export const GET_HOME_SCHEMAS = `
-  query HomeSchemas {
-    schemata(take: 8, orderBy: { time: desc }) {
+  query HomeSchemas($sortOrder: SortOrder = desc) {
+    schemata(take: 8, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
       id
       schema
       creator
@@ -49,6 +49,9 @@ export const GET_HOME_SCHEMAS = `
       txid
       attestations {
         id
+      }
+      _count {
+        attestations
       }
     }
   }
@@ -86,10 +89,10 @@ export const GET_PAGE_ATTESTATIONS = `
   }
 `;
 
-// 分页获取schema列表
+// 分页获取schema列表，按 attestations 数量排序
 export const GET_PAGE_SCHEMAS = `
-  query GetSchemas($skip: Int, $take: Int) {
-    schemata(skip: $skip, take: $take, orderBy: { time: desc }) {
+  query GetSchemas($skip: Int, $take: Int, $sortOrder: SortOrder = desc) {
+    schemata(skip: $skip, take: $take, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
       id
       schema
       creator
@@ -100,6 +103,9 @@ export const GET_PAGE_SCHEMAS = `
       txid
       attestations {
         id
+      }
+      _count {
+        attestations
       }
     }
     aggregateSchema {
@@ -229,6 +235,7 @@ export const GET_LATEST_4_SCHEMAS = `
       id
       index
       schema
+      revocable
     }
   }
 `;
@@ -240,6 +247,7 @@ export const GET_SCHEMA_BY_INDEX_UID = `
       id
       index
       schema
+      revocable
     }
   }
 `;

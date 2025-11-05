@@ -17,6 +17,7 @@ interface Schema {
   uid: string;
   schema: string;
   fields: Array<{ name: string; type: string; isArray: boolean }>;
+  revocable: boolean;
 }
 
 interface Props {
@@ -419,8 +420,9 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
 
       try {
         // 调用 SchemaRegistry 合约查询 schema
+        // 正确的 ABI：getSchema 返回一个 SchemaRecord struct
         const schemaRegistryABI = [
-          'function getSchema(bytes32 uid) external view returns (bytes32, address, bool, string)',
+          'function getSchema(bytes32 uid) external view returns (tuple(bytes32 uid, address resolver, bool revocable, string schema))',
         ];
         const schemaRegistry = new ethers.Contract(
           EAS_CONFIG.schemaRegistryAddress || '',
@@ -431,9 +433,16 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
         const onChainSchema = await schemaRegistry.getSchema(schema.uid);
         console.log('   On-chain Schema:', onChainSchema);
 
-        // 检查 schema 是否为空（不存在）
-        if (onChainSchema[1] === '0x0000000000000000000000000000000000000000') {
+        // 检查 schema 是否存在
+        // 注意：resolver 为零地址是合法的！表示不使用自定义 resolver
+        // 只有当 schema string 为空时，才表示 Schema 不存在
+        const schemaString = String(onChainSchema[3] || '');
+        const schemaUid = String(onChainSchema[0] || '');
+
+        if (!schemaString || schemaString.trim() === '') {
           console.error('❌ Schema does NOT exist on chain!');
+          console.error('   Schema UID queried:', schema.uid);
+          console.error('   Returned schema string is empty');
           toaster.create({
             title: '❌ Schema Not Found on Chain',
             description: `Schema ${ schema.uid.slice(0, 10) }...${ schema.uid.slice(-8) } does not exist on the blockchain. ` +
@@ -446,17 +455,17 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
         }
 
         console.log('✅ Schema verified on chain');
-        console.log('   Creator:', onChainSchema[1]);
-        console.log('   Revocable:', onChainSchema[2]);
-        console.log('   Schema String:', onChainSchema[3]);
+        console.log('   UID:', schemaUid);
+        console.log('   Resolver:', onChainSchema.resolver || onChainSchema[1], '(zero address = no custom resolver)');
+        console.log('   Revocable:', onChainSchema.revocable ?? onChainSchema[2]);
+        console.log('   Schema String:', schemaString);
 
         // 比较 schema format（可选：可以检测格式差异）
-        const onChainSchemaString = String(onChainSchema[3]);
         const dbSchemaString = schema.schema;
-        if (onChainSchemaString !== dbSchemaString) {
+        if (schemaString !== dbSchemaString) {
           console.warn('⚠️ Schema format mismatch!');
           console.warn('   Database:', dbSchemaString);
-          console.warn('   On-chain:', onChainSchemaString);
+          console.warn('   On-chain:', schemaString);
           console.warn('   This might cause encoding issues. Using on-chain version...');
         }
       } catch(schemaVerifyError) {
@@ -571,16 +580,19 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
         console.log('   Expiration Time: Not set (never expires)');
       }
 
-      // 创建链上 attestation
-      const tx = await eas.attest({
+      const attestOptions = {
         schema: schema.uid,
         data: {
           recipient: recipient,
           expirationTime: expirationTimestamp,
-          revocable: true,
+          revocable: schema.revocable,
           data: encodedData,
         },
-      });
+      };
+
+      console.log('Attest Options:', attestOptions);
+      // 创建链上 attestation
+      const tx = await eas.attest(attestOptions);
 
       console.log('✅ Transaction sent');
 
@@ -614,40 +626,65 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
       setExpirationTime('');
       setFieldValues({});
     } catch(error) {
+      const err = error as { code?: string | number; reason?: string; message?: string; info?: { error?: { code?: number } } };
+
+      // 检查是否是用户拒绝交易（支持多种格式）
+      const isUserRejected = err?.code === 'ACTION_REJECTED' ||
+                            err?.code === 4001 ||
+                            err?.info?.error?.code === 4001 ||
+                            err?.reason === 'rejected' ||
+                            err?.message?.includes('user rejected') ||
+                            err?.message?.includes('User denied');
+
       /* eslint-disable no-console */
-      console.error('\n=== ❌ Attestation Creation Failed ===');
-      console.error('Full error:', error);
-      console.error('Error code:', (error as { code?: string })?.code);
-      console.error('Error reason:', (error as { reason?: string })?.reason);
+      if (isUserRejected) {
+        // 用户拒绝交易是正常操作，只记录简单日志
+        console.log('ℹ️ User cancelled the transaction');
+      } else {
+        // 其他错误输出详细信息
+        console.error('\n=== ❌ Attestation Creation Failed ===');
+        console.error('Full error:', error);
+        console.error('Error code:', err?.code);
+        console.error('Error reason:', err?.reason);
+      }
       /* eslint-enable no-console */
 
-      const err = error as { code?: string; reason?: string; message?: string };
       let errorTitle = '❌ Failed to Create Attestation';
       let errorDescription = '';
 
-      if (err?.code === 'ACTION_REJECTED') {
-        errorTitle = '❌ Transaction Rejected';
-        errorDescription = 'You cancelled the transaction signature';
+      if (isUserRejected) {
+        errorTitle = '🚫 Transaction Cancelled';
+        errorDescription = 'You rejected the transaction in your wallet. No worries, you can try again when ready.';
       } else if (err?.code === 'INSUFFICIENT_FUNDS') {
         errorTitle = '❌ Insufficient Funds';
-        errorDescription = 'Account doesn\'t have enough gas fees';
+        errorDescription = 'Your account doesn\'t have enough funds to pay for gas fees. Please add more funds and try again.';
       } else if (err?.code === 'CALL_EXCEPTION') {
         errorTitle = '❌ Contract Call Failed';
-        errorDescription = 'Possible causes: Schema format mismatch, incorrect EAS contract address, ' +
-          'network configuration error, or schema doesn\'t exist';
+        errorDescription = 'The transaction failed during execution. ' +
+          'Possible causes:\n' +
+          '• Schema format mismatch\n' +
+          '• Incorrect field values\n' +
+          '• Network configuration error\n' +
+          'Please verify your inputs and try again.';
       } else if (err?.code === 'NETWORK_ERROR') {
         errorTitle = '❌ Network Error';
-        errorDescription = 'Unable to connect to RPC node';
+        errorDescription = 'Unable to connect to the blockchain network. Please check your internet connection and RPC settings.';
+      } else if (err?.code === 'TIMEOUT') {
+        errorTitle = '⏱️ Transaction Timeout';
+        errorDescription = 'The transaction took too long to process. Please try again.';
       } else if (err?.message) {
-        errorDescription = err.message;
+        // 简化错误消息，移除技术细节
+        const simpleMessage = err.message.split('\n')[0].substring(0, 150);
+        errorDescription = simpleMessage;
       } else {
-        errorDescription = 'Unknown error, please check console logs';
+        errorDescription = 'An unexpected error occurred. Please check the console for details.';
       }
 
       toaster.create({
         title: errorTitle,
         description: errorDescription,
-        type: 'error',
+        type: isUserRejected ? 'warning' : 'error',
+        duration: isUserRejected ? 4000 : 8000,
       });
 
       onAttestationError?.(error as Error);
