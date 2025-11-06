@@ -3,7 +3,7 @@ import React from 'react';
 
 import type { SchemaItem } from '../types';
 
-import { GET_HOME_SCHEMAS } from 'lib/graphql/easQueries';
+import { GET_HOME_SCHEMAS, GET_HOME_SCHEMAS_BY_TIME } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
 import useWeb3Wallet from 'lib/web3/useWallet';
 import { Button } from 'toolkit/chakra/button';
@@ -37,22 +37,34 @@ interface SchemasResponse {
   schemata: Array<Schema>;
 }
 
-type SortValue = 'attestations-asc' | 'attestations-desc';
+type SortValue = 'attestations-asc' | 'attestations-desc' | null;
 
 const HomeSchema = () => {
   const [ isSchemaModalOpen, setIsSchemaModalOpen ] = React.useState(false);
-  const [ sort, setSort ] = React.useState<SortValue>('attestations-desc'); // 默认倒序
+  const [ sort, setSort ] = React.useState<SortValue>(null);
   const web3Wallet = useWeb3Wallet({ source: 'Smart contracts' });
 
-  const sortOrder = React.useMemo(() => {
-    return sort === 'attestations-desc' ? 'asc' : 'desc';
+  // 根据 sort 值决定使用哪个查询和参数
+  const queryConfig = React.useMemo(() => {
+    if (sort === null) {
+      // 当 sort 为 null 时，只按时间排序（从大到小），不涉及 attestations 数量
+      return {
+        query: GET_HOME_SCHEMAS_BY_TIME,
+        variables: {},
+      };
+    } else {
+      // 当 sort 有值时，按 attestations 数量排序
+      const sortOrder = sort === 'attestations-desc' ? 'asc' : 'desc';
+      return {
+        query: GET_HOME_SCHEMAS,
+        variables: { sortOrder },
+      };
+    }
   }, [ sort ]);
 
   const { data, loading, error } = useEasGraphQL<SchemasResponse>({
-    query: GET_HOME_SCHEMAS,
-    variables: {
-      sortOrder, // 传递排序参数到 GraphQL 查询
-    },
+    query: queryConfig.query,
+    variables: queryConfig.variables,
     enabled: true,
   });
 
