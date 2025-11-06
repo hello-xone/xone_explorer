@@ -5,7 +5,7 @@ import { animateScroll } from 'react-scroll';
 
 import type { SchemaItem } from 'ui/eas/types';
 
-import { GET_PAGE_SCHEMAS } from 'lib/graphql/easQueries';
+import { GET_PAGE_SCHEMAS, GET_PAGE_SCHEMAS_BY_TIME } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
@@ -16,7 +16,7 @@ import SchemaTable from '../eas/home/SchemaTable';
 
 const PAGE_SIZE = 10;
 
-type SortValue = 'attestations-asc' | 'attestations-desc';
+type SortValue = 'attestations-asc' | 'attestations-desc' | null;
 
 interface Attestation {
   id: string;
@@ -49,7 +49,7 @@ interface SchemasResponse {
 const EASSchemas = () => {
   const router = useRouter();
   const [ currentPage, setCurrentPage ] = React.useState(1);
-  const [ sort, setSort ] = React.useState<SortValue>('attestations-desc'); // 默认倒序
+  const [ sort, setSort ] = React.useState<SortValue>(null); // 默认为 null（按时间排序）
 
   // 从 URL 获取页码
   React.useEffect(() => {
@@ -57,25 +57,31 @@ const EASSchemas = () => {
     setCurrentPage(pageFromUrl);
   }, [ router.query.page ]);
 
-  // 将 SortValue 转换为 GraphQL 的 sortOrder 参数
-  const sortOrder = React.useMemo(() => {
-    return sort === 'attestations-desc' ? 'asc' : 'desc';
-  }, [ sort ]);
+  // 根据 sort 值决定使用哪个查询和参数
+  const queryConfig = React.useMemo(() => {
+    const skip = (currentPage - 1) * PAGE_SIZE;
+    const take = PAGE_SIZE;
 
-  // 计算 skip 值并使用 useMemo 缓存 variables
-  const variables = React.useMemo(() => {
-    const vars = {
-      skip: (currentPage - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      sortOrder, // 添加排序参数
-    };
-    return vars;
-  }, [ currentPage, sortOrder ]);
+    if (sort === null) {
+      // 当 sort 为 null 时，只按时间排序（从大到小），不涉及 attestations 数量
+      return {
+        query: GET_PAGE_SCHEMAS_BY_TIME,
+        variables: { skip, take },
+      };
+    } else {
+      // 当 sort 有值时，按 attestations 数量排序
+      const sortOrder = sort === 'attestations-desc' ? 'asc' : 'desc';
+      return {
+        query: GET_PAGE_SCHEMAS,
+        variables: { skip, take, sortOrder },
+      };
+    }
+  }, [ currentPage, sort ]);
 
   // 获取数据
   const { data, loading, error } = useEasGraphQL<SchemasResponse>({
-    query: GET_PAGE_SCHEMAS,
-    variables,
+    query: queryConfig.query,
+    variables: queryConfig.variables,
     enabled: true,
   });
 

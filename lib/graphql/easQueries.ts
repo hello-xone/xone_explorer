@@ -35,10 +35,32 @@ export const GET_HOME_ATTESTATIONS = `
   }
 `;
 
-// 首页获取最新的8条schema数据
+// 首页获取最新的8条schema数据（按 attestations 数量排序）
 export const GET_HOME_SCHEMAS = `
   query HomeSchemas($sortOrder: SortOrder = desc) {
     schemata(take: 8, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
+      id
+      schema
+      creator
+      resolver
+      revocable
+      index
+      time
+      txid
+      attestations {
+        id
+      }
+      _count {
+        attestations
+      }
+    }
+  }
+`;
+
+// 首页获取最新的8条schema数据（只按时间排序，不涉及 attestations 数量）
+export const GET_HOME_SCHEMAS_BY_TIME = `
+  query HomeSchemsByTime {
+    schemata(take: 8, orderBy: { time: desc }) {
       id
       schema
       creator
@@ -93,6 +115,33 @@ export const GET_PAGE_ATTESTATIONS = `
 export const GET_PAGE_SCHEMAS = `
   query GetSchemas($skip: Int, $take: Int, $sortOrder: SortOrder = desc) {
     schemata(skip: $skip, take: $take, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
+      id
+      schema
+      creator
+      resolver
+      revocable
+      index
+      time
+      txid
+      attestations {
+        id
+      }
+      _count {
+        attestations
+      }
+    }
+    aggregateSchema {
+      _count {
+        _all
+      }
+    }
+  }
+`;
+
+// 分页获取schema列表，只按时间排序（不涉及 attestations 数量）
+export const GET_PAGE_SCHEMAS_BY_TIME = `
+  query GetSchemasByTime($skip: Int, $take: Int) {
+    schemata(skip: $skip, take: $take, orderBy: { time: desc }) {
       id
       schema
       creator
