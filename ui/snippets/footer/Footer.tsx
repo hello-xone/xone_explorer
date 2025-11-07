@@ -401,7 +401,7 @@ const Footer = () => {
         <Links title="Community" links={ [
           { text: 'Telegram', to: 'https://t.me/hello_xonechain/2' },
           { text: 'X', to: 'https://x.com/xone_chain' },
-          { text: 'Discord', to: 'https://discord.com/invite/Du9y2GHV' },
+          { text: 'Discord', to: 'https://discord.gg/UtFzuKNZ' },
           { text: 'Youtube', to: 'https://www.youtube.com/@HelloXone' },
           { text: 'Github', to: 'https://github.com/hello-xone/' },
           { text: 'Reddit', to: 'https://www.reddit.com/r/XoneChain/' },
