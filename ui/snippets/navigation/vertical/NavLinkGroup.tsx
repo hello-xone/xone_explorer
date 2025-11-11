@@ -15,9 +15,10 @@ import NavLink from './NavLink';
 type Props = {
   item: NavGroupItem;
   isCollapsed?: boolean;
+  isExtra?: boolean;
 };
 
-const NavLinkGroup = ({ item, isCollapsed }: Props) => {
+const NavLinkGroup = ({ item, isCollapsed, isExtra }: Props) => {
   const isExpanded = isCollapsed === false;
 
   const styleProps = useNavLinkStyleProps({ isCollapsed, isExpanded, isActive: item.isActive });
@@ -64,7 +65,7 @@ const NavLinkGroup = ({ item, isCollapsed }: Props) => {
         <Box
           { ...styleProps.itemProps }
           w={{ lg: isExpanded ? '180px' : '60px', xl: isCollapsed ? '60px' : '180px' }}
-          pl={{ lg: isExpanded ? 2 : '15px', xl: isCollapsed ? '15px' : 2 }}
+          pl={{ lg: isExpanded ? 2 : '15px', xl: isCollapsed ? '15px' : 2, base: isExtra ? 2 : 0 }}
           pr={{ lg: isExpanded ? 0 : '15px', xl: isCollapsed ? '15px' : 0 }}
           aria-label={ `${ item.text } link group` }
           position="relative"
@@ -82,7 +83,8 @@ const NavLinkGroup = ({ item, isCollapsed }: Props) => {
             <NavLinkIcon item={ item }/>
             <Text
               { ...styleProps.textProps }
-              ml={ 3 }
+              ml={ isExtra ? '10px' : 3 }
+              mt={ isExtra ? '4px' : 0 }
             >
               { item.text }
             </Text>

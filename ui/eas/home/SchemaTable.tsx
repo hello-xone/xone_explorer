@@ -27,7 +27,7 @@ const SchemaTable = ({ data, isLoading, top = 0, sort = null, onSortChange }: Pr
     // field 参数用于满足 TableColumnHeaderSortable 的接口要求
     if (field === 'attestations' && onSortChange) {
       // 在降序和升序之间切换
-      const newSort: SortValue = sort === 'attestations-desc' ? 'attestations-asc' : 'attestations-desc';
+      const newSort: SortValue = sort === 'attestations-asc' ? 'attestations-desc' : 'attestations-asc';
       onSortChange(newSort);
     }
   }, [ sort, onSortChange ]);

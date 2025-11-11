@@ -19,17 +19,35 @@ export function isInternalItem(item: NavItem): item is NavItemInternal {
   return 'nextRoute' in item;
 }
 
-export const useExtraNavItems = (): Array<NavItem> => {
+export const useExtraNavItems = (): Array<NavItem | NavGroupItem> => {
   const router = useRouter();
   const pathname = router.pathname;
 
   return React.useMemo(() => {
-    const isActive = pathname === '/eas';
+    const isEasActive = pathname.startsWith('/eas');
+
+    // 二级菜单项
+    const easSubItems: Array<NavItem> = [
+      {
+        text: 'Overview',
+        nextRoute: { pathname: '/eas' as const },
+        isActive: pathname === '/eas',
+      },
+      {
+        text: 'Schemas',
+        nextRoute: { pathname: '/eas/schemas' as const },
+        isActive: pathname === '/eas/schemas' || pathname.startsWith('/eas/schemaDetail') || pathname.startsWith('/eas/schemAttestationList'),
+      },
+      {
+        text: 'Attestations',
+        nextRoute: { pathname: '/eas/attestations' as const },
+        isActive: pathname === '/eas/attestations' || pathname.startsWith('/eas/attestationDetail'),
+      },
+    ];
 
     return [
       {
         text: 'EAS',
-        nextRoute: { pathname: '/eas' as const },
         iconComponent: ({ size = 30, className }: { size?: number; className?: string }) => {
           return (
             <span className={ className } style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
@@ -44,7 +62,7 @@ export const useExtraNavItems = (): Array<NavItem> => {
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  opacity: isActive ? 0 : 1,
+                  opacity: isEasActive ? 0 : 1,
                   transition: 'opacity 0.2s ease',
                 }}
                 className="icon-default"
@@ -64,7 +82,7 @@ export const useExtraNavItems = (): Array<NavItem> => {
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  opacity: isActive ? 1 : 0,
+                  opacity: isEasActive ? 1 : 0,
                   transition: 'opacity 0.2s ease',
                 }}
                 className="icon-hover"
@@ -76,7 +94,8 @@ export const useExtraNavItems = (): Array<NavItem> => {
             </span>
           );
         },
-        isActive,
+        isActive: isEasActive,
+        subItems: easSubItems,
       },
     ];
   }, [ pathname ]);

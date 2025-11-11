@@ -150,7 +150,6 @@ const EASAttestations = () => {
     >
       <HomeHeader
         loading={ loading }
-        isMakeAttestationButton
         title="Attestations"
         description="Showing the most recent attestations."
         gridList={ [

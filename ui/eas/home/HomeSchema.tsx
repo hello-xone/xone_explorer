@@ -54,7 +54,7 @@ const HomeSchema = () => {
       };
     } else {
       // 当 sort 有值时，按 attestations 数量排序
-      const sortOrder = sort === 'attestations-desc' ? 'asc' : 'desc';
+      const sortOrder = sort === 'attestations-asc' ? 'desc' : 'asc';
       return {
         query: GET_HOME_SCHEMAS,
         variables: { sortOrder },

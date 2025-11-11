@@ -73,7 +73,6 @@ const TEMPLATE_MAP: Record<Route['pathname'], string> = {
   '/eas/schemaDetail/[index]': 'View details for EAS Schema %index% on %network_title%. See schema structure, attestations, creator, and resolver contract information.',
   '/eas/attestations': 'Browse all EAS attestations on %network_title%. View on-chain and off-chain attestations with the Ethereum Attestation Service.',
   '/eas/attestationDetail/[uid]': 'View details for EAS Attestation %uid% on %network_title%. See attestation data, schema, attester, recipient, and verification status.',
-  '/eas/attestationCreate': 'Create a new EAS attestation on %network_title%. Choose a schema and make an on-chain or off-chain attestation with the Ethereum Attestation Service.',
   '/eas/schemAttestationList/[index]': 'View all attestations for EAS Schema %index% on %network_title%. Browse attestations, attesters, and recipients for this schema.',
 
   // multichain routes
