@@ -245,6 +245,7 @@ const FieldRow = React.memo(({
           borderColor="border"
           bg="bg"
           zIndex={ 10 }
+          overflow="hidden"
         >
           <PopoverBody p={ 0 }>
             <Box
