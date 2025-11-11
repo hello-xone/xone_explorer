@@ -4,6 +4,7 @@ import React from 'react';
 import type { EASItem } from '../types';
 
 import { Badge } from 'toolkit/chakra/badge';
+import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { TableRoot, TableHeaderSticky, TableBody, TableRow, TableCell, TableColumnHeader } from 'toolkit/chakra/table';
@@ -20,20 +21,39 @@ interface Props {
 }
 
 const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = false, isRevokedStatus = false }: Props) => {
+  const [ expandedRows, setExpandedRows ] = React.useState<Record<number, boolean>>({});
+  const defaultShowCount = 4; // 默认显示 4 个 badges
+
+  const toggleRow = React.useCallback((index: number) => {
+    return () => {
+      setExpandedRows(prev => ({
+        ...prev,
+        [index]: !prev[index],
+      }));
+    };
+  }, []);
+
+  // 计算 UID 列宽度
+  const getUidColumnWidth = () => {
+    if (isSchemaAttestationList) return '26%';
+    if (isRevokedStatus) return '24%';
+    return '29%';
+  };
+
   return (
     <TableRoot minW="1100px">
       <TableHeaderSticky top={ top }>
         <TableRow>
-          <TableColumnHeader w={ isSchemaAttestationList ? '26%' : (isRevokedStatus ? '24%' : '29%') }>UID</TableColumnHeader>
-          <TableColumnHeader w={ isRevokedStatus ? '11%' : '8%' }>Schema</TableColumnHeader>
-          <TableColumnHeader w="100px">From</TableColumnHeader>
-          <TableColumnHeader w="100px">To</TableColumnHeader>
+          <TableColumnHeader w={ getUidColumnWidth() }>UID</TableColumnHeader>
+          <TableColumnHeader w={ isRevokedStatus ? '40%' : '8%' }>Schema</TableColumnHeader>
+          <TableColumnHeader w={ isRevokedStatus ? 'auto' : '100px' }>From</TableColumnHeader>
+          <TableColumnHeader w={ isRevokedStatus ? 'auto' : '100px' }>To</TableColumnHeader>
           {
             isRevokedStatus && (
-              <TableColumnHeader w="5%">Status</TableColumnHeader>
+              <TableColumnHeader w="6%">Status</TableColumnHeader>
             )
           }
-          <TableColumnHeader w="4%">Age</TableColumnHeader>
+          <TableColumnHeader w="7%">Age</TableColumnHeader>
         </TableRow>
       </TableHeaderSticky>
       <TableBody>
@@ -60,41 +80,76 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
             </TableCell>
             <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
-                <HStack gap={ 2 } flexWrap="wrap">
-                  <Link
-                    href={ `/eas/schemaDetail/${ item.schemaId.replace('#', '') }` }
-                    _hover={{ textDecoration: 'none' }}
-                  >
-                    <Badge
-                      colorPalette="purple"
-                      variant="solid"
-                      fontSize="xs"
-                      px={ 2 }
-                      py={ 1 }
-                    >
-                      { item.schemaId }
-                    </Badge>
-                  </Link>
-                  { item.schemaName && item.schemaName.split(', ').map((word, idx) => (
-                    <Badge
-                      key={ idx }
-                      colorPalette="yellow"
-                      variant="solid"
-                      fontSize="xs"
-                      px={ 2 }
-                      py={ 1 }
-                    >
-                      { word }
-                    </Badge>
-                  )) }
-                </HStack>
+                { (() => {
+                  const isExpanded = expandedRows[index];
+                  const schemaFields = item.schemaName ? item.schemaName.split(', ') : [];
+                  const hasMoreFields = schemaFields.length > defaultShowCount;
+                  const displayFields = isExpanded || !hasMoreFields ? schemaFields : schemaFields.slice(0, defaultShowCount);
+                  const remainingCount = schemaFields.length - defaultShowCount;
+
+                  return (
+                    <HStack gap={ 2 } flexWrap="wrap">
+                      <Link
+                        href={ `/eas/schemaDetail/${ item.schemaId.replace('#', '') }` }
+                        _hover={{ textDecoration: 'none' }}
+                      >
+                        <Badge
+                          colorPalette="purple"
+                          variant="solid"
+                          fontSize="xs"
+                          px={ 2 }
+                          py={ 1 }
+                        >
+                          { item.schemaId }
+                        </Badge>
+                      </Link>
+                      { displayFields.map((word, idx) => (
+                        <Badge
+                          key={ idx }
+                          colorPalette="yellow"
+                          variant="solid"
+                          fontSize="xs"
+                          px={ 2 }
+                          py={ 1 }
+                        >
+                          { word }
+                        </Badge>
+                      )) }
+                      { hasMoreFields && (
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={ toggleRow(index) }
+                          minW={{ base: '70px', md: '80px' }}
+                          h="26px"
+                          px={ 2 }
+                          fontSize="10px"
+                          fontWeight={ 600 }
+                          lineHeight="1.2"
+                          borderRadius="md"
+                          borderWidth="1px"
+                          borderColor="border"
+                          bg="bg.subtle"
+                          color="fg"
+                          transition="all 0.15s"
+                          _hover={{
+                            borderColor: 'border.emphasized',
+                            bg: 'bg.muted',
+                          }}
+                        >
+                          { isExpanded ? 'Less ↑' : `+${ remainingCount } More` }
+                        </Button>
+                      ) }
+                    </HStack>
+                  );
+                })() }
               </Skeleton>
             </TableCell>
             <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.from }}
-                  truncation="dynamic"
+                  truncation={ isRevokedStatus ? 'constant' : 'dynamic' }
                 />
               </Skeleton>
             </TableCell>
@@ -102,7 +157,7 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.to }}
-                  truncation="dynamic"
+                  truncation={ isRevokedStatus ? 'constant' : 'dynamic' }
                 />
               </Skeleton>
             </TableCell>

@@ -5,6 +5,7 @@ import React from 'react';
 
 import buildUrl from 'lib/api/buildUrl';
 import { GET_SCHEMAS_BY_RESOLVER } from 'lib/graphql/easQueries';
+import useAccount from 'lib/web3/useAccount';
 import useEthersSigner from 'lib/web3/useEthersSigner';
 import { Button } from 'toolkit/chakra/button';
 import { Checkbox } from 'toolkit/chakra/checkbox';
@@ -13,6 +14,7 @@ import { IconButton } from 'toolkit/chakra/icon-button';
 import { PopoverBody, PopoverContent, PopoverRoot, PopoverTrigger } from 'toolkit/chakra/popover';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
+import NetworkSwitchDialog from 'ui/shared/NetworkSwitchDialog';
 
 import { EAS_CONFIG, SOLIDITY_TYPES } from './constants';
 import type { SolidityType } from './constants';
@@ -129,9 +131,9 @@ const FieldRow = React.memo(({
   return (
     <Flex
       key={ field.id }
-      gap={ 3 }
-      align="center"
-      p={ 4 }
+      gap={{ base: 2, md: 3 }}
+      align={{ base: 'stretch', md: 'center' }}
+      p={{ base: 3, md: 4 }}
       bg={ isDragging ? 'bg' : 'bg.subtle' }
       borderRadius="lg"
       borderWidth="1px"
@@ -140,8 +142,10 @@ const FieldRow = React.memo(({
       opacity={ isDragging ? 0.5 : 1 }
       cursor="default"
       transition="all 0.2s"
+      flexWrap={{ base: 'wrap', md: 'nowrap' }}
+      position="relative"
     >
-      { /* 拖拽图标 */ }
+      { /* 拖拽图标 - 移动端隐藏 */ }
       <Box
         draggable
         onDragStart={ handleDragStart }
@@ -150,20 +154,24 @@ const FieldRow = React.memo(({
         color="fg.muted"
         _hover={{ color: 'fg' }}
         _active={{ cursor: 'grabbing' }}
+        display={{ base: 'none', md: 'block' }}
       >
         <IconSvg name="dots" boxSize={ 5 }/>
       </Box>
 
-      { /* 字段名称输入框 */ }
+      { /* 字段名称输入框 - 移动端全宽 */ }
       <Input
         placeholder="Field name"
         value={ field.name }
         onChange={ onNameChange }
         onDragStart={ handleInputDragStart }
-        flex={ 1 }
+        flex={{ base: '1 1 100%', md: 1 }}
+        minW={{ base: '100%', md: 'auto' }}
         borderRadius="md"
         borderWidth="1px"
         borderColor="border"
+        size={{ base: 'sm', md: 'md' }}
+        fontSize={{ base: 'sm', md: 'md' }}
         _focus={{
           boxShadow: 'none',
         }}
@@ -184,17 +192,18 @@ const FieldRow = React.memo(({
       >
         <PopoverTrigger asChild>
           <Button
-            minW="160px"
-            maxW="200px"
+            minW={{ base: 'auto', md: '160px' }}
+            maxW={{ base: 'none', md: '200px' }}
+            flex={{ base: '1', md: 'initial' }}
             textAlign="left"
             fontWeight="medium"
             variant="outline"
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            px={ 3 }
-            py={ 2 }
-            h="auto"
+            px={{ base: 2.5, md: 3 }}
+            py={{ base: 1.5, md: 2 }}
+            h={{ base: '36px', md: 'auto' }}
             borderRadius="md"
             borderWidth="1px"
             borderColor="border"
@@ -205,16 +214,23 @@ const FieldRow = React.memo(({
               fontWeight: 'bold',
             }}
           >
-            <Text fontSize="sm" fontWeight="medium" truncate flex={ 1 } color={ field.type ? 'fg' : 'fg.muted' }>
+            <Text
+              fontSize={{ base: 'xs', md: 'sm' }}
+              fontWeight="medium"
+              truncate
+              flex={ 1 }
+              color={ field.type ? 'fg' : 'fg.muted' }
+            >
               { field.type || 'Select type' }
             </Text>
             <IconSvg
               name="arrows/east-mini"
-              boxSize={ 4 }
+              boxSize={{ base: 3.5, md: 4 }}
               color="fg.muted"
               transform={ isPopoverOpen ? 'rotate(90deg)' : 'rotate(-90deg)' }
               transition="transform 0.2s ease"
               flexShrink={ 0 }
+              ml={ 1 }
             />
           </Button>
         </PopoverTrigger>
@@ -322,15 +338,16 @@ const FieldRow = React.memo(({
         </PopoverContent>
       </PopoverRoot>
 
-      { /* Array 复选框 */ }
+      { /* Array 复选框 - 移动端调整 */ }
       <Checkbox
         checked={ field.isArray }
         onCheckedChange={ onArrayChange }
+        flex={{ base: '0 0 auto', md: 'initial' }}
       >
-        <Text fontSize="sm">Array</Text>
+        <Text fontSize={{ base: 'xs', md: 'sm' }}>Array</Text>
       </Checkbox>
 
-      { /* 删除按钮 */ }
+      { /* 删除按钮 - 移动端调整 */ }
       { canRemove && (
         <IconButton
           aria-label="Delete field"
@@ -338,8 +355,11 @@ const FieldRow = React.memo(({
           variant="ghost"
           colorPalette="red"
           onClick={ onRemove }
+          minW={{ base: '32px', md: 'auto' }}
+          h={{ base: '32px', md: 'auto' }}
+          p={{ base: 1, md: 2 }}
         >
-          <IconSvg name="delete" boxSize={ 5 }/>
+          <IconSvg name="delete" boxSize={{ base: 4, md: 5 }}/>
         </IconButton>
       ) }
     </Flex>
@@ -399,9 +419,19 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
   const [ draggedIndex, setDraggedIndex ] = React.useState<number | null>(null);
   const [ isLoading, setIsLoading ] = React.useState(false);
   const [ loadingStatus, setLoadingStatus ] = React.useState('');
+  const [ showNetworkDialog, setShowNetworkDialog ] = React.useState(false);
 
-  // 获取 signer
+  // 获取 signer 和账户信息
   const signer = useEthersSigner();
+  const account = useAccount();
+
+  // 检查网络是否匹配
+  const isWrongNetwork = React.useMemo(() => {
+    if (!account.chainId || !EAS_CONFIG.chainId) {
+      return false;
+    }
+    return account.chainId !== Number(EAS_CONFIG.chainId);
+  }, [ account.chainId ]);
 
   // 拖拽处理
   const handleDragStart = React.useCallback((index: number) => {
@@ -545,6 +575,12 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
   // 创建 Schema
   const handleCreateSchema = React.useCallback(async() => {
     if (!validateForm()) {
+      return;
+    }
+
+    // 检查网络是否匹配 - 显示对话框
+    if (isWrongNetwork) {
+      setShowNetworkDialog(true);
       return;
     }
 
@@ -883,157 +919,247 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
     } finally {
       setIsLoading(false);
     }
-  }, [ fields, resolverAddress, isRevocable, validateForm, signer, onSchemaCreated, onSchemaCreationError, onClose ]);
+  }, [
+    fields,
+    resolverAddress,
+    isRevocable,
+    validateForm,
+    signer,
+    onSchemaCreated,
+    onSchemaCreationError,
+    onClose,
+    isWrongNetwork,
+  ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
     if (!open) {
       onClose();
+      // 延迟清空表单值，让关闭动画完成后再清空
+      const timer = setTimeout(() => {
+        setFields([ { id: Date.now().toString(), name: '', type: '', isArray: false } ]);
+        setResolverAddress('');
+        setIsRevocable(true);
+        setTypeSearchQuery({});
+        clearTimeout(timer);
+      }, 300);
     }
   }, [ onClose ]);
 
+  const handleCloseNetworkDialog = React.useCallback(() => {
+    setShowNetworkDialog(false);
+  }, []);
+
   return (
-    <DialogRoot
-      open={ isOpen }
-      onOpenChange={ handleOpenChange }
-    >
-      <DialogContent maxW="700px" borderRadius="xl" p={ 0 }>
-        <DialogHeader pt={ 8 } px={ 8 }>
-          <Box>
-            <Text fontSize="32px" fontWeight="bold" lineHeight="1.2">Create a Schema</Text>
-            <Text fontSize="16px" fontWeight="normal" color="text.secondary" mt={ 1 }>
-              Add fields below that are relevant to your use case.
-            </Text>
-          </Box>
-        </DialogHeader>
-        <DialogBody pb={ 8 } px={ 8 } mt={ 2 }>
-          <Stack gap={ 2 }>
-            { /* 字段列表 */ }
-            { fields.map(function renderField(field, index) {
-              const callbacks = createFieldCallbacks(field.id);
-              return (
-                <FieldRow
-                  key={ field.id }
-                  field={ field }
-                  searchQuery={ typeSearchQuery[field.id] || '' }
-                  index={ index }
-                  isDragging={ draggedIndex === index }
-                  onNameChange={ callbacks.onNameChange }
-                  onTypeChange={ callbacks.onTypeChange }
-                  onSearchChange={ callbacks.onSearchChange }
-                  onArrayChange={ callbacks.onArrayChange }
-                  onRemove={ callbacks.onRemove }
-                  onDragStart={ handleDragStart }
-                  onDragOver={ handleDragOver }
-                  onDragEnd={ handleDragEnd }
-                  canRemove={ fields.length > 1 }
-                />
-              );
-            }) }
+    <>
+      <NetworkSwitchDialog
+        isOpen={ showNetworkDialog }
+        onClose={ handleCloseNetworkDialog }
+        currentChainId={ account.chainId }
+        targetChainId={ EAS_CONFIG.chainId as string }
+      />
 
-            { /* Add field 按钮 */ }
-            <Button
-              variant="ghost"
-              colorPalette="blue"
-              onClick={ handleAddField }
-              justifyContent="flex-start"
-            >
-              <IconSvg name="plus" boxSize={ 4 } mr={ 2 }/>
-              Add field
-            </Button>
-
-            { /* Resolver Address */ }
-            <Box mt={ 2 }>
-              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
-                RESOLVER ADDRESS
-              </Text>
-              <Text fontSize="sm" color="fg.muted" mb={ 3 }>
-                Optional smart contract that gets executed with every attestation of this type.
-                (Can be used to verify, limit, act upon any attestation)
-              </Text>
-              <Input
-                placeholder="ex: 0x0000000000000000000000000000000000000000"
-                value={ resolverAddress }
-                onChange={ handleResolverAddressChange }
-                size="lg"
-              />
-            </Box>
-
-            { /* Is Revocable */ }
-            <Box mt={ 4 }>
-              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
-                IS REVOCABLE
-              </Text>
-              <Text fontSize="sm" color="fg.muted" mb={ 3 }>
-                Determine if attestations of this schema can be revocable
-              </Text>
-              <Flex
-                borderRadius="full"
-                borderWidth="2px"
-                borderColor="border"
-                overflow="hidden"
-                bg="bg.subtle"
-                p={ 1 }
-                gap={ 1 }
-                w="50%"
+      <DialogRoot
+        open={ isOpen }
+        onOpenChange={ handleOpenChange }
+      >
+        <DialogContent
+          maxW={{ base: '95vw', sm: '90vw', md: '700px' }}
+          borderRadius={{ base: 'lg', md: 'xl' }}
+          p={ 0 }
+          maxH={{ base: '90vh', md: '85vh' }}
+          overflowY="auto"
+        >
+          <DialogHeader
+            pt={{ base: 6, sm: 6, md: 8 }}
+            px={{ base: 5, sm: 6, md: 8 }}
+            pb={{ base: 2, md: 0 }}
+          >
+            <Box>
+              <Text
+                fontSize={{ base: '20px', sm: '24px', md: '32px' }}
+                fontWeight="bold"
+                lineHeight="1.2"
               >
-                <Button
-                  flex={ 1 }
-                  variant="ghost"
-                  size="md"
-                  borderRadius="full"
-                  onClick={ handleSetRevocableTrue }
-                  bg={ isRevocable ? 'blue.600' : 'transparent' }
-                  color={ isRevocable ? 'white' : 'fg' }
-                  fontWeight={ isRevocable ? 'bold' : 'medium' }
-                  _hover={{
-                    bg: isRevocable ? 'blue.700' : '',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  Yes
-                </Button>
-                <Button
-                  flex={ 1 }
-                  variant="ghost"
-                  size="md"
-                  borderRadius="full"
-                  onClick={ handleSetRevocableFalse }
-                  bg={ !isRevocable ? 'blue.600' : 'transparent' }
-                  color={ !isRevocable ? 'white' : 'fg' }
-                  fontWeight={ !isRevocable ? 'bold' : 'medium' }
-                  _hover={{
-                    bg: !isRevocable ? 'blue.700' : '',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  No
-                </Button>
-              </Flex>
+                Create a Schema
+              </Text>
+              <Text
+                fontSize={{ base: '13px', sm: '14px', md: '16px' }}
+                fontWeight="normal"
+                color="text.secondary"
+                mt={ 1 }
+                lineHeight="1.5"
+              >
+                Add fields below that are relevant to your use case.
+              </Text>
             </Box>
+          </DialogHeader>
+          <DialogBody
+            pb={{ base: 4, sm: 6, md: 8 }}
+            px={{ base: 4, sm: 6, md: 8 }}
+            mt={{ base: 2, md: 2 }}
+          >
+            <Stack gap={{ base: 3, md: 2 }}>
+              { /* 字段列表 */ }
+              { fields.map(function renderField(field, index) {
+                const callbacks = createFieldCallbacks(field.id);
+                return (
+                  <FieldRow
+                    key={ field.id }
+                    field={ field }
+                    searchQuery={ typeSearchQuery[field.id] || '' }
+                    index={ index }
+                    isDragging={ draggedIndex === index }
+                    onNameChange={ callbacks.onNameChange }
+                    onTypeChange={ callbacks.onTypeChange }
+                    onSearchChange={ callbacks.onSearchChange }
+                    onArrayChange={ callbacks.onArrayChange }
+                    onRemove={ callbacks.onRemove }
+                    onDragStart={ handleDragStart }
+                    onDragOver={ handleDragOver }
+                    onDragEnd={ handleDragEnd }
+                    canRemove={ fields.length > 1 }
+                  />
+                );
+              }) }
 
-            { /* Loading Status */ }
-            { isLoading && loadingStatus && (
-              <Box mt={ 4 } textAlign="center">
-                <Text fontSize="sm" color="fg.muted">{ loadingStatus }</Text>
+              { /* Add field 按钮 */ }
+              <Button
+                variant="ghost"
+                colorPalette="blue"
+                onClick={ handleAddField }
+                justifyContent="flex-start"
+                size={{ base: 'sm', md: 'md' }}
+                fontSize={{ base: 'sm', md: 'md' }}
+              >
+                <IconSvg name="plus" boxSize={{ base: 3.5, md: 4 }} mr={ 2 }/>
+                Add field
+              </Button>
+
+              { /* Resolver Address */ }
+              <Box mt={{ base: 3, md: 2 }}>
+                <Text
+                  fontSize={{ base: 'xs', sm: 'xs', md: 'sm' }}
+                  fontWeight="bold"
+                  textTransform="uppercase"
+                  color="fg.muted"
+                  mb={ 1 }
+                >
+                  RESOLVER ADDRESS
+                </Text>
+                <Text
+                  fontSize={{ base: 'xs', sm: 'xs', md: 'sm' }}
+                  color="fg.muted"
+                  mb={{ base: 2, md: 3 }}
+                  lineHeight="1.5"
+                >
+                  Optional smart contract that gets executed with every attestation of this type.
+                  (Can be used to verify, limit, act upon any attestation)
+                </Text>
+                <Input
+                  placeholder="ex: 0x0000000000000000000000000000000000000000"
+                  value={ resolverAddress }
+                  onChange={ handleResolverAddressChange }
+                  size={{ base: 'md', md: 'lg' }}
+                  fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
+                />
               </Box>
-            ) }
 
-            { /* Create Schema 按钮 */ }
-            <Button
-              mt={ 6 }
-              colorPalette="blue"
-              size="lg"
-              w="100%"
-              onClick={ handleCreateSchema }
-              disabled={ isLoading }
-              loading={ isLoading }
-            >
-              { isLoading ? 'Creating...' : 'Create Schema' }
-            </Button>
-          </Stack>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+              { /* Is Revocable */ }
+              <Box mt={{ base: 3, md: 4 }}>
+                <Text
+                  fontSize={{ base: 'xs', sm: 'xs', md: 'sm' }}
+                  fontWeight="bold"
+                  textTransform="uppercase"
+                  color="fg.muted"
+                  mb={ 1 }
+                >
+                  IS REVOCABLE
+                </Text>
+                <Text
+                  fontSize={{ base: 'xs', sm: 'xs', md: 'sm' }}
+                  color="fg.muted"
+                  mb={{ base: 2, md: 3 }}
+                  lineHeight="1.5"
+                >
+                  Determine if attestations of this schema can be revocable
+                </Text>
+                <Flex
+                  borderRadius="full"
+                  borderWidth="2px"
+                  borderColor="border"
+                  overflow="hidden"
+                  bg="bg.subtle"
+                  p={ 1 }
+                  gap={ 1 }
+                  w={{ base: '100%', sm: '70%', md: '50%' }}
+                >
+                  <Button
+                    flex={ 1 }
+                    variant="ghost"
+                    size={{ base: 'sm', md: 'md' }}
+                    borderRadius="full"
+                    onClick={ handleSetRevocableTrue }
+                    bg={ isRevocable ? 'red.500' : 'transparent' }
+                    color={ isRevocable ? 'white' : 'fg' }
+                    fontWeight={ isRevocable ? 'bold' : 'medium' }
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    _hover={{
+                      bg: isRevocable ? 'red.600' : '',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    flex={ 1 }
+                    variant="ghost"
+                    size={{ base: 'sm', md: 'md' }}
+                    borderRadius="full"
+                    onClick={ handleSetRevocableFalse }
+                    bg={ !isRevocable ? 'red.500' : 'transparent' }
+                    color={ !isRevocable ? 'white' : 'fg' }
+                    fontWeight={ !isRevocable ? 'bold' : 'medium' }
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    _hover={{
+                      bg: !isRevocable ? 'red.600' : '',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    No
+                  </Button>
+                </Flex>
+              </Box>
+
+              { /* Loading Status */ }
+              { isLoading && loadingStatus && (
+                <Box mt={{ base: 3, md: 4 }} textAlign="center">
+                  <Text
+                    fontSize={{ base: 'xs', sm: 'xs', md: 'sm' }}
+                    color="fg.muted"
+                  >
+                    { loadingStatus }
+                  </Text>
+                </Box>
+              ) }
+
+              { /* Create Schema 按钮 */ }
+              <Button
+                mt={{ base: 4, sm: 5, md: 6 }}
+                colorPalette="blue"
+                size={{ base: 'md', md: 'lg' }}
+                w="100%"
+                onClick={ handleCreateSchema }
+                disabled={ isLoading }
+                loading={ isLoading }
+                fontSize={{ base: 'sm', md: 'md' }}
+              >
+                { isLoading ? 'Creating...' : 'Create Schema' }
+              </Button>
+            </Stack>
+          </DialogBody>
+        </DialogContent>
+      </DialogRoot>
+    </>
   );
 };
 

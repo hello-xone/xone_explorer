@@ -3,6 +3,7 @@ import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 import { ethers } from 'ethers';
 import React from 'react';
 
+import useAccount from 'lib/web3/useAccount';
 import useEthersSigner from 'lib/web3/useEthersSigner';
 import { Button } from 'toolkit/chakra/button';
 import { Checkbox } from 'toolkit/chakra/checkbox';
@@ -10,6 +11,7 @@ import { DialogBody, DialogContent, DialogHeader, DialogRoot } from 'toolkit/cha
 import { Textarea } from 'toolkit/chakra/textarea';
 import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
+import NetworkSwitchDialog from 'ui/shared/NetworkSwitchDialog';
 
 import { EAS_CONFIG } from './constants';
 
@@ -85,9 +87,19 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
   const [ expirationTime, setExpirationTime ] = React.useState('');
   const [ isLoading, setIsLoading ] = React.useState(false);
   const [ loadingStatus, setLoadingStatus ] = React.useState('');
+  const [ showNetworkDialog, setShowNetworkDialog ] = React.useState(false);
 
-  // 获取 signer
+  // 获取 signer 和账户信息
   const signer = useEthersSigner();
+  const account = useAccount();
+
+  // 检查网络是否匹配
+  const isWrongNetwork = React.useMemo(() => {
+    if (!account.chainId || !EAS_CONFIG.chainId) {
+      return false;
+    }
+    return account.chainId !== Number(EAS_CONFIG.chainId);
+  }, [ account.chainId ]);
 
   // 初始化字段值（使用索引作为 key）
   React.useEffect(() => {
@@ -296,6 +308,12 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
   // 创建 Attestation
   const handleCreateAttestation = React.useCallback(async() => {
     if (!validateForm()) {
+      return;
+    }
+
+    // 检查网络是否匹配 - 显示对话框
+    if (isWrongNetwork) {
+      setShowNetworkDialog(true);
       return;
     }
 
@@ -621,10 +639,13 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
       // 关闭弹窗
       onClose();
 
-      // 重置表单
-      setRecipientAddress('');
-      setExpirationTime('');
-      setFieldValues({});
+      // 延迟重置表单，让关闭动画完成后再清空
+      const timer = setTimeout(() => {
+        setRecipientAddress('');
+        setExpirationTime('');
+        setFieldValues({});
+        clearTimeout(timer);
+      }, 300);
     } catch(error) {
       const err = error as { code?: string | number; reason?: string; message?: string; info?: { error?: { code?: number } } };
 
@@ -691,13 +712,28 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
     } finally {
       setIsLoading(false);
     }
-  }, [ schema, recipientAddress, expirationTime, fieldValues, validateForm, signer, getDefaultValue, onAttestationComplete, onAttestationError, onClose ]);
+  }, [
+    schema, recipientAddress, expirationTime, fieldValues,
+    validateForm, signer, getDefaultValue,
+    onAttestationComplete, onAttestationError, onClose, isWrongNetwork,
+  ]);
 
   const handleOpenChange = React.useCallback(({ open }: { open: boolean }) => {
     if (!open) {
       onClose();
+      // 延迟清空表单值，让关闭动画完成后再清空
+      const timer = setTimeout(() => {
+        setRecipientAddress('');
+        setExpirationTime('');
+        setFieldValues({});
+        clearTimeout(timer);
+      }, 300);
     }
   }, [ onClose ]);
+
+  const handleCloseNetworkDialog = React.useCallback(() => {
+    setShowNetworkDialog(false);
+  }, []);
 
   // 格式化 schema 显示
   const formattedSchema = React.useMemo(() => {
@@ -857,129 +893,138 @@ const CreateAttestationModal = ({ isOpen, onClose, schema, onAttestationComplete
   ]);
 
   return (
-    <DialogRoot
-      open={ isOpen }
-      onOpenChange={ handleOpenChange }
-    >
-      <DialogContent maxW="700px" borderRadius="xl" p={ 0 }>
-        <DialogHeader pt={ 8 } px={ 8 }>
-          <Box>
-            <Text fontSize="32px" fontWeight="bold" lineHeight="1.2">
-              Create Attestation
-            </Text>
-            <Text fontSize="16px" fontWeight="normal" color="text.secondary" mt={ 1 }>
-              Create a new attestation for this schema
-            </Text>
-          </Box>
-        </DialogHeader>
-        <DialogBody pb={ 8 } px={ 8 } mt={ 2 }>
-          <Stack gap={ 4 }>
-            { /* Schema Format 显示 */ }
+    <>
+      <NetworkSwitchDialog
+        isOpen={ showNetworkDialog }
+        onClose={ handleCloseNetworkDialog }
+        currentChainId={ account.chainId }
+        targetChainId={ EAS_CONFIG.chainId as string }
+      />
+
+      <DialogRoot
+        open={ isOpen }
+        onOpenChange={ handleOpenChange }
+      >
+        <DialogContent maxW="700px" borderRadius="xl" p={ 0 }>
+          <DialogHeader pt={ 8 } px={ 8 }>
             <Box>
-              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 2 }>
-                Schema Format:
+              <Text fontSize="32px" fontWeight="bold" lineHeight="1.2">
+                Create Attestation
               </Text>
-              <Box
-                p={ 3 }
-                bg="bg.subtle"
-                borderRadius="md"
-                borderWidth="1px"
-                borderColor="border"
-              >
-                <Text fontSize="sm" fontFamily="mono" color="fg">
-                  { formattedSchema }
+              <Text fontSize="16px" fontWeight="normal" color="text.secondary" mt={ 1 }>
+                Create a new attestation for this schema
+              </Text>
+            </Box>
+          </DialogHeader>
+          <DialogBody pb={ 8 } px={ 8 } mt={ 2 }>
+            <Stack gap={ 4 }>
+              { /* Schema Format 显示 */ }
+              <Box>
+                <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 2 }>
+                  Schema Format:
+                </Text>
+                <Box
+                  p={ 3 }
+                  bg="bg.subtle"
+                  borderRadius="md"
+                  borderWidth="1px"
+                  borderColor="border"
+                >
+                  <Text fontSize="sm" fontFamily="mono" color="fg">
+                    { formattedSchema }
+                  </Text>
+                </Box>
+              </Box>
+
+              { /* Recipient Address */ }
+              <Box>
+                <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
+                  Recipient Address
+                </Text>
+                <Input
+                  placeholder="0x0000000000000000000000000000000000000000"
+                  value={ recipientAddress }
+                  onChange={ handleRecipientAddressChange }
+                  size="lg"
+                  fontFamily="mono"
+                />
+                <Text fontSize="xs" color="fg.muted" mt={ 1 }>
+                  Leave empty to use zero address
                 </Text>
               </Box>
-            </Box>
 
-            { /* Recipient Address */ }
-            <Box>
-              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
-                Recipient Address
-              </Text>
-              <Input
-                placeholder="0x0000000000000000000000000000000000000000"
-                value={ recipientAddress }
-                onChange={ handleRecipientAddressChange }
-                size="lg"
-                fontFamily="mono"
-              />
-              <Text fontSize="xs" color="fg.muted" mt={ 1 }>
-                Leave empty to use zero address
-              </Text>
-            </Box>
-
-            { /* Expiration Time */ }
-            <Box>
-              <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
-                Expiration Time (Optional)
-              </Text>
-              <Input
-                type="text"
-                placeholder="YYYY-MM-DD HH:mm (e.g., 2025-12-31 23:59)"
-                value={ expirationTime }
-                onChange={ handleExpirationTimeChange }
-                size="lg"
-                fontFamily="mono"
-              />
-              <Text fontSize="xs" color="fg.muted" mt={ 1 }>
-                💡 Format: YYYY-MM-DD HH:mm (24-hour). Leave empty for no expiration.
-              </Text>
-            </Box>
-
-            { /* 动态字段 */ }
-            { schema.fields.map((field, index) => {
-              const fieldLabel = `${ field.name } (${ field.isArray ? `${ field.type }[]` : field.type })`;
-
-              return (
-                <Box key={ index }>
-                  <Text fontSize="sm" fontWeight="bold" color="fg" mb={ 2 }>
-                    { fieldLabel }
-                  </Text>
-                  { renderFieldInput(field, index) }
-                  { /* 为 address 类型添加提示 */ }
-                  { field.type === 'address' && (
-                    <Text fontSize="xs" color="fg.muted" mt={ 1 }>
-                      💡 Must be a valid Ethereum address (42 chars, starting with 0x). Leave empty for zero address.
-                    </Text>
-                  ) }
-                </Box>
-              );
-            }) }
-
-            { /* Loading Status */ }
-            { isLoading && loadingStatus && (
-              <Box mt={ 4 } textAlign="center">
-                <Text fontSize="sm" color="fg.muted">{ loadingStatus }</Text>
+              { /* Expiration Time */ }
+              <Box>
+                <Text fontSize="sm" fontWeight="bold" textTransform="uppercase" color="fg.muted" mb={ 1 }>
+                  Expiration Time (Optional)
+                </Text>
+                <Input
+                  type="text"
+                  placeholder="YYYY-MM-DD HH:mm (e.g., 2025-12-31 23:59)"
+                  value={ expirationTime }
+                  onChange={ handleExpirationTimeChange }
+                  size="lg"
+                  fontFamily="mono"
+                />
+                <Text fontSize="xs" color="fg.muted" mt={ 1 }>
+                  💡 Format: YYYY-MM-DD HH:mm (24-hour). Leave empty for no expiration.
+                </Text>
               </Box>
-            ) }
 
-            { /* 按钮组 */ }
-            <Flex gap={ 3 } mt={ 4 } justify="flex-end">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={ onClose }
-                minW="140px"
-                disabled={ isLoading }
-              >
-                Cancel
-              </Button>
-              <Button
-                colorPalette="green"
-                size="lg"
-                onClick={ handleCreateAttestation }
-                minW="180px"
-                disabled={ isLoading }
-                loading={ isLoading }
-              >
-                { isLoading ? 'Creating...' : 'Create Attestation' }
-              </Button>
-            </Flex>
-          </Stack>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+              { /* 动态字段 */ }
+              { schema.fields.map((field, index) => {
+                const fieldLabel = `${ field.name } (${ field.isArray ? `${ field.type }[]` : field.type })`;
+
+                return (
+                  <Box key={ index }>
+                    <Text fontSize="sm" fontWeight="bold" color="fg" mb={ 2 }>
+                      { fieldLabel }
+                    </Text>
+                    { renderFieldInput(field, index) }
+                    { /* 为 address 类型添加提示 */ }
+                    { field.type === 'address' && (
+                      <Text fontSize="xs" color="fg.muted" mt={ 1 }>
+                        💡 Must be a valid Ethereum address (42 chars, starting with 0x). Leave empty for zero address.
+                      </Text>
+                    ) }
+                  </Box>
+                );
+              }) }
+
+              { /* Loading Status */ }
+              { isLoading && loadingStatus && (
+                <Box mt={ 4 } textAlign="center">
+                  <Text fontSize="sm" color="fg.muted">{ loadingStatus }</Text>
+                </Box>
+              ) }
+
+              { /* 按钮组 */ }
+              <Flex gap={ 3 } mt={ 4 } justify="flex-end">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={ onClose }
+                  minW="140px"
+                  disabled={ isLoading }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="green"
+                  size="lg"
+                  onClick={ handleCreateAttestation }
+                  minW="180px"
+                  disabled={ isLoading }
+                  loading={ isLoading }
+                >
+                  { isLoading ? 'Creating...' : 'Create Attestation' }
+                </Button>
+              </Flex>
+            </Stack>
+          </DialogBody>
+        </DialogContent>
+      </DialogRoot>
+    </>
   );
 };
 

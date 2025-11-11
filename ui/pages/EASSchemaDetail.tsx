@@ -367,15 +367,23 @@ const EASSchemaDetail = () => {
 
             { /* 说明提示框 */ }
             <Box
-              bg="blue.50"
-              _dark={{ bg: 'blue.900' }}
-              p={ 3 }
-              borderRadius="md"
-              borderLeftWidth="3px"
-              borderLeftColor="blue.500"
+              bg="red.50"
+              _dark={{ bg: 'red.900/30' }}
+              py={ 3 }
+              px={ 4 }
+              borderTopRightRadius="md"
+              borderBottomRightRadius="md"
+              borderLeftWidth="4px"
+              borderLeftColor="red.500"
+              transition="all 0.2s"
+              _hover={{
+                bg: 'red.100',
+                _dark: { bg: 'red.900/40' },
+                borderLeftColor: 'red.600',
+              }}
             >
               <HStack gap={ 2 } align="start">
-                <Text fontSize="sm" color="blue.600" _dark={{ color: 'blue.200' }}>
+                <Text fontSize="sm" color="red.700" _dark={{ color: 'red.300' }} lineHeight="1.6">
                   Schemas define the structure and type of data that can be included in an attestation.
                 </Text>
               </HStack>
