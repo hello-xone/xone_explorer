@@ -1,65 +1,27 @@
-import { Box, Flex, Group, Input, Text, VStack } from '@chakra-ui/react';
+import { Box, Flex, Input, Text, useBreakpointValue, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-import type { HomeTotalsResponse } from '../../.history/lib/graphql/types_20251031105336';
-
-import { GET_HOME_SCHEMA_AND_ATTESTATIONS_COUNT, GET_SCHEMA_BY_INDEX, GET_SCHEMA_BY_UID } from 'lib/graphql/easQueries';
+import { GET_HOME_SCHEMA_AND_ATTESTATIONS_COUNT, GET_HOME_SCHEMAS, GET_SCHEMA_BY_INDEX, GET_SCHEMA_BY_UID } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
-import { Button } from 'toolkit/chakra/button';
 import { Skeleton } from 'toolkit/chakra/skeleton';
-import CreateAttestationModal from 'ui/eas/CreateAttestationModal';
 import HomeHeader from 'ui/eas/Header';
 import HomeAttestation from 'ui/eas/home/HomeAttestation';
+import SchemaListItem, { parseSchemaString, type TopSchema } from 'ui/eas/home/SchemaListItem';
 import IconSvg from 'ui/shared/IconSvg';
 
-interface SchemaField {
-  type: string;
-  name: string;
+interface HomeTotalsResponse {
+  aggregateAttestation: {
+    _count: {
+      _all: number;
+    };
+  };
+  aggregateSchema: {
+    _count: {
+      _all: number;
+    };
+  };
 }
-
-interface AttestationSchemaField {
-  name: string;
-  type: string;
-  isArray: boolean;
-}
-
-interface AttestationSchema {
-  uid: string;
-  schema: string;
-  fields: Array<AttestationSchemaField>;
-  revocable: boolean;
-}
-
-// 解析 schema 字符串（用于显示）
-const parseSchemaString = (schemaStr: string): Array<SchemaField> => {
-  const fields = schemaStr.split(',').map(field => field.trim());
-  return fields.map(field => {
-    const match = field.match(/^(\w+(?:\[\])?)\s+(\w+)$/);
-    if (match) {
-      const [ , type, name ] = match;
-      return { type, name };
-    }
-    return null;
-  }).filter((field): field is SchemaField => field !== null);
-};
-
-// 解析 schema 字符串（用于 CreateAttestationModal）
-const parseSchemaForModal = (schemaStr: string): Array<AttestationSchemaField> => {
-  const fields = schemaStr.split(',').map(field => field.trim());
-  return fields.map(field => {
-    const match = field.match(/^(\w+)(\[\])?\s+(\w+)$/);
-    if (match) {
-      const [ , type, arrayBrackets, name ] = match;
-      return {
-        name,
-        type: arrayBrackets ? type : type,
-        isArray: Boolean(arrayBrackets),
-      };
-    }
-    return null;
-  }).filter((field): field is AttestationSchemaField => field !== null);
-};
 
 interface Schema {
   id: string;
@@ -72,12 +34,22 @@ interface SearchSchemaResponse {
   schemata: Array<Schema>;
 }
 
+interface TopSchemasResponse {
+  schemata: Array<TopSchema>;
+}
+
 const EAS = () => {
   const router = useRouter();
   const [ searchInput, setSearchInput ] = React.useState('');
   const [ searchQuery, setSearchQuery ] = React.useState('');
-  const [ isModalOpen, setIsModalOpen ] = React.useState(false);
-  const [ selectedSchema, setSelectedSchema ] = React.useState<AttestationSchema | null>(null);
+  const [ isDropdownOpen, setIsDropdownOpen ] = React.useState(false);
+  const searchBoxRef = React.useRef<HTMLDivElement>(null);
+  const debounceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchPlaceholder = useBreakpointValue({
+    base: 'Enter #12 or 0x123...',
+    md: 'Enter schema number (e.g., #12) or UID (e.g., 0x123...)',
+  });
 
   // 判断搜索类型：如果以 0x 开头则搜索 UID，否则搜索 index
   const isUidSearch = React.useMemo(() => {
@@ -93,14 +65,21 @@ const EAS = () => {
     return isUidSearch ? { uid: searchQuery } : { index: searchQuery };
   }, [ searchQuery, isUidSearch ]);
 
+  const { data, loading } = useEasGraphQL<HomeTotalsResponse>({
+    query: GET_HOME_SCHEMA_AND_ATTESTATIONS_COUNT,
+    enabled: true,
+  });
+
   const { data: searchResults, loading: loadingSearch } = useEasGraphQL<SearchSchemaResponse>({
     query: searchQueryGraphQL,
     variables: searchVariables,
     enabled: searchQuery.length > 0,
   });
 
-  const { data, loading } = useEasGraphQL<HomeTotalsResponse>({
-    query: GET_HOME_SCHEMA_AND_ATTESTATIONS_COUNT,
+  // 获取 attestations 数量最多的前10个 schemas
+  const { data: topSchemasData, loading: loadingTopSchemas } = useEasGraphQL<TopSchemasResponse>({
+    query: GET_HOME_SCHEMAS,
+    variables: { sortOrder: 'desc' },
     enabled: true,
   });
 
@@ -115,52 +94,13 @@ const EAS = () => {
     return data.aggregateSchema._count._all;
   }, [ data ]);
 
-  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-  }, []);
+  // 获取 top schemas 列表
+  const topSchemas = React.useMemo(() => {
+    if (!topSchemasData?.schemata) return [];
+    return topSchemasData.schemata;
+  }, [ topSchemasData ]);
 
-  const handleSearch = React.useCallback(() => {
-    const trimmedInput = searchInput.trim();
-    if (trimmedInput) {
-      setSearchQuery(trimmedInput);
-    } else {
-      setSearchQuery('');
-    }
-  }, [ searchInput ]);
-
-  const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  }, [ handleSearch ]);
-
-  const handleSchemaClick = React.useCallback((schemaIndex: string) => {
-    router.push({ pathname: '/eas/schemaDetail/[index]', query: { index: schemaIndex } });
-  }, [ router ]);
-
-  const handleCloseModal = React.useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedSchema(null);
-  }, []);
-
-  const createAttestationClickHandler = React.useCallback((schema: Schema) => {
-    return () => {
-      const fields = parseSchemaForModal(schema.schema);
-      setSelectedSchema({
-        uid: schema.id,
-        schema: schema.schema,
-        fields,
-        revocable: schema.revocable,
-      });
-      setIsModalOpen(true);
-    };
-  }, []);
-
-  const createSchemaClickHandler = React.useCallback((schemaIndex: string) => {
-    return () => handleSchemaClick(schemaIndex);
-  }, [ handleSchemaClick ]);
-
-  // 获取要显示的 schemas（仅搜索结果，后端已限制 10 条）
+  // 获取搜索结果列表
   const displayedSchemas = React.useMemo(() => {
     if (searchQuery && searchResults?.schemata) {
       return searchResults.schemata;
@@ -168,7 +108,72 @@ const EAS = () => {
     return [];
   }, [ searchQuery, searchResults ]);
 
-  const isLoading = loadingSearch;
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    // 清除之前的定时器
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // 设置新的定时器，500ms 后执行搜索
+    debounceTimerRef.current = setTimeout(() => {
+      let trimmedInput = value.trim();
+      // 如果输入以 # 开头，去除 # 符号
+      if (trimmedInput.startsWith('#')) {
+        trimmedInput = trimmedInput.substring(1).trim();
+      }
+      if (trimmedInput) {
+        setSearchQuery(trimmedInput);
+        setIsDropdownOpen(true);
+      } else {
+        setSearchQuery('');
+        setIsDropdownOpen(false);
+      }
+    }, 500);
+  }, []);
+
+  const handleSchemaClick = React.useCallback((schemaIndex: string) => {
+    setIsDropdownOpen(false);
+    setSearchInput('');
+    setSearchQuery('');
+    router.push({ pathname: '/eas/schemaDetail/[index]', query: { index: schemaIndex } });
+  }, [ router ]);
+
+  const createSchemaClickHandler = React.useCallback((schemaIndex: string) => {
+    return () => handleSchemaClick(schemaIndex);
+  }, [ handleSchemaClick ]);
+
+  // 清理定时器
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 点击外部关闭下拉框
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 当搜索结果加载完成时，打开下拉框
+  React.useEffect(() => {
+    if (searchQuery && !loadingSearch && displayedSchemas.length > 0) {
+      setIsDropdownOpen(true);
+    }
+  }, [ searchQuery, loadingSearch, displayedSchemas ]);
 
   return (
     <Box pb={{ base: 6, md: 8 }}>
@@ -180,9 +185,14 @@ const EAS = () => {
         gridList={ [ { label: 'Total Attestations', value: totalAttestations }, { label: 'Total Schemas', value: totalSchemas } ] }
       />
 
-      <Flex
-        gap={ 5 }
+      { /* 搜索框区域 */ }
+      <Box
+        mt={{ base: 2, lg: 8 }}
+        mb={{ base: 6, lg: 8 }}
+        display="flex"
         flexDirection={{ base: 'column', lg: 'row' }}
+        gap={ 4 }
+        alignItems={{ base: 'stretch', lg: 'center' }}
       >
         <Box
           bg="bg.subtle"
@@ -190,134 +200,256 @@ const EAS = () => {
           p={{ base: 4, md: 5 }}
           borderWidth="1px"
           borderColor="divider"
-          w={{ base: '100%', lg: '46%' }}
+          flex={{ base: 'auto', md: 1 / 1.25 }}
+          mx={{ base: 0, lg: 'auto' }}
         >
-          <VStack gap={ 5 } align="stretch">
+          <VStack gap={ 4 } align="stretch">
             { /* 标题 */ }
-            <Box>
-              <Text fontSize="16px" fontWeight="600" mb={ 1 }>
+            <Box textAlign="center">
+              <Text fontSize={{ base: 'lg', md: '20px' }} fontWeight="600" mb={ 2 }>
                 Search Schema
               </Text>
-              <Text fontSize="xs" color="text.secondary" lineHeight="1.5">
-                Enter schema number or UID to search
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="text.secondary" lineHeight="1.5">
+                Search by schema number (e.g., #12 or 12) or UID (e.g., 0x123...)
               </Text>
             </Box>
 
-            { /* 搜索框 */ }
-            <Box
-              overflow="hidden"
-              border="1px solid"
-              borderColor="border.muted"
-              borderRadius="xl"
-              transition="all 0.2s"
-            >
-              <Group attached w="full">
-                <Input
-                  placeholder="Please enter # / UID"
-                  value={ searchInput }
-                  onChange={ handleSearchChange }
-                  onKeyPress={ handleKeyPress }
-                  size="xl"
-                  bg="bg"
-                  border="none"
-                  _focus={{ border: 'none', boxShadow: 'none' }}
-                />
-                <Button
-                  colorPalette="blue"
-                  size="xl"
-                  onClick={ handleSearch }
-                  px={{ base: 4, md: 6 }}
-                  borderRadius="none"
-                >
-                  <IconSvg name="search" boxSize={ 5 }/>
-                </Button>
-              </Group>
-            </Box>
+            { /* 搜索框带下拉 */ }
+            <Box position="relative" ref={ searchBoxRef }>
+              <Input
+                placeholder={ searchPlaceholder }
+                value={ searchInput }
+                onChange={ handleSearchChange }
+                size={{ base: 'md', md: 'xl' }}
+                borderRadius={{ base: 'md', md: 'xl' }}
+                borderWidth="2px"
+                borderColor="border.muted"
+                transition="all 0.2s"
+                fontSize={{ base: 'sm', md: 'md' }}
+                _hover={{
+                  borderColor: 'border.emphasized',
+                }}
+                _focus={{
+                  borderColor: 'red.500',
+                  boxShadow: '0 0 0 1px var(--chakra-colors-red-500)',
+                  _hover: {
+                    borderColor: 'red.500',
+                  },
+                }}
+              />
 
-            { /* 分隔线 */ }
-            <Box h="1px" bg="divider" opacity={ 0.6 } display={{ base: 'none', md: 'block' }}/>
+              { /* 下拉搜索结果 */ }
+              { isDropdownOpen && (
+                <Box
+                  position="absolute"
+                  top="calc(100% + 8px)"
+                  left={ 0 }
+                  right={ 0 }
+                  bg="bg"
+                  borderRadius="lg"
+                  borderWidth="1px"
+                  borderColor="border"
+                  shadow="lg"
+                  maxH="400px"
+                  overflowY="auto"
+                  zIndex={ 1000 }
+                  css={{
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'transparent',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'var(--chakra-colors-gray-300)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb:hover': {
+                      background: 'var(--chakra-colors-gray-400)',
+                    },
+                  }}
+                >
+                  { loadingSearch && (
+                    <VStack gap={ 2 } p={{ base: 2, md: 3 }}>
+                      { [ ...Array(3) ].map((_, index) => (
+                        <Skeleton key={ index } loading height={{ base: '70px', md: '80px' }} borderRadius="md" w="full"/>
+                      )) }
+                    </VStack>
+                  ) }
+
+                  { !loadingSearch && displayedSchemas.length > 0 && (
+                    <VStack gap={ 0 } align="stretch">
+                      { displayedSchemas.map((schema, index) => {
+                        const parsedFields = parseSchemaString(schema.schema);
+                        return (
+                          <Box
+                            key={ schema.id }
+                            p={{ base: 3, md: 4 }}
+                            cursor="pointer"
+                            transition="all 0.2s"
+                            borderBottomWidth={ index < displayedSchemas.length - 1 ? '1px' : '0' }
+                            borderColor="divider"
+                            _hover={{
+                              bg: 'bg.subtle',
+                            }}
+                            onClick={ createSchemaClickHandler(schema.index) }
+                          >
+                            <Flex align="center" gap={{ base: 2, md: 3 }} mb={ 2 }>
+                              { /* Schema 编号 */ }
+                              <Flex
+                                align="center"
+                                justify="center"
+                                bg="red.50"
+                                color="red.600"
+                                _dark={{ bg: 'red.900', color: 'red.300' }}
+                                px={{ base: 1.5, md: 2 }}
+                                h={{ base: '32px', md: '40px' }}
+                                borderRadius="md"
+                                fontWeight="600"
+                                fontSize={{ base: 'sm', md: 'md' }}
+                                flexShrink={ 0 }
+                              >
+                                #{ schema.index }
+                              </Flex>
+
+                              { /* Schema 信息 */ }
+                              <Box flex={ 1 } minW={ 0 }>
+                                <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="700" color="fg" mb={ 0.5 }>
+                                  Schema #{ schema.index }
+                                </Text>
+                                <Text
+                                  fontSize={{ base: '2xs', md: 'xs' }}
+                                  fontFamily="mono"
+                                  color="text.secondary"
+                                  truncate
+                                >
+                                  { schema.id }
+                                </Text>
+                              </Box>
+
+                              { /* Revocable 状态 */ }
+                              <Flex align="center" gap={ 1.5 } flexShrink={ 0 } display={{ base: 'none', sm: 'flex' }}>
+                                <Box
+                                  w="6px"
+                                  h="6px"
+                                  bg={ schema.revocable ? 'green.500' : 'orange.500' }
+                                  borderRadius="full"
+                                />
+                                <Text fontSize="xs" color="text.secondary" fontWeight="500">
+                                  { schema.revocable ? 'Revocable' : 'Non-revocable' }
+                                </Text>
+                              </Flex>
+                            </Flex>
+
+                            { /* Schema 字段预览 */ }
+                            { parsedFields && parsedFields.length > 0 && (
+                              <Flex wrap="wrap" gap={{ base: 1.5, md: 2 }}>
+                                { parsedFields.slice(0, 4).map((field, fieldIndex) => (
+                                  <Box
+                                    key={ fieldIndex }
+                                    px={{ base: 1.5, md: 2 }}
+                                    py={{ base: 0.5, md: 1 }}
+                                    bg="bg.muted"
+                                    borderRadius="sm"
+                                    fontSize={{ base: '2xs', md: 'xs' }}
+                                  >
+                                    <Text
+                                      as="span"
+                                      color="blue.600"
+                                      _dark={{ color: 'blue.400' }}
+                                      fontWeight="600"
+                                      fontFamily="mono"
+                                    >
+                                      { field.type }
+                                    </Text>
+                                    { ' ' }
+                                    <Text as="span" fontWeight="600" color="fg">
+                                      { field.name }
+                                    </Text>
+                                  </Box>
+                                )) }
+                                { parsedFields.length > 4 && (
+                                  <Box
+                                    px={{ base: 1.5, md: 2 }}
+                                    py={{ base: 0.5, md: 1 }}
+                                    bg="bg.muted"
+                                    borderRadius="sm"
+                                    fontSize={{ base: '2xs', md: 'xs' }}
+                                    color="text.secondary"
+                                  >
+                                    +{ parsedFields.length - 4 }
+                                  </Box>
+                                ) }
+                              </Flex>
+                            ) }
+                          </Box>
+                        );
+                      }) }
+                    </VStack>
+                  ) }
+
+                  { !loadingSearch && displayedSchemas.length === 0 && (
+                    <Box p={ 6 } textAlign="center">
+                      <IconSvg name="info_filled" boxSize={ 10 } color="orange.500" mb={ 3 } mx="auto"/>
+                      <Text fontSize="md" fontWeight="600" color="fg" mb={ 1 }>
+                        No matching Schema found
+                      </Text>
+                      <Text fontSize="sm" color="text.secondary">
+                        Try using different keywords
+                      </Text>
+                    </Box>
+                  ) }
+                </Box>
+              ) }
+            </Box>
 
             { /* 提示信息 */ }
-            <Box fontSize="sm">
-              <Text fontWeight="600" mb={ 3 } fontSize="xs" color="text.secondary" textTransform="uppercase" letterSpacing="wider">
-                Search Rules
+            <Box fontSize="sm" bg="bg.muted" p={ 4 } borderRadius="md">
+              <Text fontWeight="600" mb={ 2 } fontSize="xs" color="text.secondary" textTransform="uppercase" letterSpacing="wider">
+                Search Tips
               </Text>
-              <VStack gap={ 2 } align="stretch" color="text.secondary" lineHeight="1.7">
+              <VStack gap={ 1.5 } align="stretch" color="text.secondary" lineHeight="1.7" fontSize="xs">
                 <Flex alignItems="center" gap={ 2 }>
-                  <Box w="5px" h="5px" bg="purple.500" borderRadius="full" flexShrink={ 0 }/>
+                  <Box w="5px" h="5px" bg="blue.500" borderRadius="full" flexShrink={ 0 }/>
                   <Text flex={ 1 }>
-                    Starts with <Text as="span" fontWeight="600" fontFamily="mono" color="purple.600" _dark={{ color: 'purple.400' }}>0x</Text> → UID search
+                    Schema number: <Text as="span" fontWeight="600" fontFamily="mono">#12</Text> or <Text as="span" fontWeight="600" fontFamily="mono">12</Text>
                   </Text>
                 </Flex>
                 <Flex alignItems="center" gap={ 2 }>
-                  <Box w="5px" h="5px" bg="green.500" borderRadius="full" flexShrink={ 0 }/>
-                  <Text flex={ 1 }>Enter numbers → Index search</Text>
+                  <Box w="5px" h="5px" bg="red.500" borderRadius="full" flexShrink={ 0 }/>
+                  <Text flex={ 1 }>
+                    Schema UID: <Text as="span" fontWeight="600" fontFamily="mono" color="red.600" _dark={{ color: 'red.400' }}>0x123...</Text>
+                  </Text>
                 </Flex>
                 <Flex alignItems="center" gap={ 2 }>
                   <Box w="5px" h="5px" bg="gray.400" borderRadius="full" flexShrink={ 0 }/>
-                  <Text flex={ 1 }>Maximum 10 results</Text>
+                  <Text flex={ 1 }>Maximum 10 results per search</Text>
                 </Flex>
               </VStack>
             </Box>
           </VStack>
         </Box>
 
-        <Box w={{ base: '100%', lg: '54%' }} h="270px">
-          { searchQuery && (
-            <Box mb={ 2 }>
-              <Flex align="center" justify="space-between" mb={ 2 }>
-                <Flex align="center" gap={ 2 }>
-                  <Text fontSize="18px" fontWeight="600">
-                    Search Results
-                  </Text>
-                  <Box
-                    px={ 2.5 }
-                    py={ 1 }
-                    bg={ isUidSearch ? 'purple.subtle' : 'green.subtle' }
-                    borderRadius="md"
-                    display="inline-flex"
-                    alignItems="center"
-                    gap={ 1.5 }
-                  >
-                    <Box
-                      w="6px"
-                      h="6px"
-                      bg={ isUidSearch ? 'purple.500' : 'green.500' }
-                      borderRadius="full"
-                    />
-                    <Text
-                      fontSize="xs"
-                      color={ isUidSearch ? 'purple.fg' : 'green.fg' }
-                      fontWeight="600"
-                      letterSpacing="wide"
-                    >
-                      { isUidSearch ? 'UID' : 'INDEX' }
-                    </Text>
-                  </Box>
-                </Flex>
-                <Text fontSize="sm" color="text.secondary" fontWeight="500">
-                  { displayedSchemas.length } results
-                </Text>
-              </Flex>
-              <Box h="2px" bg="divider" borderRadius="full"/>
-            </Box>
-          ) }
+        { /* Top Schemas 列表 */ }
+        <Box flex={{ base: 'auto', md: 1 }}>
+          <Box
+            bg="bg.subtle"
+            borderRadius="lg"
+            p={{ base: 4, md: 5 }}
+            borderWidth="1px"
+            borderColor="divider"
+            h={{ base: '400px', md: '312px' }}
+            display="flex"
+            flexDirection="column"
+          >
+            <Text fontSize={{ base: 'md', md: '18px' }} fontWeight="600" mb={{ base: 3, md: 4 }}>
+              Top Schemas
+            </Text>
 
-          { /* 加载状态 */ }
-          { isLoading && (
-            <VStack gap={ 4 } align="stretch">
-              { [ ...Array(3) ].map((_, index) => (
-                <Skeleton key={ index } loading height="full" borderRadius="lg"/>
-              )) }
-            </VStack>
-          ) }
-
-          { /* 搜索结果 */ }
-          { !isLoading && displayedSchemas.length > 0 && (
             <Box
-              h="100%"
+              flex={ 1 }
               overflowY="auto"
-              pr={ 2 }
+              pr={{ base: 1, md: 2 }}
               css={{
                 '&::-webkit-scrollbar': {
                   width: '8px',
@@ -334,217 +466,39 @@ const EAS = () => {
                 },
               }}
             >
-              <VStack gap={ 4 } align="stretch">
-                { displayedSchemas.map((schema) => {
-                  const parsedFields = parseSchemaString(schema.schema);
-                  return (
-                    <Box
-                      key={ schema.id }
-                      bg="bg.subtle"
-                      borderRadius="lg"
-                      p={{ base: 4, md: 5 }}
-                      pb={{ base: 3, md: 3 }}
-                      borderWidth="1px"
-                      borderColor="divider"
-                      transition="all 0.2s ease"
-                      _hover={{
-                        borderColor: 'border',
-                        shadow: 'sm',
-                      }}
-                    >
-                      { /* 顶部：编号 + UID */ }
-                      <Flex
-                        align="center"
-                        gap={ 4 }
-                        mb={ 5 }
-                      >
-                        <Flex
-                          align="center"
-                          justify="center"
-                          bg="blue.subtle"
-                          color="blue.fg"
-                          minW="48px"
-                          h="48px"
-                          px="10px"
-                          borderRadius="md"
-                          fontWeight="600"
-                          fontSize="lg"
-                          flexShrink={ 0 }
-                        >
-                          #{ schema.index }
-                        </Flex>
-                        <Box flex={ 1 } minW={ 0 }>
-                          <Text
-                            fontSize="sm"
-                            fontWeight="700"
-                            color="fg"
-                            mb={ 1.5 }
-                            textTransform="uppercase"
-                            letterSpacing="wide"
-                          >
-                            Schema #{ schema.index }
-                          </Text>
-                          <Text
-                            fontSize="xs"
-                            fontFamily="mono"
-                            color="text.secondary"
-                            wordBreak="break-all"
-                            lineHeight="1.5"
-                          >
-                            { schema.id }
-                          </Text>
-                        </Box>
-                      </Flex>
+              { loadingTopSchemas ? (
+                <VStack gap={{ base: 2, md: 3 }} align="stretch">
+                  { [ ...Array(10) ].map((_, index) => (
+                    <Skeleton key={ index } loading height={{ base: '55px', md: '60px' }} borderRadius="md"/>
+                  )) }
+                </VStack>
+              ) : (
+                <VStack gap={{ base: 1.5, md: 2 }} align="stretch">
+                  { topSchemas.map((schema, index) => {
+                    const attestationsCount = schema._count?.attestations || schema.attestations?.length || 0;
+                    const parsedFields = parseSchemaString(schema.schema);
 
-                      { /* 分隔线 */ }
-                      <Box h="1px" border="1px solid" borderColor="border.muted" mb={ 4 } opacity={ 0.6 }/>
-
-                      { /* Schema 字段 */ }
-                      <Box mb={ 4 }>
-                        <Flex align="center" gap={ 2 } mb={ 3 }>
-                          <Box w="3px" h="3px" bg="blue.500" borderRadius="full"/>
-                          <Text
-                            fontSize="xs"
-                            fontWeight="600"
-                            color="text.secondary"
-                            textTransform="uppercase"
-                            letterSpacing="wider"
-                          >
-                            Fields ({ parsedFields.length })
-                          </Text>
-                        </Flex>
-                        <Flex wrap="wrap" gap={ 3 }>
-                          { parsedFields && parsedFields.length > 0 ? (
-                            parsedFields.map((field, index) => (
-                              <Box
-                                key={ index }
-                                px={ 3 }
-                                py={ 2 }
-                                bg="bg"
-                                borderRadius="md"
-                                fontSize="xs"
-                                borderWidth="1px"
-                                borderColor="divider"
-                              >
-                                <Text
-                                  as="span"
-                                  color="blue.600"
-                                  _dark={{ color: 'blue.400' }}
-                                  fontWeight="600"
-                                  fontFamily="mono"
-                                >
-                                  { field.type }
-                                </Text>
-                                { ' ' }
-                                <Text as="span" fontWeight="600" color="fg" ml={ 1 }>
-                                  { field.name }
-                                </Text>
-                              </Box>
-                            ))
-                          ) : (
-                            <Text fontSize="sm" color="text.secondary" fontStyle="italic">
-                              No fields
-                            </Text>
-                          ) }
-                        </Flex>
-                      </Box>
-
-                      { /* 分隔线 */ }
-                      <Box h="1px" border="1px solid" borderColor="border.muted" mb={ 2 } opacity={ 0.6 }/>
-
-                      { /* 底部信息和按钮 */ }
-                      <Flex justify="space-between" align="center" gap={ 3 }>
-                        <Flex align="center" gap={ 1.5 }>
-                          <Box
-                            w="6px"
-                            h="6px"
-                            bg={ schema.revocable ? 'green.500' : 'orange.500' }
-                            borderRadius="full"
-                          />
-                          <Text fontSize="xs" color="text.secondary" fontWeight="500">
-                            { schema.revocable ? 'Revocable' : 'Non-revocable' }
-                          </Text>
-                        </Flex>
-                        <Flex gap={ 2 }>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={ createSchemaClickHandler(schema.index) }
-                          >
-                            Details
-                          </Button>
-                          <Button
-                            colorPalette="blue"
-                            size="sm"
-                            onClick={ createAttestationClickHandler(schema) }
-                          >
-                            Use Schema
-                          </Button>
-                        </Flex>
-                      </Flex>
-                    </Box>
-                  );
-                }) }
-              </VStack>
+                    return (
+                      <SchemaListItem
+                        key={ schema.id }
+                        schema={ schema }
+                        attestationsCount={ attestationsCount }
+                        parsedFields={ parsedFields }
+                        onClick={ createSchemaClickHandler(schema.index) }
+                        index={ index }
+                      />
+                    );
+                  }) }
+                </VStack>
+              ) }
             </Box>
-          ) }
-
-          { /* 无结果或初始状态 */ }
-          { !isLoading && displayedSchemas.length === 0 && (
-            <Box
-              textAlign="center"
-              py={ searchQuery ? 14 : 16 }
-              px={ 6 }
-              bg="bg.subtle"
-              borderRadius="lg"
-              borderWidth="1px"
-              borderColor="divider"
-            >
-              <Flex
-                align="center"
-                justify="center"
-                w="80px"
-                h="80px"
-                bg={ searchQuery ? 'orange.50' : 'blue.50' }
-                _dark={{
-                  bg: searchQuery ? 'orange.950' : 'blue.950',
-                  borderColor: searchQuery ? 'orange.800' : 'blue.800',
-                }}
-                borderRadius="full"
-                mx="auto"
-                mb={ 5 }
-                borderWidth="2px"
-                borderColor={ searchQuery ? 'orange.200' : 'blue.200' }
-              >
-                <IconSvg
-                  name={ searchQuery ? 'info_filled' : 'search' }
-                  boxSize={ 10 }
-                  color={ searchQuery ? 'orange.500' : 'blue.500' }
-                />
-              </Flex>
-              <Text fontSize="20px" fontWeight="600" color="fg" lineHeight="1.4" mb={ searchQuery ? '6px' : '10px' }>
-                { searchQuery ? 'No matching Schema found' : 'Start searching' }
-              </Text>
-              <Text fontSize="sm" color="text.secondary" maxW="360px" mx="auto" lineHeight="1.7">
-                { searchQuery ? 'Try using different keywords or check the input format' : 'Enter a Schema number or UID on the left to start searching' }
-              </Text>
-            </Box>
-          ) }
+          </Box>
         </Box>
-      </Flex>
-
-      <Box mt={{ base: 16, md: 8 }}>
-        <HomeAttestation/>
       </Box>
 
-      { /* CreateAttestationModal */ }
-      { selectedSchema && (
-        <CreateAttestationModal
-          isOpen={ isModalOpen }
-          onClose={ handleCloseModal }
-          schema={ selectedSchema }
-        />
-      ) }
+      <Box mt={{ base: 10, md: 8 }}>
+        <HomeAttestation/>
+      </Box>
     </Box>
   );
 };

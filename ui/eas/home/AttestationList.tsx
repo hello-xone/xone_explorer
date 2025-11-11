@@ -64,7 +64,7 @@ const AttestationList = ({ data, isLoading }: Props) => {
                       _hover={{ textDecoration: 'none' }}
                     >
                       <Badge
-                        colorPalette="purple"
+                        colorPalette="red"
                         variant="solid"
                         fontSize="xs"
                         px={ 2 }

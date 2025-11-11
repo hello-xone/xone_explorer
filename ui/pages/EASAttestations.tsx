@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { animateScroll } from 'react-scroll';
@@ -7,6 +7,7 @@ import type { EASItem } from 'ui/eas/types';
 
 import { GET_PAGE_ATTESTATIONS } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
 
@@ -14,7 +15,7 @@ import HomeHeader from '../eas/Header';
 import AttestationList from '../eas/home/AttestationList';
 import AttestationTable from '../eas/home/AttestationTable';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 100;
 
 interface Schema {
   id: string;
@@ -99,6 +100,7 @@ const EASAttestations = () => {
   const totalCount = data?.aggregateAttestation?._count?._all || 0;
   const hasNextPage = (currentPage * PAGE_SIZE) < totalCount;
   const canGoBackwards = currentPage > 1;
+  const isPaginationVisible = totalCount > 0;
 
   // 分页处理函数
   const handleNextPage = React.useCallback(() => {
@@ -142,12 +144,41 @@ const EASAttestations = () => {
     }, undefined, { shallow: true });
   }, [ router ]);
 
+  const actionBar = isPaginationVisible && (
+    <ActionBar mt={ -6 }>
+      <Pagination
+        ml="auto"
+        page={ currentPage }
+        onNextPageClick={ handleNextPage }
+        onPrevPageClick={ handlePrevPage }
+        resetPage={ handleResetPage }
+        hasPages={ currentPage > 1 }
+        hasNextPage={ hasNextPage }
+        canGoBackwards={ canGoBackwards }
+        isLoading={ loading }
+        isVisible={ isPaginationVisible }
+      />
+    </ActionBar>
+  );
+
+  const content = (
+    <>
+      <Box hideBelow="lg">
+        <AttestationTable
+          data={ attestations }
+          isLoading={ loading }
+          top={ isPaginationVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+        />
+      </Box>
+
+      <Box hideFrom="lg">
+        <AttestationList data={ attestations } isLoading={ loading }/>
+      </Box>
+    </>
+  );
+
   return (
-    <DataListDisplay
-      isError={ Boolean(error) }
-      itemsNum={ attestations.length }
-      emptyText="There are no attestations."
-    >
+    <>
       <HomeHeader
         loading={ loading }
         title="Attestations"
@@ -156,31 +187,15 @@ const EASAttestations = () => {
           { label: 'Total Attestations', value: totalCount },
         ] }
       />
-
-      <Box mt={ 8 }>
-        <Box hideBelow="lg">
-          <AttestationTable data={ attestations } isLoading={ loading } top={ 0 }/>
-        </Box>
-
-        <Box hideFrom="lg">
-          <AttestationList data={ attestations } isLoading={ loading }/>
-        </Box>
-
-        <Flex mt={ 8 } justifyContent="end">
-          <Pagination
-            page={ currentPage }
-            onNextPageClick={ handleNextPage }
-            onPrevPageClick={ handlePrevPage }
-            resetPage={ handleResetPage }
-            hasPages={ currentPage > 1 }
-            hasNextPage={ hasNextPage }
-            canGoBackwards={ canGoBackwards }
-            isLoading={ loading }
-            isVisible={ totalCount > 0 }
-          />
-        </Flex>
-      </Box>
-    </DataListDisplay>
+      <DataListDisplay
+        isError={ Boolean(error) }
+        itemsNum={ attestations.length }
+        emptyText="There are no attestations."
+        actionBar={ actionBar }
+      >
+        { content }
+      </DataListDisplay>
+    </>
   );
 };
 

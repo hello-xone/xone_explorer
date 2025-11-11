@@ -285,6 +285,16 @@ export const SOLIDITY_TYPES: Array<SolidityType> = [
   },
 ];
 
+// Schema 字段解析正则表达式
+// 匹配格式: "type name" 或 "type[] name"
+// 字段名只能包含字母、数字和下划线（符合 Solidity/ABI 规范）
+// 例如: "string fieldName", "uint256[] values", "address recipient"
+export const SCHEMA_FIELD_REGEX = /^(\w+(?:\[\])?)\s+([\w-]+)$/;
+
+// 字段名验证正则表达式（用于验证用户输入）
+// 必须以字母或下划线开头，后面可跟字母、数字或下划线
+export const FIELD_NAME_REGEX = /^[a-z_]\w*$/i;
+
 const isTestnet = getEnvValue('NEXT_PUBLIC_IS_TESTNET') === 'true';
 
 export const EAS_CONFIG = {

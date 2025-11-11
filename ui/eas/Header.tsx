@@ -30,7 +30,7 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeSchemaButton 
   }, []);
 
   return (
-    <Box mb={ 6 }>
+    <Box mb={ 3 }>
       { /* 移动端布局 */ }
       <Box hideFrom="lg" px={{ base: 2, md: 0 }}>
         <Flex direction="column" gap={ 4 }>
@@ -87,7 +87,7 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeSchemaButton 
 
           {
             isHome && (
-              <Flex flex={ 1 / 1.3 } justifyContent="end" pr={ 10 }>
+              <Flex flex={ 1 / 1.25 } justifyContent="end">
                 <Link
                   color="link"
                   fontSize={{ base: 'xs', sm: 'sm' }}

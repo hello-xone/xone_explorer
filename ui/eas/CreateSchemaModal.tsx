@@ -16,7 +16,7 @@ import { toaster } from 'toolkit/chakra/toaster';
 import IconSvg from 'ui/shared/IconSvg';
 import NetworkSwitchDialog from 'ui/shared/NetworkSwitchDialog';
 
-import { EAS_CONFIG, SOLIDITY_TYPES } from './constants';
+import { EAS_CONFIG, FIELD_NAME_REGEX, SOLIDITY_TYPES } from './constants';
 import type { SolidityType } from './constants';
 
 interface SchemaField {
@@ -550,6 +550,20 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
         description: 'Field names must be unique',
         type: 'error',
         duration: 3000,
+      });
+      return false;
+    }
+
+    // 检查字段名是否符合 Solidity/ABI 规范
+    const invalidFieldNames = fields.filter(field => !FIELD_NAME_REGEX.test(field.name.trim()));
+    if (invalidFieldNames.length > 0) {
+      const exampleName = invalidFieldNames[0].name;
+      toaster.create({
+        title: 'Invalid Field Name',
+        description: `Field name "${ exampleName }" is invalid. Names must start with a letter or underscore, ` +
+          'and contain only letters, numbers, and underscores (no hyphens or special characters).',
+        type: 'error',
+        duration: 5000,
       });
       return false;
     }

@@ -12,6 +12,7 @@ import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { Tooltip } from 'toolkit/chakra/tooltip';
+import { SCHEMA_FIELD_REGEX } from 'ui/eas/constants';
 import CreateAttestationModal from 'ui/eas/CreateAttestationModal';
 import AttestationList from 'ui/eas/home/AttestationList';
 import AttestationTable from 'ui/eas/home/AttestationTable';
@@ -96,7 +97,7 @@ const EASSchemaDetail = () => {
       const fields: Array<{ type: string; name: string; isArray: boolean }> = [];
 
       for (const part of fieldParts) {
-        const match = part.match(/^(\w+(?:\[\])?)\s+(\w+)$/);
+        const match = part.match(SCHEMA_FIELD_REGEX);
         if (match) {
           const typeStr = match[1];
           const isArray = typeStr.endsWith('[]');
@@ -185,6 +186,7 @@ const EASSchemaDetail = () => {
                     px={ 3 }
                     py={ 1 }
                     borderRadius="md"
+                    colorPalette="red"
                   >
                     #{ schema?.index || index }
                   </Badge>
@@ -235,6 +237,7 @@ const EASSchemaDetail = () => {
                   px={ 3 }
                   py={ 1 }
                   borderRadius="md"
+                  colorPalette="red"
                 >
                   #{ schema?.index || index }
                 </Badge>
@@ -375,12 +378,6 @@ const EASSchemaDetail = () => {
               borderBottomRightRadius="md"
               borderLeftWidth="4px"
               borderLeftColor="red.500"
-              transition="all 0.2s"
-              _hover={{
-                bg: 'red.100',
-                _dark: { bg: 'red.900/40' },
-                borderLeftColor: 'red.600',
-              }}
             >
               <HStack gap={ 2 } align="start">
                 <Text fontSize="sm" color="red.700" _dark={{ color: 'red.300' }} lineHeight="1.6">
@@ -398,7 +395,7 @@ const EASSchemaDetail = () => {
               <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 3 } textTransform="uppercase">
                 Decoded Schema:
               </Text>
-              <SchemaFieldBadges schema={ schema?.schema || '' } isLoading={ loading }/>
+              <SchemaFieldBadges schema={ schema?.schema || '' } isNotMore isLoading={ loading }/>
             </Box>
 
             { /* RAW SCHEMA */ }
