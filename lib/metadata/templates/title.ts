@@ -70,7 +70,6 @@ const TEMPLATE_MAP: Record<Route['pathname'], string> = {
   '/eas/schemaDetail/[index]': 'EAS Schema %index% - %network_name% explorer',
   '/eas/attestations': 'EAS Attestations - %network_name% explorer',
   '/eas/attestationDetail/[uid]': 'EAS Attestation %uid% - %network_name% explorer',
-  '/eas/attestationCreate': 'Create EAS Attestation - %network_name% explorer',
   '/eas/schemAttestationList/[index]': 'EAS Schema %index% Attestations - %network_name% explorer',
 
   // multichain routes

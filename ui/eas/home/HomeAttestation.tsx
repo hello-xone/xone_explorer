@@ -1,11 +1,13 @@
-import { Box } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import React from 'react';
 
 import type { EASItem } from '../types';
 
 import { GET_HOME_ATTESTATIONS } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
+import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
+import CreateSchemaModal from 'ui/eas/CreateSchemaModal';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 
 import HomeAttestationList from './AttestationList';
@@ -43,10 +45,20 @@ interface AttestationsResponse {
 }
 
 const HomeAttestation = () => {
+  const [ isModalOpen, setIsModalOpen ] = React.useState(false);
+
   const { data, loading, error } = useEasGraphQL<AttestationsResponse>({
     query: GET_HOME_ATTESTATIONS,
     enabled: true,
   });
+
+  const handleOpenModal = React.useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = React.useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
   // 将 GraphQL 返回的数据转换为 EASItem 格式
   const attestations = React.useMemo(() => {
@@ -70,6 +82,31 @@ const HomeAttestation = () => {
 
   const content = attestations.length > 0 ? (
     <Box>
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        mb={ 4 }
+        gap={ 2 }
+        flexWrap={{ base: 'wrap', sm: 'nowrap' }}
+      >
+        <Text
+          fontSize={{ base: '16px', sm: '18px' }}
+          fontWeight="600"
+          flexShrink={ 0 }
+        >
+          Latest Attestations
+        </Text>
+        <Button
+          variant="solid"
+          colorScheme="blue"
+          size={{ base: 'xs', sm: 'sm' }}
+          fontSize={{ base: 'xs', sm: 'sm' }}
+          px={{ base: 3, sm: 4 }}
+          onClick={ handleOpenModal }
+        >
+          Make Schema
+        </Button>
+      </Flex>
       <Box hideBelow="lg">
         <HomeAttestationTable data={ attestations } isLoading={ loading } top={ 0 }/>
       </Box>
@@ -92,13 +129,20 @@ const HomeAttestation = () => {
   ) : null;
 
   return (
-    <DataListDisplay
-      isError={ Boolean(error) }
-      itemsNum={ attestations.length }
-      emptyText="There are no attestations."
-    >
-      { content }
-    </DataListDisplay>
+    <>
+      <DataListDisplay
+        isError={ Boolean(error) }
+        itemsNum={ attestations.length }
+        emptyText="There are no attestations."
+      >
+        { content }
+      </DataListDisplay>
+
+      <CreateSchemaModal
+        isOpen={ isModalOpen }
+        onClose={ handleCloseModal }
+      />
+    </>
   );
 };
 

@@ -289,10 +289,30 @@ export const GET_LATEST_4_SCHEMAS = `
   }
 `;
 
-// 根据 # / UID 搜索schema
-export const GET_SCHEMA_BY_INDEX_UID = `
-  query GetSchemaByIndexUid($index: String!, $uid: String!) {
-    schemata(where: { OR: [{ index: { equals: $index } }, { id: { equals: $uid } }] }) {
+// 根据 index 搜索 schema（模糊搜索，最多返回10条）
+export const GET_SCHEMA_BY_INDEX = `
+  query GetSchemaByIndex($index: String!) {
+    schemata(
+      where: { index: { contains: $index } }
+      take: 10
+      orderBy: { time: desc }
+    ) {
+      id
+      index
+      schema
+      revocable
+    }
+  }
+`;
+
+// 根据 UID 搜索 schema（模糊搜索，最多返回10条）
+export const GET_SCHEMA_BY_UID = `
+  query GetSchemaByUid($uid: String!) {
+    schemata(
+      where: { id: { contains: $uid } }
+      take: 10
+      orderBy: { time: desc }
+    ) {
       id
       index
       schema

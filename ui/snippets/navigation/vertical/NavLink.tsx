@@ -69,7 +69,7 @@ const NavLink = ({ item, onClick, isCollapsed, isDisabled, isExtra }: Props) => 
             <chakra.span
               { ...styleProps.textProps }
               ml={ 3 }
-              mt={ isExtra ? '5px' : 0 }
+              mt={ isExtra ? '4px' : 0 }
               display={{ base: 'inline', lg: isExpanded ? 'inline' : 'none', xl: isCollapsed ? 'none' : 'inline' }}
             >
               <span>{ item.text }</span>

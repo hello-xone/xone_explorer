@@ -67,7 +67,6 @@ const OG_TYPE_DICT: Record<Route['pathname'], OGPageType> = {
   '/add-token-info': 'Regular page',
   '/eas': 'Regular page',
   '/eas/attestations': 'Root page',
-  '/eas/attestationCreate': 'Regular page',
   '/eas/attestationDetail/[uid]': 'Regular page',
   '/eas/schemas': 'Root page',
   '/eas/schemaDetail/[index]': 'Regular page',

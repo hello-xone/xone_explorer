@@ -65,7 +65,6 @@ export const PAGE_TYPE_DICT: Record<Route['pathname'], string> = {
   '/add-token-info': 'Add token info',
   '/eas': 'EAS',
   '/eas/attestations': 'All Attestations',
-  '/eas/attestationCreate': 'Create Attestation',
   '/eas/attestationDetail/[uid]': 'Attestation Details',
   '/eas/schemas': 'All Schemas',
   '/eas/schemaDetail/[index]': 'Schema Details',

@@ -1,8 +1,8 @@
 import { Box, Flex, Text } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
 import React from 'react';
 
 import { Button } from 'toolkit/chakra/button';
+import { Link } from 'toolkit/chakra/link';
 import CreateSchemaModal from 'ui/eas/CreateSchemaModal';
 import StatsCard from 'ui/eas/StatsCard';
 
@@ -14,17 +14,12 @@ interface Props {
     value: number;
   }>;
   description: string;
-  isMakeAttestationButton?: boolean;
   isMakeSchemaButton?: boolean;
+  isHome?: boolean;
 }
 
-const HomeHeader = ({ loading, title, description, gridList, isMakeAttestationButton = false, isMakeSchemaButton = false }: Props) => {
-  const router = useRouter();
+const HomeHeader = ({ loading, title, description, gridList, isMakeSchemaButton = false, isHome = false }: Props) => {
   const [ isSchemaModalOpen, setIsSchemaModalOpen ] = React.useState(false);
-
-  const handleMakeAttestation = React.useCallback(() => {
-    router.push('/eas/attestationCreate');
-  }, [ router ]);
 
   const handleOpenSchemaModal = React.useCallback(() => {
     setIsSchemaModalOpen(true);
@@ -37,7 +32,7 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeAttestationBu
   return (
     <Box mb={ 6 }>
       { /* 移动端布局 */ }
-      <Box hideFrom="lg">
+      <Box hideFrom="lg" px={{ base: 2, md: 0 }}>
         <Flex direction="column" gap={ 4 }>
           <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gapY={ 2 }>
             <Box>
@@ -54,20 +49,6 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeAttestationBu
               loading={ loading }
             />
           </Box>
-
-          {
-            isMakeAttestationButton && (
-              <Button
-                variant="solid"
-                colorScheme="blue"
-                size="md"
-                w="100%"
-                onClick={ handleMakeAttestation }
-              >
-                Make Attestation
-              </Button>
-            )
-          }
 
           {
             isMakeSchemaButton && (
@@ -87,8 +68,8 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeAttestationBu
 
       { /* 桌面端布局 */ }
       <Box hideBelow="lg">
-        <Flex justifyContent="space-between" alignItems="center">
-          <Flex alignItems="center" gap={ 12 }>
+        <Flex justifyContent="space-between" alignItems="center" flex={ isHome ? '1' : 'inherit' }>
+          <Flex alignItems="center" gap={ 12 } flex={ isHome ? '1' : 'inherit' } justifyContent={ isHome ? 'space-between' : 'inherit' }>
             <Box>
               <Text fontSize="22px" fontWeight="bold" mb={ 1 }>
                 { title }
@@ -105,15 +86,20 @@ const HomeHeader = ({ loading, title, description, gridList, isMakeAttestationBu
           </Flex>
 
           {
-            isMakeAttestationButton && (
-              <Button
-                variant="solid"
-                colorScheme="blue"
-                size="sm"
-                onClick={ handleMakeAttestation }
-              >
-                Make Attestation
-              </Button>
+            isHome && (
+              <Flex flex={ 1 / 1.3 } justifyContent="end" pr={ 10 }>
+                <Link
+                  color="link"
+                  fontSize={{ base: 'xs', sm: 'sm' }}
+                  fontWeight={ 500 }
+                  textAlign="right"
+                  mt={ 4 }
+                  target="_blank"
+                  href="https://docs.xone.org/developers/tools/attest/eas"
+                >
+                  What is Eas?
+                </Link>
+              </Flex>
             )
           }
 
