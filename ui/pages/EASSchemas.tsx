@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { animateScroll } from 'react-scroll';
@@ -7,6 +7,7 @@ import type { SchemaItem } from 'ui/eas/types';
 
 import { GET_PAGE_SCHEMAS, GET_PAGE_SCHEMAS_BY_TIME } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
+import { Button } from 'toolkit/chakra/button';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
 
@@ -155,6 +156,19 @@ const EASSchemas = () => {
     }, undefined, { shallow: true });
   }, [ router ]);
 
+  // 移动端排序按钮点击处理
+  const handleSortToLatest = React.useCallback(() => {
+    handleSortChange(null);
+  }, [ handleSortChange ]);
+
+  const handleSortToMostDesc = React.useCallback(() => {
+    handleSortChange('attestations-desc');
+  }, [ handleSortChange ]);
+
+  const handleSortToLeastAsc = React.useCallback(() => {
+    handleSortChange('attestations-asc');
+  }, [ handleSortChange ]);
+
   return (
     <DataListDisplay
       isError={ Boolean(error) }
@@ -171,7 +185,8 @@ const EASSchemas = () => {
         ] }
       />
 
-      <Box mt={ 8 }>
+      <Box mt={{ base: 4, md: 8 }}>
+        { /* 桌面端表格视图 */ }
         <Box hideBelow="lg">
           <SchemaTable
             data={ schemas }
@@ -182,11 +197,66 @@ const EASSchemas = () => {
           />
         </Box>
 
+        { /* 移动端列表视图 */ }
         <Box hideFrom="lg">
+          { /* 移动端排序控制 */ }
+          <Flex
+            mb={ 3 }
+            gap={{ base: 1.5, sm: 2 }}
+            align="center"
+            justify="space-between"
+            flexWrap="wrap"
+          >
+            <Text
+              fontSize={{ base: 'xs', sm: 'sm' }}
+              fontWeight="medium"
+              color="fg.muted"
+              flexShrink={ 0 }
+            >
+              Sort by:
+            </Text>
+            <Flex gap={{ base: 1.5, sm: 2 }} align="center" flexWrap="wrap">
+              <Button
+                size="sm"
+                variant={ sort === null ? 'solid' : 'outline' }
+                colorPalette={ sort === null ? 'blue' : 'gray' }
+                onClick={ handleSortToLatest }
+                fontSize={{ base: '2xs', sm: 'xs' }}
+                px={{ base: 2, sm: 3 }}
+                h={{ base: '28px', sm: '32px' }}
+              >
+                Latest
+              </Button>
+              <Button
+                size="sm"
+                variant={ sort === 'attestations-desc' ? 'solid' : 'outline' }
+                colorPalette={ sort === 'attestations-desc' ? 'blue' : 'gray' }
+                onClick={ handleSortToMostDesc }
+                fontSize={{ base: '2xs', sm: 'xs' }}
+                px={{ base: 2, sm: 3 }}
+                h={{ base: '28px', sm: '32px' }}
+              >
+                Most ↓
+              </Button>
+              <Button
+                size="sm"
+                variant={ sort === 'attestations-asc' ? 'solid' : 'outline' }
+                colorPalette={ sort === 'attestations-asc' ? 'blue' : 'gray' }
+                onClick={ handleSortToLeastAsc }
+                fontSize={{ base: '2xs', sm: 'xs' }}
+                px={{ base: 2, sm: 3 }}
+                h={{ base: '28px', sm: '32px' }}
+              >
+                Least ↑
+              </Button>
+            </Flex>
+          </Flex>
+
           <SchemaList data={ schemas } isLoading={ loading }/>
         </Box>
 
-        <Flex mt={ 8 } justifyContent="end">
+        { /* 分页控制 */ }
+        <Flex mt={{ base: 4, md: 8 }} justifyContent={{ base: 'center', md: 'end' }}>
           <Pagination
             page={ currentPage }
             onNextPageClick={ handleNextPage }

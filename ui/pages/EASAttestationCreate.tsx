@@ -260,7 +260,13 @@ const EASAttestationCreate = () => {
                           borderColor="border.muted"
                         >
                           { /* 顶部：编号 + 标题 + UID */ }
-                          <Flex align="center" gap={{ base: 3, md: 5 }} mb={{ base: 4, md: 6 }}>
+                          <Flex
+                            align="center"
+                            gap={{ base: 3, md: 5 }}
+                            mb={{ base: 4, md: 6 }}
+                            cursor="pointer"
+                            onClick={ createSchemaClickHandler(schema.index) }
+                          >
                             <Flex
                               align="center"
                               justify="center"

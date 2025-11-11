@@ -105,6 +105,19 @@ const HomeSchema = () => {
     setSort(newSort);
   }, []);
 
+  // 排序按钮点击处理
+  const handleSortToLatest = React.useCallback(() => {
+    setSort(null);
+  }, []);
+
+  const handleSortToMostDesc = React.useCallback(() => {
+    setSort('attestations-desc');
+  }, []);
+
+  const handleSortToLeastAsc = React.useCallback(() => {
+    setSort('attestations-asc');
+  }, []);
+
   const content = schemas.length > 0 ? (
     <Box>
       { /* 桌面端表格视图 */ }
@@ -120,14 +133,67 @@ const HomeSchema = () => {
 
       { /* 移动端列表视图 */ }
       <Box hideFrom="lg">
+        { /* 移动端排序控制 */ }
+        <Flex
+          mb={ 3 }
+          gap={{ base: 1.5, sm: 2 }}
+          align="center"
+          justify="space-between"
+          flexWrap="wrap"
+        >
+          <Text
+            fontSize={{ base: 'xs', sm: 'sm' }}
+            fontWeight="medium"
+            color="fg.muted"
+            flexShrink={ 0 }
+          >
+            Sort by:
+          </Text>
+          <Flex gap={{ base: 1.5, sm: 2 }} align="center" flexWrap="wrap">
+            <Button
+              size="sm"
+              variant={ sort === null ? 'solid' : 'outline' }
+              colorPalette={ sort === null ? 'blue' : 'gray' }
+              onClick={ handleSortToLatest }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Latest
+            </Button>
+            <Button
+              size="sm"
+              variant={ sort === 'attestations-desc' ? 'solid' : 'outline' }
+              colorPalette={ sort === 'attestations-desc' ? 'blue' : 'gray' }
+              onClick={ handleSortToMostDesc }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Most ↓
+            </Button>
+            <Button
+              size="sm"
+              variant={ sort === 'attestations-asc' ? 'solid' : 'outline' }
+              colorPalette={ sort === 'attestations-asc' ? 'blue' : 'gray' }
+              onClick={ handleSortToLeastAsc }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Least ↑
+            </Button>
+          </Flex>
+        </Flex>
+
         <HomeSchemaList data={ schemas } isLoading={ loading }/>
       </Box>
 
       { /* View all schemas 链接 */ }
-      <Box textAlign="center" mt={ 6 }>
+      <Box textAlign="center" mt={{ base: 4, md: 6 }}>
         <Link
           color="link"
-          fontSize="sm"
+          fontSize={{ base: 'xs', sm: 'sm' }}
           fontWeight={ 500 }
           href="/eas/schemas"
         >
@@ -138,17 +204,29 @@ const HomeSchema = () => {
   ) : null;
 
   return (
-    <Box mt={ 8 }>
+    <Box mt={{ base: 4, md: 8 }}>
       { /* 标题和按钮 */ }
-      <Flex justifyContent="space-between" alignItems="center" mb={ 4 }>
-        <Text fontSize="18px" fontWeight="600">
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        mb={ 4 }
+        gap={ 2 }
+        flexWrap={{ base: 'wrap', sm: 'nowrap' }}
+      >
+        <Text
+          fontSize={{ base: '16px', sm: '18px' }}
+          fontWeight="600"
+          flexShrink={ 0 }
+        >
           Latest Schemas
         </Text>
         <Button
           variant="solid"
           colorScheme="blue"
-          size="sm"
+          size={{ base: 'xs', sm: 'sm' }}
           onClick={ handleOpenModal }
+          fontSize={{ base: 'xs', sm: 'sm' }}
+          px={{ base: 3, sm: 4 }}
         >
           Make Schema
         </Button>

@@ -1,6 +1,7 @@
 import { Box, Flex, Text } from '@chakra-ui/react';
 import React from 'react';
 
+import { Button } from 'toolkit/chakra/button';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 
 interface SchemaField {
@@ -12,10 +13,13 @@ interface Props {
   schema: string;
   isLoading?: boolean;
   maxFields?: number;
+  defaultShowCount?: number; // 默认显示的字段数量
 }
 
-const SchemaFieldBadges = ({ schema, isLoading, maxFields }: Props) => {
-  const fields = React.useMemo(() => {
+const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3 }: Props) => {
+  const [ isExpanded, setIsExpanded ] = React.useState(false);
+
+  const allFields = React.useMemo(() => {
     if (!schema) return [];
 
     try {
@@ -45,60 +49,106 @@ const SchemaFieldBadges = ({ schema, isLoading, maxFields }: Props) => {
     }
   }, [ schema, maxFields ]);
 
+  // 确定要显示的字段
+  const displayFields = React.useMemo(() => {
+    if (isExpanded || allFields.length <= defaultShowCount) {
+      return allFields;
+    }
+    return allFields.slice(0, defaultShowCount);
+  }, [ allFields, isExpanded, defaultShowCount ]);
+
+  const hasMoreFields = allFields.length > defaultShowCount;
+  const remainingCount = allFields.length - defaultShowCount;
+
+  const handleToggleExpand = React.useCallback(() => {
+    setIsExpanded(prev => !prev);
+  }, []);
+
   if (isLoading) {
     return (
-      <Flex gap={ 2 } flexWrap="wrap">
+      <Flex gap={ 1.5 } flexWrap="wrap">
         { [ 1, 2, 3 ].map((i) => (
-          <Skeleton key={ i } loading={ true } w="120px" h="56px" borderRadius="md"/>
+          <Skeleton key={ i } loading={ true } w={{ base: '90px', md: '100px' }} h={{ base: '38px', md: '42px' }} borderRadius="md"/>
         )) }
       </Flex>
     );
   }
 
-  if (fields.length === 0) {
+  if (allFields.length === 0) {
     return (
-      <Text fontSize="sm" color="text.secondary" fontFamily="mono">
+      <Text fontSize="xs" color="text.secondary" fontFamily="mono">
         { schema || 'No schema defined' }
       </Text>
     );
   }
 
   return (
-    <Flex gap={ 2 } flexWrap="wrap" paddingRight={ 2 }>
-      { fields.map((field, index) => (
-        <Box
-          key={ index }
-          borderWidth="1px"
-          borderColor="gray.200"
-          borderRadius="md"
-          px={ 3 }
-          py={ 2 }
-          bg="gray.50"
-          _dark={{
-            borderColor: 'gray.600',
-            bg: 'gray.700',
-          }}
-        >
-          <Text
-            fontSize="xs"
-            color="text.secondary"
-            fontWeight={ 500 }
-            textTransform="uppercase"
-            mb={ 1 }
+    <Box>
+      <Flex gap={ 2 } flexWrap="wrap">
+        { displayFields.map((field, index) => (
+          <Box
+            key={ index }
+            borderWidth="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            px={{ base: 1.5, md: 2 }}
+            py={{ base: 1, md: 1.5 }}
+            bg="gray.50"
+            _dark={{
+              borderColor: 'gray.600',
+              bg: 'gray.700',
+            }}
           >
-            { field.type }
-          </Text>
-          <Text
-            fontSize="sm"
+            <Text
+              fontSize={{ base: '10px', md: '11px' }}
+              color="text.secondary"
+              fontWeight={ 500 }
+              textTransform="uppercase"
+              mb={ 0.5 }
+              lineHeight="1.2"
+            >
+              { field.type }
+            </Text>
+            <Text
+              fontSize={{ base: '11px', md: '12px' }}
+              fontWeight={ 600 }
+              color="text.primary"
+              fontFamily="mono"
+              lineHeight="1.3"
+            >
+              { field.name }
+            </Text>
+          </Box>
+        )) }
+
+        { /* 展开/收起按钮 */ }
+        { hasMoreFields && (
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={ handleToggleExpand }
+            minW={{ base: '80px', md: '90px' }}
+            h={{ base: '38px', md: '42px' }}
+            px={{ base: 2, md: 2.5 }}
+            fontSize={{ base: '10px', md: '11px' }}
             fontWeight={ 600 }
-            color="text.primary"
-            fontFamily="mono"
+            lineHeight="1.2"
+            borderRadius="md"
+            borderWidth="1px"
+            borderColor="border"
+            bg="bg.subtle"
+            color="fg"
+            transition="all 0.15s"
+            _hover={{
+              borderColor: 'border.emphasized',
+              bg: 'bg.muted',
+            }}
           >
-            { field.name }
-          </Text>
-        </Box>
-      )) }
-    </Flex>
+            { isExpanded ? 'Collapse ↑' : `+${ remainingCount } More` }
+          </Button>
+        ) }
+      </Flex>
+    </Box>
   );
 };
 
