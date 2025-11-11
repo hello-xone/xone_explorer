@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, HStack, Text, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 
@@ -11,6 +11,7 @@ import { Skeleton } from 'toolkit/chakra/skeleton';
 import { Tooltip } from 'toolkit/chakra/tooltip';
 import AttestationList from 'ui/eas/home/AttestationList';
 import AttestationTable from 'ui/eas/home/AttestationTable';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import CopyToClipboard from 'ui/shared/CopyToClipboard';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
@@ -81,6 +82,7 @@ const EASSchemAttestationList = () => {
   // 分页逻辑
   const hasNextPage = (currentPage * PAGE_SIZE) < totalCount;
   const canGoBackwards = currentPage > 1;
+  const isPaginationVisible = totalCount > 0;
 
   // 分页处理函数
   const handleNextPage = React.useCallback(() => {
@@ -145,10 +147,51 @@ const EASSchemAttestationList = () => {
     );
   }
 
+  const actionBar = isPaginationVisible && (
+    <ActionBar alignItems="center">
+      { /* 总数 */ }
+      <Skeleton loading={ loading }>
+        <Text fontSize="sm" color="text.secondary">
+          { totalCount } { totalCount === 1 ? 'attestation' : 'attestations' } found
+        </Text>
+      </Skeleton>
+      <Pagination
+        ml="auto"
+        page={ currentPage }
+        onNextPageClick={ handleNextPage }
+        onPrevPageClick={ handlePrevPage }
+        resetPage={ handleResetPage }
+        hasPages={ currentPage > 1 }
+        hasNextPage={ hasNextPage }
+        canGoBackwards={ canGoBackwards }
+        isLoading={ loading }
+        isVisible={ isPaginationVisible }
+      />
+    </ActionBar>
+  );
+
+  const content = (
+    <>
+      <Box hideBelow="lg">
+        <AttestationTable
+          data={ attestations }
+          isLoading={ loading }
+          isSchemaAttestationList
+          isRevokedStatus
+          top={ isPaginationVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+        />
+      </Box>
+
+      <Box hideFrom="lg">
+        <AttestationList data={ attestations } isLoading={ loading }/>
+      </Box>
+    </>
+  );
+
   return (
     <Box>
       { /* 标题 */ }
-      <VStack align="stretch" gapY={ 1 } gapX={ 4 } display="flex" flexDirection="row" alignItems="center" flexWrap="wrap" mb={ 4 }>
+      <VStack align="stretch" gapY={ 1 } gapX={ 4 } display="flex" flexDirection="row" alignItems="center" flexWrap="wrap" mb={{ base: 5, lg: 4 }}>
         <Skeleton loading={ loading }>
           <HStack gap={ 2 } flexWrap="wrap">
             <Text fontSize={{ base: '20px', lg: '24px' }} fontWeight="600">
@@ -186,44 +229,15 @@ const EASSchemAttestationList = () => {
         </Skeleton>
       </VStack>
 
-      { /* 总数 */ }
-      <Flex mb={ 4 }>
-        <Skeleton loading={ loading }>
-          <Text fontSize="sm" color="text.secondary">
-            { totalCount } { totalCount === 1 ? 'attestation' : 'attestations' } found
-          </Text>
-        </Skeleton>
-      </Flex>
-
       { /* Attestation 列表 */ }
       <DataListDisplay
         isError={ Boolean(error) }
         itemsNum={ attestations.length }
         emptyText="No attestations found for this schema."
+        actionBar={ actionBar }
       >
-        <Box hideBelow="lg">
-          <AttestationTable data={ attestations } isLoading={ loading } isSchemaAttestationList isRevokedStatus top={ 80 }/>
-        </Box>
-
-        <Box hideFrom="lg">
-          <AttestationList data={ attestations } isLoading={ loading }/>
-        </Box>
+        { content }
       </DataListDisplay>
-
-      { /* 底部分页 */ }
-      <Flex mt={ 8 } justifyContent="end">
-        <Pagination
-          page={ currentPage }
-          onNextPageClick={ handleNextPage }
-          onPrevPageClick={ handlePrevPage }
-          resetPage={ handleResetPage }
-          hasPages={ currentPage > 1 }
-          hasNextPage={ hasNextPage }
-          canGoBackwards={ canGoBackwards }
-          isLoading={ loading }
-          isVisible={ totalCount > 0 }
-        />
-      </Flex>
     </Box>
   );
 };

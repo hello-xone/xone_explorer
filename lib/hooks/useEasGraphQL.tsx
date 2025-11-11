@@ -88,13 +88,6 @@ export default function useEasGraphQL<T = unknown>({
         ...(parsedVariables && { variables: parsedVariables }),
       };
 
-      // 调试日志：查看发送的请求
-      // eslint-disable-next-line no-console
-      console.log('🔍 GraphQL Request:', {
-        url: graphqlUrl,
-        variables: parsedVariables,
-      });
-
       const response = await fetch(graphqlUrl, {
         method: 'POST',
         headers: {
@@ -124,15 +117,6 @@ export default function useEasGraphQL<T = unknown>({
       }
 
       if (result.data) {
-        // 调试日志：查看返回的数据
-        // eslint-disable-next-line no-console
-        console.log('✅ GraphQL Response:', {
-          dataKeys: Object.keys(result.data),
-          // @ts-ignore
-          attestationsCount: result.data.attestations?.length,
-          // @ts-ignore
-          totalCount: result.data.aggregateAttestation?._count?._all,
-        });
         setData(result.data);
         onCompletedRef.current?.(result.data);
       } else {

@@ -1,7 +1,7 @@
 import { Box, Flex, Text, VStack } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 
-import useNavItems, { isGroupItem } from 'lib/hooks/useNavItems';
+import useNavItems, { isGroupItem, useExtraNavItems } from 'lib/hooks/useNavItems';
 import { useColorModeValue } from 'toolkit/chakra/color-mode';
 import IconSvg from 'ui/shared/IconSvg';
 import useIsAuth from 'ui/snippets/auth/useIsAuth';
@@ -22,9 +22,13 @@ interface Props {
 const NavigationMobile = ({ onNavLinkClick, isMarketplaceAppPage }: Props) => {
   const timeoutRef = React.useRef<number | null>(null);
   const { mainNavItems, accountNavItems } = useNavItems();
+  const extraNavItems = useExtraNavItems();
 
   const [ openedGroupIndex, setOpenedGroupIndex ] = React.useState(-1);
   const [ isOpen, setIsOpen ] = React.useState(false);
+
+  // 合并 mainNavItems 和 extraNavItems 来统一管理索引
+  const allNavItems = React.useMemo(() => [ ...mainNavItems, ...extraNavItems ], [ mainNavItems, extraNavItems ]);
 
   const onGroupItemOpen = (index: number) => () => {
     setOpenedGroupIndex(index);
@@ -32,6 +36,15 @@ const NavigationMobile = ({ onNavLinkClick, isMarketplaceAppPage }: Props) => {
       setIsOpen(true);
     }, 100);
   };
+
+  const onExtraGroupItemOpen = useCallback((extraIndex: number) => () => {
+    // Extra items 的索引需要加上 mainNavItems 的长度
+    const actualIndex = mainNavItems.length + extraIndex;
+    setOpenedGroupIndex(actualIndex);
+    timeoutRef.current = window.setTimeout(() => {
+      setIsOpen(true);
+    }, 100);
+  }, [ mainNavItems.length ]);
 
   const onGroupItemClose = useCallback(() => {
     setIsOpen(false);
@@ -52,7 +65,7 @@ const NavigationMobile = ({ onNavLinkClick, isMarketplaceAppPage }: Props) => {
 
   const iconColor = useColorModeValue('blue.600', 'blue.300');
 
-  const openedItem = mainNavItems[openedGroupIndex];
+  const openedItem = allNavItems[openedGroupIndex];
 
   const isCollapsed = isMarketplaceAppPage ? false : undefined;
 
@@ -85,7 +98,7 @@ const NavigationMobile = ({ onNavLinkClick, isMarketplaceAppPage }: Props) => {
               }
             }) }
           </VStack>
-          <ExtraNavItems isCollapsed={ false } onClick={ onNavLinkClick }/>
+          <ExtraNavItems isCollapsed={ false } onClick={ onNavLinkClick } onGroupItemOpen={ onExtraGroupItemOpen }/>
         </Box>
         { isAuth && (
           <Box
@@ -114,7 +127,7 @@ const NavigationMobile = ({ onNavLinkClick, isMarketplaceAppPage }: Props) => {
       >
         <Flex alignItems="center" px={ 2 } py={ 2.5 } w="100%" h="50px" onClick={ onGroupItemClose } mb={ 1 }>
           <IconSvg name="arrows/east-mini" boxSize={ 6 } mr={ 2 } color={ iconColor }/>
-          <Text color="text.secondary" fontSize="sm">{ mainNavItems[openedGroupIndex]?.text }</Text>
+          <Text color="text.secondary" fontSize="sm">{ allNavItems[openedGroupIndex]?.text }</Text>
         </Flex>
         <Box
           w="100%"

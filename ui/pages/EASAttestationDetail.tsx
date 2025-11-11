@@ -9,7 +9,7 @@ import { Badge } from 'toolkit/chakra/badge';
 import { Button } from 'toolkit/chakra/button';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
-import { EAS_CONFIG } from 'ui/eas/constants';
+import { EAS_CONFIG, SCHEMA_FIELD_REGEX } from 'ui/eas/constants';
 import RevokeAttestationModal from 'ui/eas/RevokeAttestationModal';
 import CopyToClipboard from 'ui/shared/CopyToClipboard';
 import DataListDisplay from 'ui/shared/DataListDisplay';
@@ -297,13 +297,13 @@ const EASAttestationDetail = () => {
     }
 
     try {
-      // 解析 schema 字符串，格式如: "uint256 eventId, string name"
+      // 解析 schema 字符串，格式如: "uint256 eventId, string name, string add-test"
       const fieldParts = attestation.schema.schema.split(',').map(part => part.trim());
       const types: Array<{ name: string; type: string }> = [];
 
       for (const part of fieldParts) {
-        // 匹配格式: "type name" 或 "type[] name"
-        const match = part.match(/^(\w+(?:\[\])?)\s+(\w+)$/);
+        // 匹配格式: "type name" 或 "type[] name" 支持连字符
+        const match = part.match(SCHEMA_FIELD_REGEX);
         if (match) {
           const type = match[1];
           const name = match[2];
@@ -513,7 +513,7 @@ const EASAttestationDetail = () => {
                   alignItems="stretch"
                 >
                   <Badge
-                    colorPalette="purple"
+                    colorPalette="red"
                     variant="solid"
                     fontSize="lg"
                     px={ 4 }

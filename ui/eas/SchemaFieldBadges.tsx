@@ -4,6 +4,8 @@ import React from 'react';
 import { Button } from 'toolkit/chakra/button';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 
+import { SCHEMA_FIELD_REGEX } from './constants';
+
 interface SchemaField {
   type: string;
   name: string;
@@ -14,9 +16,10 @@ interface Props {
   isLoading?: boolean;
   maxFields?: number;
   defaultShowCount?: number; // 默认显示的字段数量
+  isNotMore?: boolean; // 是否不显示更多按钮
 }
 
-const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3 }: Props) => {
+const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3, isNotMore = false }: Props) => {
   const [ isExpanded, setIsExpanded ] = React.useState(false);
 
   const allFields = React.useMemo(() => {
@@ -28,8 +31,8 @@ const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3 
       const parsedFields: Array<SchemaField> = [];
 
       for (const part of fieldParts) {
-        // 匹配类型和名称，如 "string credentialType" 或 "uint256 amount"
-        const match = part.match(/^(\w+(?:\[\])?)\s+(\w+)$/);
+        // 匹配类型和名称，如 "string credentialType" 或 "uint256 amount" 或 "string add-test"
+        const match = part.match(SCHEMA_FIELD_REGEX);
         if (match) {
           parsedFields.push({
             type: match[1].toUpperCase(),
@@ -51,11 +54,12 @@ const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3 
 
   // 确定要显示的字段
   const displayFields = React.useMemo(() => {
-    if (isExpanded || allFields.length <= defaultShowCount) {
+    // 如果不显示更多按钮，则显示所有字段
+    if (isNotMore || isExpanded || allFields.length <= defaultShowCount) {
       return allFields;
     }
     return allFields.slice(0, defaultShowCount);
-  }, [ allFields, isExpanded, defaultShowCount ]);
+  }, [ allFields, isExpanded, defaultShowCount, isNotMore ]);
 
   const hasMoreFields = allFields.length > defaultShowCount;
   const remainingCount = allFields.length - defaultShowCount;
@@ -122,7 +126,7 @@ const SchemaFieldBadges = ({ schema, isLoading, maxFields, defaultShowCount = 3 
         )) }
 
         { /* 展开/收起按钮 */ }
-        { hasMoreFields && (
+        { hasMoreFields && !isNotMore && (
           <Button
             variant="outline"
             size="xs"

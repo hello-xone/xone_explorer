@@ -8,6 +8,7 @@ import type { SchemaItem } from 'ui/eas/types';
 import { GET_PAGE_SCHEMAS, GET_PAGE_SCHEMAS_BY_TIME } from 'lib/graphql/easQueries';
 import useEasGraphQL from 'lib/hooks/useEasGraphQL';
 import { Button } from 'toolkit/chakra/button';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
 
@@ -103,6 +104,7 @@ const EASSchemas = () => {
   const totalCount = data?.aggregateSchema?._count?._all || 0;
   const hasNextPage = (currentPage * PAGE_SIZE) < totalCount;
   const canGoBackwards = currentPage > 1;
+  const isPaginationVisible = totalCount > 0;
 
   // 分页处理函数
   const handleNextPage = React.useCallback(() => {
@@ -169,12 +171,98 @@ const EASSchemas = () => {
     handleSortChange('attestations-asc');
   }, [ handleSortChange ]);
 
+  const actionBar = isPaginationVisible && (
+    <ActionBar>
+      <Pagination
+        ml="auto"
+        page={ currentPage }
+        onNextPageClick={ handleNextPage }
+        onPrevPageClick={ handlePrevPage }
+        resetPage={ handleResetPage }
+        hasPages={ currentPage > 1 }
+        hasNextPage={ hasNextPage }
+        canGoBackwards={ canGoBackwards }
+        isLoading={ loading }
+        isVisible={ isPaginationVisible }
+      />
+    </ActionBar>
+  );
+
+  const content = (
+    <>
+      { /* 桌面端表格视图 */ }
+      <Box hideBelow="lg">
+        <SchemaTable
+          data={ schemas }
+          isLoading={ loading }
+          top={ isPaginationVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+          sort={ sort }
+          onSortChange={ handleSortChange }
+        />
+      </Box>
+
+      { /* 移动端列表视图 */ }
+      <Box hideFrom="lg">
+        { /* 移动端排序控制 */ }
+        <Flex
+          mb={ 3 }
+          gap={{ base: 1.5, sm: 2 }}
+          align="center"
+          justify="space-between"
+          flexWrap="wrap"
+        >
+          <Text
+            fontSize={{ base: 'xs', sm: 'sm' }}
+            fontWeight="medium"
+            color="fg.muted"
+            flexShrink={ 0 }
+          >
+            Sort by:
+          </Text>
+          <Flex gap={{ base: 1.5, sm: 2 }} align="center" flexWrap="wrap">
+            <Button
+              size="sm"
+              variant={ sort === null ? 'solid' : 'outline' }
+              colorPalette={ sort === null ? 'blue' : 'gray' }
+              onClick={ handleSortToLatest }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Latest
+            </Button>
+            <Button
+              size="sm"
+              variant={ sort === 'attestations-desc' ? 'solid' : 'outline' }
+              colorPalette={ sort === 'attestations-desc' ? 'blue' : 'gray' }
+              onClick={ handleSortToMostDesc }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Most ↓
+            </Button>
+            <Button
+              size="sm"
+              variant={ sort === 'attestations-asc' ? 'solid' : 'outline' }
+              colorPalette={ sort === 'attestations-asc' ? 'blue' : 'gray' }
+              onClick={ handleSortToLeastAsc }
+              fontSize={{ base: '2xs', sm: 'xs' }}
+              px={{ base: 2, sm: 3 }}
+              h={{ base: '28px', sm: '32px' }}
+            >
+              Least ↑
+            </Button>
+          </Flex>
+        </Flex>
+
+        <SchemaList data={ schemas } isLoading={ loading }/>
+      </Box>
+    </>
+  );
+
   return (
-    <DataListDisplay
-      isError={ Boolean(error) }
-      itemsNum={ schemas.length }
-      emptyText="There are no schemas."
-    >
+    <>
       <HomeHeader
         loading={ loading }
         isMakeSchemaButton
@@ -184,93 +272,17 @@ const EASSchemas = () => {
           { label: 'Total Schemas', value: totalCount },
         ] }
       />
-
-      <Box mt={{ base: 4, md: 8 }}>
-        { /* 桌面端表格视图 */ }
-        <Box hideBelow="lg">
-          <SchemaTable
-            data={ schemas }
-            isLoading={ loading }
-            top={ 0 }
-            sort={ sort }
-            onSortChange={ handleSortChange }
-          />
-        </Box>
-
-        { /* 移动端列表视图 */ }
-        <Box hideFrom="lg">
-          { /* 移动端排序控制 */ }
-          <Flex
-            mb={ 3 }
-            gap={{ base: 1.5, sm: 2 }}
-            align="center"
-            justify="space-between"
-            flexWrap="wrap"
-          >
-            <Text
-              fontSize={{ base: 'xs', sm: 'sm' }}
-              fontWeight="medium"
-              color="fg.muted"
-              flexShrink={ 0 }
-            >
-              Sort by:
-            </Text>
-            <Flex gap={{ base: 1.5, sm: 2 }} align="center" flexWrap="wrap">
-              <Button
-                size="sm"
-                variant={ sort === null ? 'solid' : 'outline' }
-                colorPalette={ sort === null ? 'blue' : 'gray' }
-                onClick={ handleSortToLatest }
-                fontSize={{ base: '2xs', sm: 'xs' }}
-                px={{ base: 2, sm: 3 }}
-                h={{ base: '28px', sm: '32px' }}
-              >
-                Latest
-              </Button>
-              <Button
-                size="sm"
-                variant={ sort === 'attestations-desc' ? 'solid' : 'outline' }
-                colorPalette={ sort === 'attestations-desc' ? 'blue' : 'gray' }
-                onClick={ handleSortToMostDesc }
-                fontSize={{ base: '2xs', sm: 'xs' }}
-                px={{ base: 2, sm: 3 }}
-                h={{ base: '28px', sm: '32px' }}
-              >
-                Most ↓
-              </Button>
-              <Button
-                size="sm"
-                variant={ sort === 'attestations-asc' ? 'solid' : 'outline' }
-                colorPalette={ sort === 'attestations-asc' ? 'blue' : 'gray' }
-                onClick={ handleSortToLeastAsc }
-                fontSize={{ base: '2xs', sm: 'xs' }}
-                px={{ base: 2, sm: 3 }}
-                h={{ base: '28px', sm: '32px' }}
-              >
-                Least ↑
-              </Button>
-            </Flex>
-          </Flex>
-
-          <SchemaList data={ schemas } isLoading={ loading }/>
-        </Box>
-
-        { /* 分页控制 */ }
-        <Flex mt={{ base: 4, md: 8 }} justifyContent={{ base: 'center', md: 'end' }}>
-          <Pagination
-            page={ currentPage }
-            onNextPageClick={ handleNextPage }
-            onPrevPageClick={ handlePrevPage }
-            resetPage={ handleResetPage }
-            hasPages={ currentPage > 1 }
-            hasNextPage={ hasNextPage }
-            canGoBackwards={ canGoBackwards }
-            isLoading={ loading }
-            isVisible={ totalCount > 0 }
-          />
-        </Flex>
+      <Box mt={{ base: 7, lg: 0 }}>
+        <DataListDisplay
+          isError={ Boolean(error) }
+          itemsNum={ schemas.length }
+          emptyText="There are no schemas."
+          actionBar={ actionBar }
+        >
+          { content }
+        </DataListDisplay>
       </Box>
-    </DataListDisplay>
+    </>
   );
 };
 

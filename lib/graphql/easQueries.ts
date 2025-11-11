@@ -35,10 +35,10 @@ export const GET_HOME_ATTESTATIONS = `
   }
 `;
 
-// 首页获取最新的8条schema数据（按 attestations 数量排序）
+// 首页获取最新的10条schema数据（按 attestations 数量排序）
 export const GET_HOME_SCHEMAS = `
   query HomeSchemas($sortOrder: SortOrder = desc) {
-    schemata(take: 8, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
+    schemata(take: 10, orderBy: [ { attestations: { _count: $sortOrder } }, { time: $sortOrder } ]) {
       id
       schema
       creator
