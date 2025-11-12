@@ -569,6 +569,26 @@ const CreateSchemaModal = ({ isOpen, onClose, onSchemaCreated, onSchemaCreationE
       return false;
     }
 
+    // 检查字段名是否与 Solidity 类型名冲突
+    const solidityTypeNames = SOLIDITY_TYPES.map(t => t.name.toLowerCase());
+    const conflictingTypeNames = fields.filter(field => {
+      const fieldName = field.name.trim().toLowerCase();
+      return solidityTypeNames.includes(fieldName);
+    });
+    if (conflictingTypeNames.length > 0) {
+      const conflictList = conflictingTypeNames.map(f => `"${ f.name }"`).join(', ');
+      toaster.create({
+        title: 'Invalid Field Name',
+        description: `Field name cannot be a Solidity type name. ` +
+          `Conflicting names: ${ conflictList }. ` +
+          `These are reserved type keywords (e.g., uint8, uint256, address, string, bool, bytes, etc.). ` +
+          `Please use descriptive names like "amount", "recipient", "tokenId" instead.`,
+        type: 'error',
+        duration: 8000,
+      });
+      return false;
+    }
+
     // 检查 Resolver Address 格式（如果填写了）
     // 零地址被视为"无 Resolver"，是有效的
     const zeroAddress = '0x0000000000000000000000000000000000000000';
