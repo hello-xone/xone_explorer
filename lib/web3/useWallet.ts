@@ -1,6 +1,6 @@
-import { useAppKit, useAppKitState } from '@reown/appkit/react';
+import { useAppKit, useAppKitState, useDisconnect } from '@reown/appkit/react';
 import React from 'react';
-import { useDisconnect, useAccountEffect } from 'wagmi';
+import { useAccountEffect } from 'wagmi';
 
 import * as mixpanel from 'lib/mixpanel/index';
 import useAccount from 'lib/web3/useAccount';
@@ -17,7 +17,6 @@ export default function useWeb3Wallet({ source, onConnect }: Params) {
   const [ isOpening, setIsOpening ] = React.useState(false);
   const [ isClientLoaded, setIsClientLoaded ] = React.useState(false);
   const isConnectionStarted = React.useRef(false);
-
   React.useEffect(() => {
     setIsClientLoaded(true);
   }, []);
@@ -41,8 +40,8 @@ export default function useWeb3Wallet({ source, onConnect }: Params) {
     isConnectionStarted.current = false;
   }, [ source, onConnect ]);
 
-  const handleDisconnect = React.useCallback(() => {
-    disconnect();
+  const handleDisconnect = React.useCallback(async() => {
+    await disconnect();
   }, [ disconnect ]);
 
   useAccountEffect({ onConnect: handleAccountConnected });
