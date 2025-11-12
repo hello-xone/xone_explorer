@@ -501,56 +501,82 @@ const EASAttestationDetail = () => {
           <VStack align="stretch" gap={ 6 }>
             { /* SCHEMA */ }
             <Box>
-              <Text fontSize="xs" color="text.secondary" fontWeight={ 600 } mb={ 3 } textTransform="uppercase">
+              <Text
+                fontSize={{ base: 'xs', md: 'xs' }}
+                color="text.secondary"
+                fontWeight={ 600 }
+                mb={{ base: 2, md: 3 }}
+                textTransform="uppercase"
+              >
                 Schema:
               </Text>
               <Skeleton loading={ loading }>
                 <Flex
                   bg="gray.100"
                   _dark={{ bg: 'gray.800' }}
-                  borderRadius="md"
+                  borderRadius={{ base: 'md', md: 'md' }}
                   overflow="hidden"
                   alignItems="stretch"
+                  direction={{ base: 'column', sm: 'row' }}
                 >
                   <Badge
                     colorPalette="red"
                     variant="solid"
-                    fontSize="lg"
-                    px={ 4 }
-                    py={ 3 }
+                    fontSize={{ base: 'md', sm: 'lg' }}
+                    px={{ base: 3, sm: 4 }}
+                    py={{ base: 2, sm: 3 }}
                     borderRadius="none"
                     fontWeight={ 600 }
                     display="flex"
                     alignItems="center"
+                    justifyContent={{ base: 'center', sm: 'flex-start' }}
                   >
                     #{ attestation?.schema?.index }
                   </Badge>
                   <Flex
                     flex={ 1 }
-                    px={ 4 }
-                    py={ 3 }
+                    px={{ base: 3, sm: 4 }}
+                    py={{ base: 2, sm: 3 }}
                     alignItems="center"
+                    minW={ 0 }
                   >
+                    { /* 截断显示 (0x1234...5678) */ }
                     <Text
-                      fontSize="sm"
+                      fontSize={{ base: 'xs', sm: 'sm' }}
+                      color="blue.500"
+                      _dark={{ color: 'blue.300' }}
+                      fontFamily="mono"
+                      hideFrom="sm"
+                    >
+                      { attestation?.schema?.id ?
+                        `${ attestation.schema.id.slice(0, 30) }...${ attestation.schema.id.slice(-8) }` :
+                        ''
+                      }
+                    </Text>
+                    { /* 完整显示 */ }
+                    <Text
+                      fontSize={{ base: 'xs', sm: 'sm' }}
                       color="blue.500"
                       _dark={{ color: 'blue.300' }}
                       fontFamily="mono"
                       truncate
+                      w="100%"
+                      hideBelow="sm"
                     >
                       { attestation?.schema?.id }
                     </Text>
                   </Flex>
                   <Link href={ `/eas/schemaDetail/${ attestation?.schema?.index }` }>
                     <Flex
-                      px={ 4 }
-                      py={ 3 }
+                      px={{ base: 3, sm: 4 }}
+                      py={{ base: 2, sm: 3 }}
                       bg="gray.200"
                       _dark={{ bg: 'gray.700' }}
                       alignItems="center"
                       justifyContent="center"
                       cursor="pointer"
                       transition="all 0.1s ease"
+                      minW={{ base: '100%', sm: 'auto' }}
                       _hover={{
                         bg: 'gray.300',
                         _dark: { bg: 'gray.600' },
@@ -562,6 +588,7 @@ const EASAttestationDetail = () => {
                         viewBox="0 0 20 20"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
+                        style={{ width: '18px', height: '18px' }}
                       >
                         <path
                           d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7z
@@ -615,7 +642,12 @@ const EASAttestationDetail = () => {
                 Transaction ID:
               </Text>
               <Skeleton loading={ loading }>
-                { attestation?.txid && <TxEntity hash={ attestation.txid } truncation="dynamic"/> }
+                { attestation?.txid && (
+                  <>
+                    <TxEntity hash={ attestation.txid } truncation="dynamic" hideBelow="lg"/>
+                    <TxEntity hash={ attestation.txid } truncation="constant" hideFrom="lg"/>
+                  </>
+                ) }
               </Skeleton>
             </Box>
           </VStack>
@@ -692,12 +724,13 @@ const EASAttestationDetail = () => {
           Decoded Data:
         </Text>
         <Skeleton loading={ loading }>
-          <VStack align="stretch" gap={ 3 }>
+          <VStack align="stretch" gap={{ base: 2, md: 3 }}>
             { decodedData.map((field: { name: string; type: string; value: string }, idx: number) => (
               <Flex
                 key={ idx }
-                gap={ 4 }
-                alignItems="center"
+                gap={{ base: 0, md: 4 }}
+                alignItems={{ base: 'stretch', md: 'center' }}
+                direction={{ base: 'column', md: 'row' }}
                 borderTopRadius="md"
                 borderBottomRadius="md"
                 overflow="hidden"
@@ -707,8 +740,9 @@ const EASAttestationDetail = () => {
               >
                 <Box
                   color="white"
-                  borderRadius="md"
-                  minW="180px"
+                  borderRadius={{ base: 'none', md: 'md' }}
+                  minW={{ base: 'auto', md: '180px' }}
+                  w={{ base: '100%', md: 'auto' }}
                 >
                   <Flex
                     flexDirection="column"
@@ -717,12 +751,13 @@ const EASAttestationDetail = () => {
                     _dark={{
                       bg: 'gray.700',
                     }}
-                    px={ 3 }
-                    py={ 2 }
-                    h="60px"
+                    px={{ base: 3, md: 3 }}
+                    py={{ base: 2, md: 2 }}
+                    h={{ base: 'auto', md: '60px' }}
+                    minH={{ base: '50px', md: '60px' }}
                   >
                     <Text
-                      fontSize="11px"
+                      fontSize={{ base: '10px', md: '11px' }}
                       color="text.secondary"
                       fontWeight={ 500 }
                       textTransform="uppercase"
@@ -730,7 +765,7 @@ const EASAttestationDetail = () => {
                       { field.type }
                     </Text>
                     <Text
-                      fontSize="14px"
+                      fontSize={{ base: '13px', md: '14px' }}
                       fontWeight={ 600 }
                       color="text.primary"
                       fontFamily="mono"
@@ -740,7 +775,14 @@ const EASAttestationDetail = () => {
                     </Text>
                   </Flex>
                 </Box>
-                <Text fontSize="sm">{ field.value }</Text>
+                <Text
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  px={{ base: 3, md: 0 }}
+                  py={{ base: 2, md: 0 }}
+                  wordBreak="break-word"
+                >
+                  { field.value }
+                </Text>
               </Flex>
             )) }
           </VStack>
