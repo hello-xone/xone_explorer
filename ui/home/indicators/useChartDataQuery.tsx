@@ -54,6 +54,8 @@ interface MarketDataItem {
 
 interface MarketDataResponse {
   chartdata: Array<MarketDataItem>;
+  chart_data: Array<MarketDataItem>;
+
 }
 
 // 自定义的市场数据获取函数
@@ -118,7 +120,7 @@ export default function useChartDataQuery(indicatorId: ChainIndicatorId): UseFet
     queryFn: fetchMarketData,
     enabled: indicatorId === 'coin_price',
     refetchOnMount: false,
-    select: (data) => data.chartdata.map((item) => ({ date: new Date(item.date), value: parseFloat(item.closing_price) })),
+    select: (data) => data.chart_data.map((item) => ({ date: new Date(item.date), value: parseFloat(item.closing_price) })),
   });
 
   const secondaryCoinPriceQuery = useApiQuery('general:stats_charts_secondary_coin_price', {
@@ -135,7 +137,7 @@ export default function useChartDataQuery(indicatorId: ChainIndicatorId): UseFet
     queryFn: fetchMarketData,
     enabled: indicatorId === 'market_cap',
     refetchOnMount: false,
-    select: (data) => data.chartdata.map((item) => ({
+    select: (data) => data.chart_data.map((item) => ({
       date: new Date(item.date),
       value: item.market_cap ? parseFloat(item.market_cap) : null,
     })),
@@ -147,7 +149,7 @@ export default function useChartDataQuery(indicatorId: ChainIndicatorId): UseFet
     queryFn: fetchMarketData,
     enabled: indicatorId === 'tvl',
     refetchOnMount: false,
-    select: (data) => data.chartdata.map((item) => ({
+    select: (data) => data.chart_data.map((item) => ({
       date: new Date(item.date),
       value: item.tvl !== undefined && item.tvl !== null ? parseFloat(item.tvl) : 0,
     })),

@@ -333,13 +333,18 @@ const AddressPageContent = () => {
         ),
       } : undefined,
     ].filter(Boolean);
-  }, [ addressQuery, countersQuery, isTabsLoading, mudTablesCountQuery.data,
-    areQueriesEnabled, addressTabsCountersQuery.data?.transactions_count, addressTabsCountersQuery.data?.beacon_deposits_count,
-    addressTabsCountersQuery.data?.withdrawals_count, addressTabsCountersQuery.data?.token_transfers_count,
-    addressTabsCountersQuery.data?.token_balances_count, addressTabsCountersQuery.data?.internal_transactions_count,
-    addressTabsCountersQuery.data?.celo_election_rewards_count, addressTabsCountersQuery.data?.validations_count,
-    addressTabsCountersQuery.data?.logs_count, userOpsAccountQuery.data?.total_ops, address3rdPartyWidgets.isEnabled,
-    address3rdPartyWidgets.items.length, addressType, reportQuery ]);
+  }, [
+    addressQuery,
+    countersQuery,
+    addressTabsCountersQuery.data,
+    userOpsAccountQuery.data,
+    isTabsLoading,
+    areQueriesEnabled,
+    mudTablesCountQuery.data,
+    address3rdPartyWidgets,
+    addressType,
+    reportQuery,
+  ]);
 
   const usernameApiTag = userPropfileApiQuery.data?.user_profile?.username;
 
