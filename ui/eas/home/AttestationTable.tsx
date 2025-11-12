@@ -149,7 +149,15 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.from }}
-                  truncation={ isRevokedStatus ? 'constant' : 'dynamic' }
+                  hideBelow="2xl"
+                  truncation="dynamic"
+
+                />
+                <AddressEntity
+                  address={{ hash: item.from }}
+                  hideFrom="2xl"
+                  truncation="constant"
+
                 />
               </Skeleton>
             </TableCell>
@@ -157,7 +165,15 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
               <Skeleton loading={ isLoading } display="inline-block">
                 <AddressEntity
                   address={{ hash: item.to }}
-                  truncation={ isRevokedStatus ? 'constant' : 'dynamic' }
+                  hideBelow="2xl"
+                  truncation="dynamic"
+
+                />
+                <AddressEntity
+                  address={{ hash: item.to }}
+                  hideFrom="2xl"
+                  truncation="constant"
+
                 />
               </Skeleton>
             </TableCell>
