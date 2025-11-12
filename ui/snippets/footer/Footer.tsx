@@ -35,7 +35,7 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=087a1fef6489`, {
+        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=${ getEnvValue('NEXT_PUBLIC_MAIL_TOKEN') }`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
