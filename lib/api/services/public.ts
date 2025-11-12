@@ -29,7 +29,7 @@ export interface ChartResponse {
 
 /* eslint-disable @stylistic/indent */
 export type XonePublicApiResourcePayload<R extends XonePublicApiResourceName> =
-  R extends 'xonePublic:subscribe' ? boolean :
+  R extends 'xonePublic:subscribe' ? XonePublicBaseResponse<string> :
   R extends 'xonePublic:chart' ? XonePublicBaseResponse<ChartResponse> :
   never;
 /* eslint-enable @stylistic/indent */
