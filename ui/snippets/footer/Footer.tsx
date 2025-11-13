@@ -4,7 +4,6 @@ import React, { useCallback, useState } from 'react';
 import chain from 'configs/app/chain';
 import { getEnvValue } from 'configs/app/utils';
 import type { ResourceError } from 'lib/api/resources';
-import useApiFetch from 'lib/api/useApiFetch';
 import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
 import { Button } from 'toolkit/chakra/button';
@@ -21,8 +20,6 @@ const Footer = () => {
 
   const handleAddToWalletClick = useAddChainClick();
   const [ email, setEmail ] = useState<string>('');
-  const apiFetch = useApiFetch();
-
   const buttonColor = useColorModeValue('black', 'white');
   // const formik = useFormik({
   //   initialValues: {
@@ -103,7 +100,7 @@ const Footer = () => {
       });
     }
 
-  }, [ apiFetch, email ]);
+  }, [ email ]);
 
   return (
     <Box display={{ md: 'flex' }} as="footer" p={ 4 } borderTop="1px solid" borderColor="border.divider">
