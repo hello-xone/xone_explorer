@@ -2,8 +2,8 @@ import { Box, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import React, { useCallback, useState } from 'react';
 
 import chain from 'configs/app/chain';
+import { getEnvValue } from 'configs/app/utils';
 import type { ResourceError } from 'lib/api/resources';
-import type { XonePublicBaseResponse } from 'lib/api/services/public';
 import useApiFetch from 'lib/api/useApiFetch';
 import useAddChainClick from 'lib/web3/useAddChainClick';
 import { WALLETS_INFO } from 'lib/web3/wallets';
@@ -38,57 +38,57 @@ const Footer = () => {
   const send = useCallback(async() => {
     if (email && isEmail(email)) {
       try {
-        // fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=087a1fef6489`, {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({ email }),
-        // }).then(async res => {
-        //   if (res.ok) {
-        //     const result = await res.json() as { msg: string; code: number; data: string; message: string };
-        //     setEmail('');
-        //     if (result.code === 200) {
-        //       toaster.success({
-        //         title: 'Success',
-        //         description: result.msg || result.message || 'Subscribed',
-        //       });
-        //     } else {
-        //       toaster.error({
-        //         title: 'Error',
-        //         description: result.msg || result.data || 'Something went wrong',
-        //       });
-        //     }
-
-        //   } else {
-        //     const result = await res.json() as { msg: string };
-        //     toaster.error({
-        //       title: 'Error',
-        //       description: result.msg || 'Something went wrong',
-        //     });
-        //   }
-        // });
-        const res = await apiFetch('xonePublic:subscribe', {
-          fetchParams: {
-            method: 'POST',
-            body: {
-              email: email,
-            },
+        fetch(`${ getEnvValue('NEXT_PUBLIC_MAIL_API_HOST') }/api/subscribe/submit?token=${ getEnvValue('NEXT_PUBLIC_MAIL_TOKEN') }`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ email }),
+        }).then(async res => {
+          if (res.ok) {
+            const result = await res.json() as { msg: string; code: number; data: string; message: string };
+            setEmail('');
+            if (result.code === 200) {
+              toaster.success({
+                title: 'Success',
+                description: result.msg || result.message || 'Subscribed',
+              });
+            } else {
+              toaster.error({
+                title: 'Error',
+                description: result.msg || result.data || 'Something went wrong',
+              });
+            }
+
+          } else {
+            const result = await res.json() as { msg: string };
+            toaster.error({
+              title: 'Error',
+              description: result.msg || 'Something went wrong',
+            });
+          }
         });
-        const _res = res as XonePublicBaseResponse<string>;
-        if (_res.code === 0) {
-          setEmail('');
-          toaster.success({
-            title: 'Success',
-            description: 'Subscribed',
-          });
-        } else {
-          toaster.error({
-            title: 'Error',
-            description: _res.data || 'Something went wrong. Try again later.',
-          });
-        }
+        // const res = await apiFetch('xonePublic:subscribe', {
+        //   fetchParams: {
+        //     method: 'POST',
+        //     body: {
+        //       email: email,
+        //     },
+        //   },
+        // });
+        // const _res = res as XonePublicBaseResponse<string>;
+        // if (_res.code === 0) {
+        //   setEmail('');
+        //   toaster.success({
+        //     title: 'Success',
+        //     description: 'Subscribed',
+        //   });
+        // } else {
+        //   toaster.error({
+        //     title: 'Error',
+        //     description: _res.data || 'Something went wrong. Try again later.',
+        //   });
+        // }
 
       } catch(error) {
         toaster.error({

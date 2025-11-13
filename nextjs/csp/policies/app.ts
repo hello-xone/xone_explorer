@@ -58,6 +58,7 @@ export function app(): CspDev.DirectiveDescriptor {
       'https://api.testnet.xonescan.com',
       'https://explorer-api.xonetest.plus',
       'https://mail.xone.plus',
+      'https://mail.xone.org',
       'https://*.xone.works',
       'https://rpc.xone.org',
       'https://rpc-testnet.xone.org',
