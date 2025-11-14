@@ -45,7 +45,7 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
       <TableHeaderSticky top={ top }>
         <TableRow>
           <TableColumnHeader w={ getUidColumnWidth() }>UID</TableColumnHeader>
-          <TableColumnHeader w={ isRevokedStatus ? '40%' : '8%' }>Schema</TableColumnHeader>
+          <TableColumnHeader w={ isRevokedStatus ? '36%' : '8%' }>Schema</TableColumnHeader>
           <TableColumnHeader w={ isRevokedStatus ? 'auto' : '100px' }>From</TableColumnHeader>
           <TableColumnHeader w={ isRevokedStatus ? 'auto' : '100px' }>To</TableColumnHeader>
           {
@@ -147,34 +147,36 @@ const AttestationTable = ({ data, isLoading, top, isSchemaAttestationList = fals
             </TableCell>
             <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
-                <AddressEntity
-                  address={{ hash: item.from }}
-                  hideBelow="2xl"
-                  truncation="dynamic"
-
-                />
-                <AddressEntity
-                  address={{ hash: item.from }}
-                  hideFrom="2xl"
-                  truncation="constant"
-
-                />
+                {
+                  isRevokedStatus ? (
+                    <AddressEntity
+                      address={{ hash: item.from }}
+                      truncation="constant"
+                    />
+                  ) : (
+                    <AddressEntity
+                      address={{ hash: item.from }}
+                      truncation="dynamic"
+                    />
+                  )
+                }
               </Skeleton>
             </TableCell>
             <TableCell verticalAlign="middle">
               <Skeleton loading={ isLoading } display="inline-block">
-                <AddressEntity
-                  address={{ hash: item.to }}
-                  hideBelow="2xl"
-                  truncation="dynamic"
-
-                />
-                <AddressEntity
-                  address={{ hash: item.to }}
-                  hideFrom="2xl"
-                  truncation="constant"
-
-                />
+                {
+                  isRevokedStatus ? (
+                    <AddressEntity
+                      address={{ hash: item.to }}
+                      truncation="constant"
+                    />
+                  ) : (
+                    <AddressEntity
+                      address={{ hash: item.to }}
+                      truncation="dynamic"
+                    />
+                  )
+                }
               </Skeleton>
             </TableCell>
             {

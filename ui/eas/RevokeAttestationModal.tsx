@@ -282,38 +282,50 @@ const RevokeAttestationModal = ({
             <Box
               bg="red.50"
               _dark={{ bg: 'red.950' }}
-              p={ 4 }
-              borderRadius="lg"
-              borderLeftWidth="4px"
+              p={{ base: 3, md: 4 }}
+              borderRadius={{ base: 'md', md: 'lg' }}
+              borderLeftWidth={{ base: '3px', md: '4px' }}
               borderLeftColor="red.500"
               shadow="sm"
             >
-              <Flex align="start" gap={ 3 }>
+              <Flex align="start" gap={{ base: 2, md: 3 }}>
                 <IconSvg
                   name="status/error"
-                  boxSize={ 5 }
+                  boxSize={{ base: 4, md: 5 }}
                   color="red.500"
                   flexShrink={ 0 }
-                  mt={ 0.5 }
+                  mt={{ base: 0.5, md: 0.5 }}
                 />
                 <Box flex={ 1 }>
-                  <Text fontSize="md" fontWeight="700" color="red.700" _dark={{ color: 'red.300' }} mb={ 3 }>
+                  <Text
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    fontWeight="700"
+                    color="red.700"
+                    _dark={{ color: 'red.300' }}
+                    mb={{ base: 2, md: 3 }}
+                  >
                     Important Notice
                   </Text>
-                  <Stack gap={ 2 } fontSize="sm" color="red.700" _dark={{ color: 'red.300' }} lineHeight="1.6">
-                    <Flex gap={ 2 } align="start">
+                  <Stack
+                    gap={{ base: 1.5, md: 2 }}
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    color="red.700"
+                    _dark={{ color: 'red.300' }}
+                    lineHeight={{ base: '1.5', md: '1.6' }}
+                  >
+                    <Flex gap={{ base: 1.5, md: 2 }} align="start">
                       <Text fontWeight="600" mt={ 0.5 }>•</Text>
                       <Text flex={ 1 }>Revocation is irreversible, attestation will be permanently marked as revoked</Text>
                     </Flex>
-                    <Flex gap={ 2 } align="start">
+                    <Flex gap={{ base: 1.5, md: 2 }} align="start">
                       <Text fontWeight="600" mt={ 0.5 }>•</Text>
                       <Text flex={ 1 }>Only the attestation creator can revoke it</Text>
                     </Flex>
-                    <Flex gap={ 2 } align="start">
+                    <Flex gap={{ base: 1.5, md: 2 }} align="start">
                       <Text fontWeight="600" mt={ 0.5 }>•</Text>
                       <Text flex={ 1 }>Attestation must be set as revocable (revocable = true) when created</Text>
                     </Flex>
-                    <Flex gap={ 2 } align="start">
+                    <Flex gap={{ base: 1.5, md: 2 }} align="start">
                       <Text fontWeight="600" mt={ 0.5 }>•</Text>
                       <Text flex={ 1 }>This operation requires gas fees</Text>
                     </Flex>
@@ -383,21 +395,21 @@ const RevokeAttestationModal = ({
             <Flex justify="flex-end" gap={ 3 } mt={ 6 } pt={ 4 } borderTopWidth="1px" borderColor="border.muted">
               <Button
                 variant="outline"
-                size="lg"
+                size="md"
                 onClick={ handleClose }
                 disabled={ isRevoking }
-                px={ 8 }
+                px={ 6 }
                 fontWeight="600"
               >
                 Cancel
               </Button>
               <Button
                 colorPalette="red"
-                size="lg"
+                size="md"
                 onClick={ handleRevoke }
                 disabled={ isRevoking }
                 loading={ isRevoking }
-                px={ 8 }
+                px={ 6 }
                 fontWeight="600"
                 shadow="sm"
                 _hover={{ shadow: 'md' }}
