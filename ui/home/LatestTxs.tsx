@@ -27,7 +27,7 @@ const LatestTransactions = () => {
 
   // Auto-refresh transaction list when new transactions arrive
   React.useEffect(() => {
-    if (num > 0 && !isPlaceholderData) {
+    if (num && num > 0 && !isPlaceholderData) {
       refetch();
     }
   }, [ num, isPlaceholderData, refetch ]);
