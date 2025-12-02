@@ -35,7 +35,7 @@ const moduleExports = {
   rewrites,
   redirects,
   headers,
-  output: 'standalone',
+  // output: 'standalone', // Disabled for Vercel - standalone mode is for Docker/self-hosted only
   productionBrowserSourceMaps: true,
   serverExternalPackages: ["@opentelemetry/sdk-node", "@opentelemetry/auto-instrumentations-node"],
   experimental: {
