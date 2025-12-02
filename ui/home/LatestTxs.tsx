@@ -17,13 +17,20 @@ import LatestTxsItemMobile from './LatestTxsItemMobile';
 const LatestTransactions = () => {
   const isMobile = useIsMobile();
   const txsCount = isMobile ? 2 : 6;
-  const { data, isPlaceholderData, isError } = useApiQuery('general:homepage_txs', {
+  const { data, isPlaceholderData, isError, refetch } = useApiQuery('general:homepage_txs', {
     queryOptions: {
       placeholderData: Array(txsCount).fill(TX),
     },
   });
 
   const { num, showErrorAlert } = useNewTxsSocket({ type: 'txs_home', isLoading: isPlaceholderData });
+
+  // Auto-refresh transaction list when new transactions arrive
+  React.useEffect(() => {
+    if (num > 0 && !isPlaceholderData) {
+      refetch();
+    }
+  }, [ num, isPlaceholderData, refetch ]);
 
   if (isError) {
     return <Text mt={ 4 }>No data. Please reload the page.</Text>;
