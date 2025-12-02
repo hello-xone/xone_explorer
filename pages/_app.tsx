@@ -84,7 +84,14 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   const socketUrl = !config.features.opSuperchain.isEnabled ? getSocketUrl() : undefined;
   const socketOptions = {
-    heartbeatIntervalMs: 25000,
+    heartbeatIntervalMs: 10000,
+    reconnectAfterMs: (tries: number) => {
+      return [ 1000, 2000, 5000, 10000 ][tries - 1] || 10000;
+    },
+    rejoinAfterMs: (tries: number) => {
+      return [ 1000, 2000, 5000 ][tries - 1] || 5000;
+    },
+    timeout: 10000,
   };
 
   return (
