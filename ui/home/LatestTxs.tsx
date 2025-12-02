@@ -25,10 +25,14 @@ const LatestTransactions = () => {
 
   const { num, showErrorAlert } = useNewTxsSocket({ type: 'txs_home', isLoading: isPlaceholderData });
 
-  // Auto-refresh transaction list when new transactions arrive
+  // Auto-refresh transaction list when new transactions arrive (with debounce)
   React.useEffect(() => {
     if (num && num > 0 && !isPlaceholderData) {
-      refetch();
+      const timeoutId = setTimeout(() => {
+        refetch();
+      }, 2000); // Wait 2 seconds after last transaction before refetching
+
+      return () => clearTimeout(timeoutId);
     }
   }, [ num, isPlaceholderData, refetch ]);
 
