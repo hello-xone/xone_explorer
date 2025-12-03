@@ -39,6 +39,14 @@ const moduleExports = {
   productionBrowserSourceMaps: true,
   serverExternalPackages: ["@opentelemetry/sdk-node", "@opentelemetry/auto-instrumentations-node"],
   experimental: {
+    optimizePackageImports: [
+      '@wagmi/core',
+      '@wagmi/connectors',
+      '@reown/appkit',
+      '@reown/appkit-adapter-wagmi',
+      'wagmi',
+      'viem',
+    ],
     staleTimes: {
       dynamic: 30,
       'static': 180,
